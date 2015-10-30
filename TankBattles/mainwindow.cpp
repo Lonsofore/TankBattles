@@ -12,3 +12,11 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    hide();
+    QWidget* form = new QWidget();
+    form->setAttribute(Qt::WA_DeleteOnClose, true);
+    form->show();
+}
