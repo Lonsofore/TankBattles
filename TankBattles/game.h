@@ -2,21 +2,30 @@
 #define GAME_H
 
 #include <QWidget>
+#include <QLabel>
+#include <QString>
 
 namespace Ui {
-class Game;
+class game;
 }
 
-class Game : public QWidget
+class game : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit Game(QWidget *parent = 0);
-    ~Game();
+    explicit game(QWidget *parent = 0);
+    ~game();
+    void showEvent(QShowEvent *);
+    void keyPressEvent(QKeyEvent* event);
+    void rotateTank();
+
+    QString img;
+    QLabel *pic;
+    int x,y,dir,speed;
 
 private:
-    Ui::Game *ui;
+    Ui::game *ui;
 };
 
 #endif // GAME_H

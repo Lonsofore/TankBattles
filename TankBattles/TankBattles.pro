@@ -13,8 +13,13 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    game.cpp \
+    panzer.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    game.h \
+    panzer.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    game.ui
