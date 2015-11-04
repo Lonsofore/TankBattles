@@ -15,12 +15,10 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     game.cpp \
-    panzer.cpp \
     tank.cpp
 
 HEADERS  += mainwindow.h \
     game.h \
-    panzer.h \
     tank.h
 
 FORMS    += mainwindow.ui \

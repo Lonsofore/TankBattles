@@ -17,14 +17,8 @@ class game : public QWidget
 public:
     explicit game(QWidget *parent = 0);
     ~game();
-    void showEvent(QShowEvent *);
     void keyPressEvent(QKeyEvent* event);
-    void spawntank(tank t);
-
-    QString img;
-    QLabel *pic;
-    int x,y,dir,speed;
-
+    void spawntank();
 private:
     Ui::game *ui;
 };
