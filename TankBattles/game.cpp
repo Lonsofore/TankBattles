@@ -1,12 +1,13 @@
 #include "game.h"
 #include "ui_game.h"
+#include "tank.h"
+
 #include <QLabel>
 #include <QPixmap>
 #include <QString>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QKeyEvent>
-#include "panzer.h"
 
 game::game(QWidget *parent) :
     QWidget(parent),
@@ -27,9 +28,10 @@ int speed;
 
 void game::showEvent(QShowEvent *)
 {
-    Panzer z;
-    //z.spawn();
+    tank t;
+    spawntank(t);
 
+    /*
     //x = game.height()-20;
     //y = game.width()/2;
     x = 200;
@@ -61,46 +63,45 @@ void game::showEvent(QShowEvent *)
     //QPushButton *pb=new QPushButton(tr("NewButton"),this);
     //pb->setGeometry(20, 20, 80, 80);
     //pb->show();
-
+    */
 
 }
 
-void rotateTank(int r)
+void game::spawntank(tank t)
 {
-
+    pic = new QLabel(this);
+    pic->setGeometry(t.x, t.y, t.weight*1.2, t.height*1.2); // x, y, weight, height
+    pic->setAlignment(Qt::AlignCenter);
+    pic->setPixmap(QPixmap(t.img));
+    pic->show();
 }
 
 void game::keyPressEvent(QKeyEvent* event)
 {
-    int k = dir;
     switch (event->key())
     {
-        case Qt::Key_Up:
-            switch (dir)
-            {
-                case 0:
-                    y -= speed;
-                case 1:
-                    x += speed;
-                case 2:
-                    y += speed;
-                case 3:
-                    x -= speed;
-            }
+        case Qt::Key_Up:    // ехать вперед
+
             break;
-        case Qt::Key_Down:
-            y += 3;
+        case Qt::Key_Down:  // ехать назад
+
             break;
-        case Qt::Key_Left:
-            dir -= 2;
+        case Qt::Key_Left:  // поворот влево
+
             break;
-        case Qt::Key_Right:
-            dir += 2;
+        case Qt::Key_Right: // поворот вправо
+
+            break;
+        case Qt::Key_Escape:// выход
+
+            break;
+        case Qt::Key_Space: // выстрел
+
             break;
         default:
             break;
     }
-
+/*
     if (k != dir)
     {
         QPixmap pix(img);
@@ -112,7 +113,7 @@ void game::keyPressEvent(QKeyEvent* event)
     }
 
     pic->setGeometry(x, y, 200, 200);
-    /*
+
     QMessageBox msgBox;
     QString msg;
     msg.setNum(x);

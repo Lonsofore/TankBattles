@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "tank.h"
 #include <QWidget>
 #include <QLabel>
 #include <QString>
@@ -18,7 +19,7 @@ public:
     ~game();
     void showEvent(QShowEvent *);
     void keyPressEvent(QKeyEvent* event);
-    void rotateTank();
+    void spawntank(tank t);
 
     QString img;
     QLabel *pic;
