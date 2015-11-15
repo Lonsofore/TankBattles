@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/textures">
+        <file>breakable.jpg</file>
+        <file>not_breakable.jpg</file>
+    </qresource>
+</RCC>
