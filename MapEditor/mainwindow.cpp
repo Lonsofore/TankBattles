@@ -64,9 +64,26 @@ void MainWindow::on_field_cellClicked(int row, int column)
     }
     if (ui->spwn_btn->isChecked()) //Спавн
     {
-        item->setText("S");
-        ui->field->setItem(row, column, item);
-        spwncnt++;
+        if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1)))
+        {
+            if((ui->field->item(row-1,column)->text() == "0") && (ui->field->item(row+1,column)->text() == "0") &&          //Проверка соседних блоков на пустоту
+                    (ui->field->item(row,column-1)->text() == "0") && (ui->field->item(row,column+1)->text() == "0") &&
+                    (ui->field->item(row-1,column-1)->text() == "0") && (ui->field->item(row-1,column+1)->text() == "0") &&
+                    (ui->field->item(row+1,column-1)->text() == "0") && (ui->field->item(row+1,column+1)->text() == "0"))
+            {
+                item->setText("S");
+                ui->field->setItem(row, column, item);
+                spwncnt++;
+            }
+            else
+            {
+                QMessageBox::information(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+            }
+        }
+        else
+        {
+            QMessageBox::information(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+        }
     }
 }
 
@@ -183,7 +200,7 @@ void MainWindow::on_Load_triggered()
                        {
                            item->setText("0");
                            ui->field->setItem(r, i, item);
-                       }
+                       }                //TODO: Сделать проверку на заполненность соседних блоков
                        if (elm == 'S') //Спавн
                        {
                            item->setText("S");
