@@ -426,7 +426,7 @@
    </property>
    <widget class="QMenu" name="file">
     <property name="title">
-     <string>Фаил</string>
+     <string>Файл</string>
     </property>
     <addaction name="New"/>
     <addaction name="Load"/>
@@ -479,7 +479,7 @@
     <string>Новый</string>
    </property>
    <property name="toolTip">
-    <string>Создать новый фаил</string>
+    <string>Создать новый файл</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
