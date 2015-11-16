@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->field->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->field->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->field->setIconSize(QSize(69, 65));
 }
 
 MainWindow::~MainWindow()
@@ -130,7 +131,7 @@ void MainWindow::on_scale_slide_sliderMoved(int position)
     ui->field->verticalHeader()->setDefaultSectionSize(position);
     if (position > 50)
     {
-        ui->field->setIconSize(QSize(position-20, position-20));
+        ui->field->setIconSize(QSize(position-1, position-5));
     }
 }
 
