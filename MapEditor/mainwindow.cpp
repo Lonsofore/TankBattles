@@ -48,15 +48,85 @@ void MainWindow::on_field_cellClicked(int row, int column)
     if (ui->field->item(row, column)->text() == "S") spwncnt--;
     QTableWidgetItem *item = new QTableWidgetItem;
     if (ui->ubr_btn->isChecked())  //Неразрушаеммый
-    {   item->setText("2");
-        item->setIcon(QIcon(":/textures/not_breakable.jpg"));
-        ui->field->setItem(row, column, item);
+    {
+        if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
+                {
+                    if((ui->field->item(row-1,column)->text() != "S") && (ui->field->item(row+1,column)->text() != "S") &&                 //Проверка соседних элементов на наличие в них точки спавна
+                                   (ui->field->item(row,column-1)->text() != "S") && (ui->field->item(row,column+1)->text() != "S") &&
+                                   (ui->field->item(row-1,column-1)->text() != "S") && (ui->field->item(row-1,column+1)->text() != "S") &&
+                                   (ui->field->item(row+1,column-1)->text() != "S") && (ui->field->item(row+1,column+1)->text() != "S"))
+                    {
+                        item->setText("2");
+                        item->setIcon(QIcon(":/textures/not_breakable.jpg"));
+                        ui->field->setItem(row, column, item);
+                    }
+                    else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                }
+                else //Если расположена на краю
+                {    //Обходятся варианты расположения ячейки(От верхнего левого края по часовой стрелке) и производится поиск точки спавна в соседних ячейках
+                    if (((row == 0 && column ==0) && (ui->field->item(row+1,column+1)->text() != "S")) ||
+                       ((row == 0 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row+1,column)->text() != "S") &&
+                                                                                               (ui->field->item(row+1,column-1)->text() != "S") &&
+                                                                                               (ui->field->item(row+1,column+1)->text() != "S"))) ||
+                       ((row == 0 && column == ui->field->columnCount()-1) && (ui->field->item(row+1,column-1)->text() != "S")) ||
+                       (((row != 0 && row < ui->field->rowCount()-1) && column == ui->field->columnCount()-1) && ((ui->field->item(row,column-1)->text() != "S") &&
+                                                                                                                  (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                                  (ui->field->item(row+1,column-1)->text() != "S"))) ||
+                       ((row == ui->field->rowCount()-1 && column == ui->field->columnCount()-1) && (ui->field->item(row-1,column-1)->text() != "S")) ||
+                       ((row == ui->field->rowCount()-1 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row-1,column)->text() != "S") &&
+                                                                                                                     (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                                     (ui->field->item(row-1,column+1)->text() != "S"))) ||
+                       ((row == ui->field->rowCount()-1 && column == 0) && (ui->field->item(row-1,column+1)->text() != "S")) ||
+                       (((row != 0 && row < ui->field->rowCount()-1) && column == 0) && ((ui->field->item(row,column+1)->text() != "S") &&
+                                                                                         (ui->field->item(row-1,column+1)->text() != "S") &&
+                                                                                         (ui->field->item(row+1,column+1)->text() != "S"))))
+                    {
+                        item->setText("2");
+                        item->setIcon(QIcon(":/textures/not_breakable.jpg"));
+                        ui->field->setItem(row, column, item);
+                    }
+                    else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                }
     }
     if (ui->br_btn->isChecked())   //Разрушаеммый
-    {
-        item->setText("1");
-        item->setIcon(QIcon(":/textures/breakable.jpg"));
-        ui->field->setItem(row, column, item);
+    {   if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
+        {
+            if((ui->field->item(row-1,column)->text() != "S") && (ui->field->item(row+1,column)->text() != "S") &&                 //Проверка соседних элементов на наличие в них точки спавна
+                           (ui->field->item(row,column-1)->text() != "S") && (ui->field->item(row,column+1)->text() != "S") &&
+                           (ui->field->item(row-1,column-1)->text() != "S") && (ui->field->item(row-1,column+1)->text() != "S") &&
+                           (ui->field->item(row+1,column-1)->text() != "S") && (ui->field->item(row+1,column+1)->text() != "S"))
+            {
+                item->setText("1");
+                item->setIcon(QIcon(":/textures/breakable.jpg"));
+                ui->field->setItem(row, column, item);
+            }
+            else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+        }
+        else //Если расположена на краю
+        {    //Обходятся варианты расположения ячейки(От верхнего левого края по часовой стрелке) и производится поиск точки спавна в соседних ячейках
+            if (((row == 0 && column ==0) && (ui->field->item(row+1,column+1)->text() != "S")) ||
+               ((row == 0 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row+1,column)->text() != "S") &&
+                                                                                       (ui->field->item(row+1,column-1)->text() != "S") &&
+                                                                                       (ui->field->item(row+1,column+1)->text() != "S"))) ||
+               ((row == 0 && column == ui->field->columnCount()-1) && (ui->field->item(row+1,column-1)->text() != "S")) ||
+               (((row != 0 && row < ui->field->rowCount()-1) && column == ui->field->columnCount()-1) && ((ui->field->item(row,column-1)->text() != "S") &&
+                                                                                                          (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                          (ui->field->item(row+1,column-1)->text() != "S"))) ||
+               ((row == ui->field->rowCount()-1 && column == ui->field->columnCount()-1) && (ui->field->item(row-1,column-1)->text() != "S")) ||
+               ((row == ui->field->rowCount()-1 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row-1,column)->text() != "S") &&
+                                                                                                             (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                             (ui->field->item(row-1,column+1)->text() != "S"))) ||
+               ((row == ui->field->rowCount()-1 && column == 0) && (ui->field->item(row-1,column+1)->text() != "S")) ||
+               (((row != 0 && row < ui->field->rowCount()-1) && column == 0) && ((ui->field->item(row,column+1)->text() != "S") &&
+                                                                                 (ui->field->item(row-1,column+1)->text() != "S") &&
+                                                                                 (ui->field->item(row+1,column+1)->text() != "S"))))
+            {
+                item->setText("1");
+                item->setIcon(QIcon(":/textures/breakable.jpg"));
+                ui->field->setItem(row, column, item);
+            }
+            else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+        }
     }
     if (ui->emp_btn->isChecked()) //Пустой
     {
@@ -78,12 +148,12 @@ void MainWindow::on_field_cellClicked(int row, int column)
             }
             else
             {
-                QMessageBox::information(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
             }
         }
         else
         {
-            QMessageBox::information(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+            QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
         }
     }
 }
@@ -161,66 +231,116 @@ void MainWindow::on_Load_triggered()
             cnt = fields.at(2);
             int spwn = cnt.toInt();    //Кол-во точек спавна
             int i, r = 0;
-            char elm;                 //Текущий элемент
-            spwncnt = 0;
-            ui->field->setRowCount(rowcnt);
-            ui->field->setColumnCount(colcnt);
-            while(!in.atEnd())  //Пока не конец файла
+            if (spwn >= 2 || rowcnt<=0 || colcnt<=0)
             {
-                QString line = in.readLine(); //Читаем строку
-                QStringList fields = line.split(" "); //Элементы в файле разделены пробелами
-                if (fields.count() == colcnt+1)       //Если кол-во элементов в строке равно кол-ву элементов указанных в строке информации
+                char elm;                 //Текущий элемент
+                int **spcord = new int* [spwn]; //Массив для записи координат точек спавна для последующей проверки на правильность их расположения
+                for (i = 0; i < spwn; i++)
                 {
-                    for(i = 0; i < colcnt; i++)
+                    spcord[i] = new int [2];
+                }
+                spwncnt = 0;
+                ui->field->setRowCount(rowcnt);
+                ui->field->setColumnCount(colcnt);
+                while(!in.atEnd())  //Пока не конец файла
+                {
+                    QString line = in.readLine(); //Читаем строку
+                    QStringList fields = line.split(" "); //Элементы в файле разделены пробелами
+                    if (fields.count() == colcnt+1)       //Если кол-во элементов в строке равно кол-ву элементов указанных в строке информации
                     {
-                       cnt = fields.at(i);
-                       elm = cnt.at(0).toLatin1(); //Читаем элемент
-                       QTableWidgetItem *item = new QTableWidgetItem;
-                       if (elm == '2') //Неразрушаеммый
-                       {
-                           item->setText("2");
-                           item->setIcon(QIcon(":/textures/not_breakable.jpg"));
-                           ui->field->setItem(r, i, item);
-                       }
-                       if (elm == '1') //Разрушаеммый
-                       {
-                           item->setText("1");
-                           item->setIcon(QIcon(":/textures/breakable.jpg"));
-                           ui->field->setItem(r, i, item);
-                       }
-                       if (elm == '0') //Пустой
-                       {
-                           item->setText("0");
-                           ui->field->setItem(r, i, item);
-                       }                //TODO: Сделать проверку на заполненность соседних блоков
-                       if (elm == 'S') //Спавн
-                       {
-                           item->setText("S");
-                           ui->field->setItem(r, i, item);
-                           spwncnt++;
-                       }
-                       if ((elm != '2') && (elm != '1') && (elm != '0') && (elm != 'S')) //Что-то другое
-                       {
-                           goto err; //Выдаем сообщение об ошибке и стираем всё
-                       }
+                        for(i = 0; i < colcnt; i++)
+                        {
+                           cnt = fields.at(i);
+                           elm = cnt.at(0).toLatin1(); //Читаем элемент
+                           QTableWidgetItem *item = new QTableWidgetItem;
+                           if (elm == '2') //Неразрушаеммый
+                           {
+                               item->setText("2");
+                               item->setIcon(QIcon(":/textures/not_breakable.jpg"));
+                               ui->field->setItem(r, i, item);
+                           }
+                           if (elm == '1') //Разрушаеммый
+                           {
+                               item->setText("1");
+                               item->setIcon(QIcon(":/textures/breakable.jpg"));
+                               ui->field->setItem(r, i, item);
+                           }
+                           if (elm == '0') //Пустой
+                           {
+                               item->setText("0");
+                               ui->field->setItem(r, i, item);
+                           }                //TODO: Сделать проверку на заполненность соседних блоков
+                           if (elm == 'S') //Спавн
+                           {
+                               item->setText("S");
+                               ui->field->setItem(r, i, item);
+                               spcord[spwncnt][0] = r;
+                               spcord[spwncnt][1] = i;
+                               spwncnt++;
+                           }
+                           if ((elm != '2') && (elm != '1') && (elm != '0') && (elm != 'S')) //Что-то другое
+                           {
+                               QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                               ui->field->clearContents();
+                               ui->field->setRowCount(0);
+                               ui->field->setColumnCount(0);
+                               file.close();
+                               return;
+                           }
+                        }
                     }
+                    else
+                    {
+                        QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден."); //Выдаем сообщение об ошибке и стираем всё
+                        ui->field->clearContents();
+                        ui->field->setRowCount(0);
+                        ui->field->setColumnCount(0);
+                        file.close();
+                        return;
+                    }
+                    r = r+1; //Строка прочитанна
                 }
-                else
+                for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
                 {
-                    err: //Выдаем сообщение об ошибке и стираем всё
-                    QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
-                    ui->field->clearContents();
-                    ui->field->setRowCount(0);
-                    ui->field->setColumnCount(0);
-                    break;
+                   if (((spcord[i][0] > 0) && (spcord[i][0] < ui->field->rowCount()-1)) && ((spcord[i][1] > 0) && (spcord[i][1] < ui->field->columnCount()-1)))
+                   {
+                       if((ui->field->item(spcord[i][0]-1,spcord[i][1])->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1])->text() != "0") ||          //Проверка соседних блоков на пустоту
+                               (ui->field->item(spcord[i][0],spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0],spcord[i][1]+1)->text() != "0") ||
+                               (ui->field->item(spcord[i][0]-1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]-1,spcord[i][1]+1)->text() != "0") ||
+                               (ui->field->item(spcord[i][0]+1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1]+1)->text() != "0"))
+                       {
+                           QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                           ui->field->clearContents();
+                           ui->field->setRowCount(0);
+                           ui->field->setColumnCount(0);
+                           file.close();
+                           return;
+                       }
+                   }
+                   else
+                   {
+                       QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                       ui->field->clearContents();
+                       ui->field->setRowCount(0);
+                       ui->field->setColumnCount(0);
+                       file.close();
+                       return;
+                   }
                 }
-                r = r+1; //Строка прочитанна
+            }
+            else
+            {
+                file.close();
+                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                return;
             }
             file.close();
             if ((r != rowcnt) || (spwn != spwncnt)) //Если кол-во строк или точек спавна не равно указанному в начале файла кол-ву
             {
                 QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
                 ui->field->clearContents();
+                ui->field->setRowCount(0);
+                ui->field->setColumnCount(0);
             }
             else
             {
@@ -266,7 +386,7 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.1.6\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.2\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
