@@ -125,15 +125,6 @@ void MainWindow::on_Save_triggered()
 }
 
 
-void MainWindow::on_scale_slide_sliderMoved(int position)
-{
-    ui->field->horizontalHeader()->setDefaultSectionSize(position);
-    ui->field->verticalHeader()->setDefaultSectionSize(position);
-    if (position > 50)
-    {
-        ui->field->setIconSize(QSize(position-1, position-5));
-    }
-}
 
 void MainWindow::on_Load_triggered()
 {
@@ -275,7 +266,7 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.1\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.1.6\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
@@ -284,4 +275,14 @@ void MainWindow::on_preview_clicked()
     msgBox.setButtonText(QMessageBox::Yes, trUtf8("Я нечаянно"));
     msgBox.setButtonText(QMessageBox::No, trUtf8("Я больше так не буду"));
     msgBox.exec();
+}
+
+void MainWindow::on_scale_slide_valueChanged(int value)
+{
+    ui->field->horizontalHeader()->setDefaultSectionSize(value);
+    ui->field->verticalHeader()->setDefaultSectionSize(value);
+    if (value > 50)
+    {
+        ui->field->setIconSize(QSize(value-1, value-5));
+    }
 }

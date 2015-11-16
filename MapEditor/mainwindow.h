@@ -24,8 +24,6 @@ private slots:
 
     void on_Save_triggered();
 
-    void on_scale_slide_sliderMoved(int position);
-
     void on_Load_triggered();
 
     void on_New_triggered();
@@ -35,6 +33,8 @@ private slots:
     void on_About_triggered();
 
     void on_preview_clicked();
+
+    void on_scale_slide_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;
