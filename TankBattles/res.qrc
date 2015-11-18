@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/sounds">
+        <file>sounds/dude.mp3</file>
+        <file>sounds/hellmarch.mp3</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>images/tank.png</file>
+        <file>images/tank1.png</file>
+        <file>images/bullet.png</file>
+    </qresource>
+</RCC>
