@@ -406,3 +406,8 @@ void MainWindow::on_scale_slide_valueChanged(int value)
         ui->field->setIconSize(QSize(value-1, value-5));
     }
 }
+void MainWindow::on_field_cellEntered(int row, int column)
+{
+    // баг - при скролле выделяется ячейка
+    on_field_cellClicked(row, column);
+}
