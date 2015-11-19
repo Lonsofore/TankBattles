@@ -8,6 +8,7 @@ class Health: public QGraphicsTextItem
 public:
     Health(QGraphicsItem * parent = 0);
     void decrease(int v);
+    void set(int v);
     int getHealth();
 private:
     int health;

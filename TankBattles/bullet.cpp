@@ -1,10 +1,9 @@
-#include "bullet.h"
-#include <typeinfo>
+#include "Bullet.h"
 #include <QTimer>
 #include <QGraphicsScene>
 #include <QList>
-#include "enemy.h"
-#include "game.h"
+#include "Enemy.h"
+#include "Game.h"
 
 #include <math.h>
 #define PI 3.14159265

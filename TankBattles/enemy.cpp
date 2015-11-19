@@ -1,7 +1,7 @@
-#include "enemy.h"
+#include "Enemy.h"
 #include <QTimer>
 #include <QGraphicsScene>
-#include "game.h"
+#include "Game.h"
 
 #include <QDebug>
 

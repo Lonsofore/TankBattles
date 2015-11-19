@@ -2,9 +2,9 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include "bullet.h"
-#include "enemy.h"
-#include "game.h"
+#include "Bullet.h"
+#include "Enemy.h"
+#include "Game.h"
 
 #include <math.h>
 #define PI 3.14159265
@@ -21,7 +21,7 @@ Tank::Tank(QGraphicsItem *parent)
     setPos(300,200);
     degree = 0;
     speed = 5;
-    rspeed = 3;
+    rspeed = 6;
 
     bulletsound = new QMediaPlayer();
     bulletsound->setMedia(QUrl("qrc:/sounds/sounds/dude.mp3"));
@@ -33,49 +33,38 @@ void Tank::keyPressEvent(QKeyEvent *event)
     switch (event->key())
     {
         case Qt::Key_Up:
-            //if (pos().y() > 0)
-            //    setPos(x(),y()-5);
-
-            x1 = x() + cos(degree * (PI / 180))*speed;
-            y1 = y() + sin(degree * (PI / 180))*speed;
-            setPos(x1,y1);
-
+            //if (y() > 0 && y() < scene()->height() && x() > 0 && x() < scene()->width())
+            //{
+                x1 = pos().x() + round(cos(degree * (PI / 180))*speed);
+                y1 = pos().y() + round(sin(degree * (PI / 180))*speed);
+                setPos(x1,y1);
+            //}
             break;
 
         case Qt::Key_Down:
             //if (pos().y() < scene()->height() - 100)
-            //    setPos(x(),y()+5);
-
-            x1 = x() - cos(degree * (PI / 180))*speed;
-            y1 = y() - sin(degree * (PI / 180))*speed;
-            setPos(x1,y1);
-
+            //if (y() > 0 && y() < scene()->height() && x() > 0 && x() < scene()->width())
+            //{
+                x1 = pos().x() - round(cos(degree * (PI / 180))*speed);
+                y1 = pos().y() - round(sin(degree * (PI / 180))*speed);
+                setPos(x1,y1);
+            //}
             break;
 
         case Qt::Key_Left:
-            //if (pos().x() > 0)
-            //    setPos(x()-5,y());
-
-            if (degree > -360)
+            if (degree - rspeed > -360)
                 degree -= rspeed;
             else
                 degree = 0;
-
             rotate();
-
             break;
 
         case Qt::Key_Right:
-            //if (pos().x() < scene()->width() - 100)
-            //    setPos(x()+5,y());
-
-            if (degree < 360)
+            if (degree + rspeed < 360)
                 degree += rspeed;
             else
                 degree = 0;
-
             rotate();
-
             break;
 
         case Qt::Key_Space:
@@ -101,7 +90,7 @@ void Tank::keyPressEvent(QKeyEvent *event)
 
             break;
     }
-    //game->health->setPos(game->player->x()+25,game->player->y()+30);
+    //game->health->setPos(game->player->x()+40,game->player->y()+50);
 }
 
 void Tank::rotate()

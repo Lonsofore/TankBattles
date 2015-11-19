@@ -1,8 +1,8 @@
-#include "game.h"
+#include "Game.h"
 #include <QTimer>
 #include <QGraphicsTextItem>
 #include <QFont>
-#include "enemy.h"
+#include "Enemy.h"
 #include <QMediaPlayer>
 
 Game::Game(QWidget *parent){
@@ -31,11 +31,11 @@ Game::Game(QWidget *parent){
     score = new Score();
     scene->addItem(score);
 
-    /*
+/*
     health = new Health();
-    health->setPos(player->x()+30,player->y()+30);
+    health->setPos(player->x()+40,player->y()+50);
     scene->addItem(health);
-    */
+*/
 
     // spawn enemies
     QTimer * timer = new QTimer();
@@ -45,7 +45,7 @@ Game::Game(QWidget *parent){
     // ambient
     QMediaPlayer * music = new QMediaPlayer();
     music->setMedia(QUrl("qrc:/sounds/sounds/hellmarch.mp3"));
-    music->play();
+    //music->play();
 
     show();
 }
