@@ -1,4 +1,4 @@
-#include "Health.h"
+#include "health.h"
 #include <QFont>
 
 Health::Health(QGraphicsItem *parent) : QGraphicsTextItem(parent)
