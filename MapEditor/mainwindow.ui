@@ -282,7 +282,10 @@
              </rect>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
             </property>
            </widget>
            <widget class="QLabel" name="X_label">
@@ -308,7 +311,10 @@
              </rect>
             </property>
             <property name="minimum">
-             <number>1</number>
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
             </property>
            </widget>
            <widget class="QLabel" name="Y_label">

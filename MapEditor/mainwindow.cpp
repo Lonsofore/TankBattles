@@ -379,14 +379,15 @@ void MainWindow::on_Help_triggered()
                                                       "-Блок спавна(S)\n"
                                                       "-Пустой блок(0)\n"
                                                       "Требование к карте:\n"
-                                                      "-Минимальный размер: 1*1\n"
+                                                      "-Минимальный размер: 5*5\n"
+                                                      "-Максимальный размер: 1000*1000\n"
                                                       "-Минимальное кол-во блоков спавна: 2\n"
                                                       "Предварительный просмотр на данный момент не реализован!");
 }
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.2\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.2.1\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
@@ -405,9 +406,4 @@ void MainWindow::on_scale_slide_valueChanged(int value)
     {
         ui->field->setIconSize(QSize(value-1, value-5));
     }
-}
-void MainWindow::on_field_cellEntered(int row, int column)
-{
-    // баг - при скролле выделяется ячейка
-    on_field_cellClicked(row, column);
 }

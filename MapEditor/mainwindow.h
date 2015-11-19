@@ -36,7 +36,6 @@ private slots:
 
     void on_scale_slide_valueChanged(int value);
 
-    void on_field_cellEntered(int row, int column);
 
 private:
     Ui::MainWindow *ui;
