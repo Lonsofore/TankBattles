@@ -1,13 +1,12 @@
-#include "Bullet.h"
+#include "bullet.h"
 #include <QTimer>
 #include <QGraphicsScene>
 #include <QList>
-#include "Enemy.h"
-#include "Game.h"
-
+#include "enemy.h"
+#include "game.h"
+#include <typeinfo>
 #include <math.h>
 #define PI 3.14159265
-
 #include <QDebug>
 
 extern Game * game;

@@ -2,9 +2,9 @@
 #include <QKeyEvent>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include "Bullet.h"
-#include "Enemy.h"
-#include "Game.h"
+#include "bullet.h"
+#include "enemy.h"
+#include "game.h"
 
 #include <math.h>
 #define PI 3.14159265
