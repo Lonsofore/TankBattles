@@ -30,25 +30,25 @@ Tank::Tank(QGraphicsItem *parent)
 void Tank::keyPressEvent(QKeyEvent *event)
 {
     int x1,y1;
+    QPixmap tank(image);
     switch (event->key())
     {
         case Qt::Key_Up:
-            //if (y() > 0 && y() < scene()->height() && x() > 0 && x() < scene()->width())
-            //{
-                x1 = pos().x() + round(cos(degree * (PI / 180))*speed);
-                y1 = pos().y() + round(sin(degree * (PI / 180))*speed);
+            x1 = pos().x() + round(cos(degree * (PI / 180))*speed);
+            y1 = pos().y() + round(sin(degree * (PI / 180))*speed);
+            if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+            {
                 setPos(x1,y1);
-            //}
+            }
             break;
 
         case Qt::Key_Down:
-            //if (pos().y() < scene()->height() - 100)
-            //if (y() > 0 && y() < scene()->height() && x() > 0 && x() < scene()->width())
-            //{
-                x1 = pos().x() - round(cos(degree * (PI / 180))*speed);
-                y1 = pos().y() - round(sin(degree * (PI / 180))*speed);
+            x1 = pos().x() - round(cos(degree * (PI / 180))*speed);
+            y1 = pos().y() - round(sin(degree * (PI / 180))*speed);
+            if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+            {
                 setPos(x1,y1);
-            //}
+            }
             break;
 
         case Qt::Key_Left:
