@@ -6,6 +6,7 @@
 #include <QGraphicsItem>
 #include <QMediaPlayer>
 #include <QPixmap>
+#include <QMouseEvent>
 
 class Tank: public QObject, public QGraphicsPixmapItem
 {
@@ -13,6 +14,7 @@ class Tank: public QObject, public QGraphicsPixmapItem
 public:
     Tank(QGraphicsItem * parent=0);
     void keyPressEvent(QKeyEvent *event);
+
     void rotate();
     int degree;
     int speed;
