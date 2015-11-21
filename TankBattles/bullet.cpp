@@ -16,6 +16,7 @@ Bullet::Bullet()
     speed = 40;
     image = ":/images/images/bullet.png";
     setPixmap(QPixmap(image));
+    rotate();
 
     QTimer *timer = new QTimer();
     connect(timer,SIGNAL(timeout()),this,SLOT(move()));

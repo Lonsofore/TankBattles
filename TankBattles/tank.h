@@ -14,8 +14,8 @@ class Tank: public QObject, public QGraphicsPixmapItem
 public:
     Tank(QGraphicsItem * parent=0);
     void keyPressEvent(QKeyEvent *event);
-
     void rotate();
+
     int degree;
     int speed;
     int rspeed;
