@@ -11,6 +11,7 @@
 class Game: public QGraphicsView{
 public:
     Game(QWidget * parent=0);
+    void mouseReleaseEvent(QMouseEvent * event);
 
     QGraphicsScene * scene;
     Tank * player;

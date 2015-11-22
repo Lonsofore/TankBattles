@@ -49,3 +49,8 @@ Game::Game(QWidget *parent){
 
     show();
 }
+
+void Game::mouseReleaseEvent(QMouseEvent *event)
+{
+    player->setFocus();
+}

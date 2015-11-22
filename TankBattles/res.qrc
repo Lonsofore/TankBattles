@@ -7,5 +7,6 @@
         <file>images/tank.png</file>
         <file>images/tank1.png</file>
         <file>images/bullet.png</file>
+        <file>images/tank2.png</file>
     </qresource>
 </RCC>

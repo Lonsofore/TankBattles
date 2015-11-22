@@ -17,7 +17,7 @@ Tank::Tank(QGraphicsItem *parent)
 {
     image = ":/images/images/tank1.png";
     setPixmap(QPixmap(image));
-    //setPos(scene()->width()/2,scene()->height()/2);
+    //setPos(scene()->width()/2, scene()->height()/2);
     setPos(300,200);
     degree = 0;
     speed = 5;
@@ -30,25 +30,25 @@ Tank::Tank(QGraphicsItem *parent)
 void Tank::keyPressEvent(QKeyEvent *event)
 {
     int x1,y1;
+    QPixmap tank(image);
     switch (event->key())
     {
         case Qt::Key_Up:
-            //if (y() > 0 && y() < scene()->height() && x() > 0 && x() < scene()->width())
-            //{
-                x1 = pos().x() + round(cos(degree * (PI / 180))*speed);
-                y1 = pos().y() + round(sin(degree * (PI / 180))*speed);
+            x1 = x() + round(cos(degree * (PI / 180))*speed);
+            y1 = y() + round(sin(degree * (PI / 180))*speed);
+            if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+            {
                 setPos(x1,y1);
-            //}
+            }
             break;
 
         case Qt::Key_Down:
-            //if (pos().y() < scene()->height() - 100)
-            //if (y() > 0 && y() < scene()->height() && x() > 0 && x() < scene()->width())
-            //{
-                x1 = pos().x() - round(cos(degree * (PI / 180))*speed);
-                y1 = pos().y() - round(sin(degree * (PI / 180))*speed);
+            x1 = x() - round(cos(degree * (PI / 180))*speed);
+            y1 = y() - round(sin(degree * (PI / 180))*speed);
+            if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+            {
                 setPos(x1,y1);
-            //}
+            }
             break;
 
         case Qt::Key_Left:
@@ -70,8 +70,8 @@ void Tank::keyPressEvent(QKeyEvent *event)
         case Qt::Key_Space:
             Bullet *bullet = new Bullet();
 
-            x1 = x() + cos(degree * (PI / 180)) + 65;
-            y1 = y() + sin(degree * (PI / 180)) + 65;
+            x1 = x() + 50 + round(cos(degree * (PI / 180)) * tank.size().width()/2);  // пока писал - забыл, что такое 50...
+            y1 = y() + 50 + round(sin(degree * (PI / 180)) * tank.size().height()/2); // по идее, тут центр смещается в середину танка и от него идет рассчет, где появится пуля
 
             //bullet->setPos(x()+48,y());
             bullet->setPos(x1,y1);
