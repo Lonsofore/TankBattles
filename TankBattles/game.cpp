@@ -20,12 +20,9 @@ Game::Game(QWidget *parent){
     // create the player
     player = new Tank();
 
-    // make the player focusable and set it to be the current focus
-    player->setFlag(QGraphicsItem::ItemIsFocusable);
-    player->setFocus();
-
     // add the player to the scene
     scene->addItem(player);
+    scene->addItem(player->head);
 
     // create the score/health
     score = new Score();
@@ -43,9 +40,11 @@ Game::Game(QWidget *parent){
     timer->start(2000);
 
     // ambient
+    /*
     QMediaPlayer * music = new QMediaPlayer();
     music->setMedia(QUrl("qrc:/sounds/sounds/hellmarch.mp3"));
-    //music->play();
+    music->play();
+    */
 
     show();
 }

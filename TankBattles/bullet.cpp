@@ -35,7 +35,7 @@ void Bullet::rotate()
     p.setRenderHint(QPainter::SmoothPixmapTransform);
     p.setRenderHint(QPainter::HighQualityAntialiasing);
     p.translate(rotatePixmap.size().width() / 2, rotatePixmap.size().height() / 2);
-    p.rotate(game->player->degree); // градус
+    p.rotate(game->player->hdegree); // градус
     p.translate(-rotatePixmap.size().width() / 2, -rotatePixmap.size().height() / 2);
     p.drawPixmap(0, 0, shipPixels);
     p.end();
@@ -62,7 +62,7 @@ void Bullet::move()
         }
     }
 
-    int deg = game->player->degree;
+    int deg = game->player->hdegree;
     int x1 = x() + cos(deg * (PI / 180))*speed;
     int y1 = y() + sin(deg * (PI / 180))*speed;
     setPos(x1,y1);

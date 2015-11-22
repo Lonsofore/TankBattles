@@ -12,14 +12,20 @@ class Tank: public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
-    Tank(QGraphicsItem * parent=0);
+    Tank();
     void keyPressEvent(QKeyEvent *event);
     void rotate();
+    void hrotate();
 
-    int degree;
-    int speed;
-    int rspeed;
-    QString image;
+    QGraphicsPixmapItem *head;
+
+    int degree;  // base degree
+    int hdegree; // head degree
+    int speed;   // move speed
+    int rspeed;  // rotate speed
+    int hspeed;  // head rotate speed
+    QString baseImage;  // base image
+    QString headImage;  // head image
 public slots:
     void spawn();
 private:
