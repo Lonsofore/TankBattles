@@ -21,6 +21,7 @@ Tank::Tank()
     // обнуление
     xfix = 0;
     yfix = 0;
+    mf = mb = rr = rl = hr = hl = fr = false;
 
     // платформа
     setPos(x,y);
@@ -50,148 +51,241 @@ Tank::Tank()
 void Tank::keyPressEvent(QKeyEvent *event)
 {
     //qDebug() << (uint) event->key(); // чтобы узнать код клавиши
-    int x1,y1;
-    int xadd = 0;
-    int yadd = 0;
-    double sn, cs;
-    QPixmap tank(baseImage);
     switch ((uint) event->key())
     {
         // Двигаться вперед
         case 16777235: // Up
-            // чтобы высчитывать это только 1 раз
-            cs = cos(degree * (PI / 180))*speed;
-            sn = sin(degree * (PI / 180))*speed;
-
-            // исправление кривого передвижения из-за int координат
-            xfix += round(cs) - cs;
-            yfix += round(sn) - sn;
-
-            // если есть целое значение
-            if (round(xfix) != 0)
-            {
-                xadd = round(xfix);
-                xfix = xfix - round(xfix);
-            }
-            if (round(yfix) != 0)
-            {
-                yadd = round(yfix);
-                yfix = yfix - round(yfix);
-            }
-
-            // новые координаты
-            x1 = x() + round(cs) - xadd;
-            y1 = y() + round(sn) - yadd;
-            if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
-            {
-                setPos(x1,y1);
-                head->setPos(x1,y1);
-            }
+            mf = true;
         break;
 
         // Двигаться назад
         case 16777237: // Down
-            // чтобы высчитывать это только 1 раз
-            cs = cos(degree * (PI / 180))*speed;
-            sn = sin(degree * (PI / 180))*speed;
-
-            // исправление кривого передвижения из-за int координат
-            xfix -= round(cs) - cs;
-            yfix -= round(sn) - sn;
-
-            // если есть целое значение
-            if (round(xfix) != 0)
-            {
-                xadd = round(xfix);
-                xfix = xfix - round(xfix);
-            }
-            if (round(yfix) != 0)
-            {
-                yadd = round(yfix);
-                yfix = yfix - round(yfix);
-            }
-
-            // новые координаты
-            x1 = x() - round(cs) - xadd;
-            y1 = y() - round(sn) - yadd;
-            if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
-            {
-                setPos(x1,y1);
-                head->setPos(x1,y1);
-            }
+            mb = true;
         break;
 
         // Поворот танка налево
         case 16777234: // Left
-            if (degree - rspeed > -360)
-                degree -= rspeed;
-            else
-                degree = 0;
-            rotate();
-
-            if (hdegree - rspeed > -360)
-                hdegree -= rspeed;
-            else
-                hdegree = 0;
-            hrotate();
+            rl = true;
         break;
 
         // Поворот танка направо
         case 16777236: // Right
-            if (degree + rspeed < 360)
-                degree += rspeed;
-            else
-                degree = 0;
-            rotate();
-
-            if (hdegree + rspeed < 360)
-                hdegree += rspeed;
-            else
-                hdegree = 0;
-            hrotate();
+            rr = true;
         break;
 
         // Поворот башни налево
         case 90:   // Z
         case 1071: // Я
-            if (hdegree - hspeed > -360)
-                hdegree -= hspeed;
-            else
-                hdegree = 0;
-            hrotate();
+            hl = true;
         break;
 
         // Поворот башни направо
         case 88:   // X
         case 1063: // Ч
-            if (hdegree + hspeed < 360)
-                hdegree += hspeed;
-            else
-                hdegree = 0;
-            hrotate();
+            hr = true;
         break;
 
         // Выстрел
         case 32: // SPAAAAACE
-            Bullet *bullet = new Bullet();
-
-            x1 = x() + tank.size().width()/2 - 20 + round(cos(hdegree * (PI / 180)) * tank.size().width()/2);   // понятия не имею, что за 20
-            y1 = y() + tank.size().height()/2 - 20 + round(sin(hdegree * (PI / 180)) * tank.size().height()/2); // я его просто подобрал
-            bullet->setPos(x1,y1);
-            scene()->addItem(bullet);
-
-            switch (bulletsound->state())
-            {
-                case QMediaPlayer::PlayingState:
-                    bulletsound->setPosition(0);
-                    break;
-                case QMediaPlayer::StoppedState:
-                    bulletsound->play();
-                    break;
-            }
+            fr = true;
         break;
     }
+    onKey();
     //game->health->setPos(game->player->x()+40,game->player->y()+50);
+}
+
+void Tank::keyReleaseEvent(QKeyEvent *event) // то же самое, только отмена
+{
+    switch ((uint) event->key())
+    {
+        case 16777235: // Up
+            mf = false;
+        break;
+
+        case 16777237: // Down
+            mb = false;
+        break;
+
+        case 16777234: // Left
+            rl = false;
+        break;
+
+        case 16777236: // Right
+            rr = false;
+        break;
+
+        case 90:   // Z
+        case 1071: // Я
+            hl = false;
+        break;
+
+        case 88:   // X
+        case 1063: // Ч
+            hr = false;
+        break;
+
+        case 32: // SPAAAAACE
+            fr = false;
+        break;
+    }
+}
+
+void Tank::onKey()
+{
+    if (mf) moveForward();
+    if (mb) moveBack();
+    if (rl) rotateLeft();
+    if (rr) rotateRight();
+    if (hl) headLeft();
+    if (hr) headRight();
+    if (fr) fire();
+}
+
+void Tank::moveForward()
+{
+    int x1,y1;
+    int xadd = 0;
+    int yadd = 0;
+    double sn, cs;
+    QPixmap tank(baseImage);
+
+    // чтобы высчитывать это только 1 раз
+    cs = cos(degree * (PI / 180))*speed;
+    sn = sin(degree * (PI / 180))*speed;
+
+    // исправление кривого передвижения из-за int координат
+    xfix += round(cs) - cs;
+    yfix += round(sn) - sn;
+
+    // если есть целое значение
+    if (round(xfix) != 0)
+    {
+        xadd = round(xfix);
+        xfix = xfix - round(xfix);
+    }
+    if (round(yfix) != 0)
+    {
+        yadd = round(yfix);
+        yfix = yfix - round(yfix);
+    }
+
+    // новые координаты
+    x1 = x() + round(cs) - xadd;
+    y1 = y() + round(sn) - yadd;
+    if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+    {
+        setPos(x1,y1);
+        head->setPos(x1,y1);
+    }
+}
+
+void Tank::moveBack()
+{
+    int x1,y1;
+    int xadd = 0;
+    int yadd = 0;
+    double sn, cs;
+    QPixmap tank(baseImage);
+
+    // чтобы высчитывать это только 1 раз
+    cs = cos(degree * (PI / 180))*speed;
+    sn = sin(degree * (PI / 180))*speed;
+
+    // исправление кривого передвижения из-за int координат
+    xfix -= round(cs) - cs;
+    yfix -= round(sn) - sn;
+
+    // если есть целое значение
+    if (round(xfix) != 0)
+    {
+        xadd = round(xfix);
+        xfix = xfix - round(xfix);
+    }
+    if (round(yfix) != 0)
+    {
+        yadd = round(yfix);
+        yfix = yfix - round(yfix);
+    }
+
+    // новые координаты
+    x1 = x() - round(cs) - xadd;
+    y1 = y() - round(sn) - yadd;
+    if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+    {
+        setPos(x1,y1);
+        head->setPos(x1,y1);
+    }
+}
+
+void Tank::rotateRight()
+{
+    if (degree + rspeed < 360)
+        degree += rspeed;
+    else
+        degree = 0;
+    rotate();
+
+    if (hdegree + rspeed < 360)
+        hdegree += rspeed;
+    else
+        hdegree = 0;
+    hrotate();
+}
+
+void Tank::rotateLeft()
+{
+    if (degree - rspeed > -360)
+        degree -= rspeed;
+    else
+        degree = 0;
+    rotate();
+
+    if (hdegree - rspeed > -360)
+        hdegree -= rspeed;
+    else
+        hdegree = 0;
+    hrotate();
+}
+
+void Tank::headRight()
+{
+    if (hdegree + hspeed < 360)
+        hdegree += hspeed;
+    else
+        hdegree = 0;
+    hrotate();
+}
+
+void Tank::headLeft()
+{
+    if (hdegree - hspeed > -360)
+        hdegree -= hspeed;
+    else
+        hdegree = 0;
+    hrotate();
+}
+
+void Tank::fire()
+{
+    int x1,y1;
+    QPixmap tank(baseImage);
+
+    Bullet *bullet = new Bullet();
+
+    x1 = x() + tank.size().width()/2 - 20 + round(cos(hdegree * (PI / 180)) * tank.size().width()/2);   // понятия не имею, что за 20
+    y1 = y() + tank.size().height()/2 - 20 + round(sin(hdegree * (PI / 180)) * tank.size().height()/2); // я его просто подобрал
+    bullet->setPos(x1,y1);
+    scene()->addItem(bullet);
+
+    switch (bulletsound->state())
+    {
+        case QMediaPlayer::PlayingState:
+            bulletsound->setPosition(0);
+            break;
+        case QMediaPlayer::StoppedState:
+            bulletsound->play();
+            break;
+    }
 }
 
 void Tank::rotate() // поворот платформы

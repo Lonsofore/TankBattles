@@ -15,6 +15,7 @@ public:
     Bullet();
     void rotate();
     int speed;
+    int degree;
     QString image;
 public slots:
     void move();

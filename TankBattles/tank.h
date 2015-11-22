@@ -14,6 +14,17 @@ class Tank: public QObject, public QGraphicsPixmapItem
 public:
     Tank();
     void keyPressEvent(QKeyEvent *event); // кнопки
+    void keyReleaseEvent(QKeyEvent *event);
+
+    // вызов действий
+    void onKey();
+    void moveForward();
+    void moveBack();
+    void rotateRight();
+    void rotateLeft();
+    void headRight();
+    void headLeft();
+    void fire();
 
     void rotate(); // поворот платформы
     int degree;    // угол платформы
@@ -34,6 +45,8 @@ public slots:
 
 private:
     QMediaPlayer *bulletsound;
+    // соответственно с объявленными функциями для действий
+    bool mf, mb, rr, rl, hr, hl, fr;
 };
 
 #endif // TANK

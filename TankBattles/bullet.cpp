@@ -14,6 +14,7 @@ extern Game * game;
 Bullet::Bullet()
 {
     speed = 40;
+    degree = game->player->hdegree;
     image = ":/images/images/bullet.png";
     setPixmap(QPixmap(image));
     rotate();
@@ -35,7 +36,7 @@ void Bullet::rotate()
     p.setRenderHint(QPainter::SmoothPixmapTransform);
     p.setRenderHint(QPainter::HighQualityAntialiasing);
     p.translate(rotatePixmap.size().width() / 2, rotatePixmap.size().height() / 2);
-    p.rotate(game->player->hdegree); // градус
+    p.rotate(degree); // градус
     p.translate(-rotatePixmap.size().width() / 2, -rotatePixmap.size().height() / 2);
     p.drawPixmap(0, 0, shipPixels);
     p.end();
@@ -62,9 +63,8 @@ void Bullet::move()
         }
     }
 
-    int deg = game->player->hdegree;
-    int x1 = x() + cos(deg * (PI / 180))*speed;
-    int y1 = y() + sin(deg * (PI / 180))*speed;
+    int x1 = x() + cos(degree * (PI / 180))*speed;
+    int y1 = y() + sin(degree * (PI / 180))*speed;
     setPos(x1,y1);
     rotate();
     if (pos().y() < 0 || pos().y() > scene()->height() || pos().x() < 0 || pos().x() > scene()->width())
