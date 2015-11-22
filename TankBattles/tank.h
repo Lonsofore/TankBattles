@@ -13,21 +13,25 @@ class Tank: public QObject, public QGraphicsPixmapItem
     Q_OBJECT
 public:
     Tank();
-    void keyPressEvent(QKeyEvent *event);
-    void rotate();
-    void hrotate();
+    void keyPressEvent(QKeyEvent *event); // кнопки
 
-    QGraphicsPixmapItem *head;
+    void rotate(); // поворот платформы
+    int degree;    // угол платформы
+    int speed;     // скорость
+    int rspeed;    // скорость поворота
+    double xfix;    // суммирует дробные значения координат
+    double yfix;    // x и y
+    QString baseImage;  // изображение платформы
 
-    int degree;  // base degree
-    int hdegree; // head degree
-    int speed;   // move speed
-    int rspeed;  // rotate speed
-    int hspeed;  // head rotate speed
-    QString baseImage;  // base image
-    QString headImage;  // head image
+    QGraphicsPixmapItem *head; // башня
+    void hrotate(); // поворот башни
+    int hdegree;    // угол башни
+    int hspeed;     // скорость поворота башни
+    QString headImage;  // изображение башни
+
 public slots:
     void spawn();
+
 private:
     QMediaPlayer *bulletsound;
 };
