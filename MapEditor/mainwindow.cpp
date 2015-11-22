@@ -12,6 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    QPalette p = ui->field->palette();
+    p.setColor(QPalette::Base, QColor(229, 229, 229, 255));
+    ui->field->setPalette(p);
     ui->field->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->field->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->field->setIconSize(QSize(69, 65));
@@ -21,8 +24,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-
 
 void MainWindow::on_apply_button_clicked()
 {
@@ -39,121 +40,6 @@ void MainWindow::on_apply_button_clicked()
                 ui->field->setItem(i, j, insert);
 
             }
-        }
-    }
-}
-
-void MainWindow::on_field_cellClicked(int row, int column)
-{
-    if (ui->field->item(row, column)->text() == "S") spwncnt--;
-    QTableWidgetItem *item = new QTableWidgetItem;
-    if (ui->ubr_btn->isChecked())  //Неразрушаеммый
-    {
-        if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
-                {
-                    if((ui->field->item(row-1,column)->text() != "S") && (ui->field->item(row+1,column)->text() != "S") &&                 //Проверка соседних элементов на наличие в них точки спавна
-                                   (ui->field->item(row,column-1)->text() != "S") && (ui->field->item(row,column+1)->text() != "S") &&
-                                   (ui->field->item(row-1,column-1)->text() != "S") && (ui->field->item(row-1,column+1)->text() != "S") &&
-                                   (ui->field->item(row+1,column-1)->text() != "S") && (ui->field->item(row+1,column+1)->text() != "S"))
-                    {
-                        item->setText("2");
-                        item->setIcon(QIcon(":/textures/not_breakable.jpg"));
-                        ui->field->setItem(row, column, item);
-                    }
-                    else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
-                }
-                else //Если расположена на краю
-                {    //Обходятся варианты расположения ячейки(От верхнего левого края по часовой стрелке) и производится поиск точки спавна в соседних ячейках
-                    if (((row == 0 && column ==0) && (ui->field->item(row+1,column+1)->text() != "S")) ||
-                       ((row == 0 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row+1,column)->text() != "S") &&
-                                                                                               (ui->field->item(row+1,column-1)->text() != "S") &&
-                                                                                               (ui->field->item(row+1,column+1)->text() != "S"))) ||
-                       ((row == 0 && column == ui->field->columnCount()-1) && (ui->field->item(row+1,column-1)->text() != "S")) ||
-                       (((row != 0 && row < ui->field->rowCount()-1) && column == ui->field->columnCount()-1) && ((ui->field->item(row,column-1)->text() != "S") &&
-                                                                                                                  (ui->field->item(row-1,column-1)->text() != "S") &&
-                                                                                                                  (ui->field->item(row+1,column-1)->text() != "S"))) ||
-                       ((row == ui->field->rowCount()-1 && column == ui->field->columnCount()-1) && (ui->field->item(row-1,column-1)->text() != "S")) ||
-                       ((row == ui->field->rowCount()-1 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row-1,column)->text() != "S") &&
-                                                                                                                     (ui->field->item(row-1,column-1)->text() != "S") &&
-                                                                                                                     (ui->field->item(row-1,column+1)->text() != "S"))) ||
-                       ((row == ui->field->rowCount()-1 && column == 0) && (ui->field->item(row-1,column+1)->text() != "S")) ||
-                       (((row != 0 && row < ui->field->rowCount()-1) && column == 0) && ((ui->field->item(row,column+1)->text() != "S") &&
-                                                                                         (ui->field->item(row-1,column+1)->text() != "S") &&
-                                                                                         (ui->field->item(row+1,column+1)->text() != "S"))))
-                    {
-                        item->setText("2");
-                        item->setIcon(QIcon(":/textures/not_breakable.jpg"));
-                        ui->field->setItem(row, column, item);
-                    }
-                    else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
-                }
-    }
-    if (ui->br_btn->isChecked())   //Разрушаеммый
-    {   if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
-        {
-            if((ui->field->item(row-1,column)->text() != "S") && (ui->field->item(row+1,column)->text() != "S") &&                 //Проверка соседних элементов на наличие в них точки спавна
-                           (ui->field->item(row,column-1)->text() != "S") && (ui->field->item(row,column+1)->text() != "S") &&
-                           (ui->field->item(row-1,column-1)->text() != "S") && (ui->field->item(row-1,column+1)->text() != "S") &&
-                           (ui->field->item(row+1,column-1)->text() != "S") && (ui->field->item(row+1,column+1)->text() != "S"))
-            {
-                item->setText("1");
-                item->setIcon(QIcon(":/textures/breakable.jpg"));
-                ui->field->setItem(row, column, item);
-            }
-            else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
-        }
-        else //Если расположена на краю
-        {    //Обходятся варианты расположения ячейки(От верхнего левого края по часовой стрелке) и производится поиск точки спавна в соседних ячейках
-            if (((row == 0 && column ==0) && (ui->field->item(row+1,column+1)->text() != "S")) ||
-               ((row == 0 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row+1,column)->text() != "S") &&
-                                                                                       (ui->field->item(row+1,column-1)->text() != "S") &&
-                                                                                       (ui->field->item(row+1,column+1)->text() != "S"))) ||
-               ((row == 0 && column == ui->field->columnCount()-1) && (ui->field->item(row+1,column-1)->text() != "S")) ||
-               (((row != 0 && row < ui->field->rowCount()-1) && column == ui->field->columnCount()-1) && ((ui->field->item(row,column-1)->text() != "S") &&
-                                                                                                          (ui->field->item(row-1,column-1)->text() != "S") &&
-                                                                                                          (ui->field->item(row+1,column-1)->text() != "S"))) ||
-               ((row == ui->field->rowCount()-1 && column == ui->field->columnCount()-1) && (ui->field->item(row-1,column-1)->text() != "S")) ||
-               ((row == ui->field->rowCount()-1 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row-1,column)->text() != "S") &&
-                                                                                                             (ui->field->item(row-1,column-1)->text() != "S") &&
-                                                                                                             (ui->field->item(row-1,column+1)->text() != "S"))) ||
-               ((row == ui->field->rowCount()-1 && column == 0) && (ui->field->item(row-1,column+1)->text() != "S")) ||
-               (((row != 0 && row < ui->field->rowCount()-1) && column == 0) && ((ui->field->item(row,column+1)->text() != "S") &&
-                                                                                 (ui->field->item(row-1,column+1)->text() != "S") &&
-                                                                                 (ui->field->item(row+1,column+1)->text() != "S"))))
-            {
-                item->setText("1");
-                item->setIcon(QIcon(":/textures/breakable.jpg"));
-                ui->field->setItem(row, column, item);
-            }
-            else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
-        }
-    }
-    if (ui->emp_btn->isChecked()) //Пустой
-    {
-        item->setText("0");
-        ui->field->setItem(row, column, item);
-    }
-    if (ui->spwn_btn->isChecked()) //Спавн
-    {
-        if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1)))
-        {
-            if((ui->field->item(row-1,column)->text() == "0") && (ui->field->item(row+1,column)->text() == "0") &&          //Проверка соседних блоков на пустоту
-                    (ui->field->item(row,column-1)->text() == "0") && (ui->field->item(row,column+1)->text() == "0") &&
-                    (ui->field->item(row-1,column-1)->text() == "0") && (ui->field->item(row-1,column+1)->text() == "0") &&
-                    (ui->field->item(row+1,column-1)->text() == "0") && (ui->field->item(row+1,column+1)->text() == "0"))
-            {
-                item->setText("S");
-                ui->field->setItem(row, column, item);
-                spwncnt++;
-            }
-            else
-            {
-                QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
-            }
-        }
-        else
-        {
-            QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
         }
     }
 }
@@ -194,8 +80,6 @@ void MainWindow::on_Save_triggered()
     }
 }
 
-
-
 void MainWindow::on_Load_triggered()
 {
     if ((ui->field->rowCount() != 0) && (ui->field->columnCount() != 0)) //Если что-то открыто
@@ -203,13 +87,10 @@ void MainWindow::on_Load_triggered()
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
-        else
-        {
-            ui->field->clearContents();
-            ui->field->clearContents();
-            ui->field->setRowCount(0);
-            ui->field->setColumnCount(0);
-        }
+        ui->field->clearContents();
+        ui->field->clearContents();
+        ui->field->setRowCount(0);
+        ui->field->setColumnCount(0);
     }
     QString fname = QFileDialog::getOpenFileName(this, tr("Загрузка"), "", tr("Map files (*.map)"));
     QFile file(fname);
@@ -256,13 +137,13 @@ void MainWindow::on_Load_triggered()
                            if (elm == '2') //Неразрушаеммый
                            {
                                item->setText("2");
-                               item->setIcon(QIcon(":/textures/not_breakable.jpg"));
+                               item->setIcon(QIcon(":/textures/unbreakable.png"));
                                ui->field->setItem(r, i, item);
                            }
                            if (elm == '1') //Разрушаеммый
                            {
                                item->setText("1");
-                               item->setIcon(QIcon(":/textures/breakable.jpg"));
+                               item->setIcon(QIcon(":/textures/breakable.png"));
                                ui->field->setItem(r, i, item);
                            }
                            if (elm == '0') //Пустой
@@ -387,14 +268,14 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.2.1\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.3\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
 {
-    QMessageBox msgBox(QMessageBox::Question, "!!!", "Вот кто тебя просил сюда заходить!?", QMessageBox::Yes | QMessageBox::No); //Почему бы и да?
-    msgBox.setButtonText(QMessageBox::Yes, trUtf8("Я нечаянно"));
-    msgBox.setButtonText(QMessageBox::No, trUtf8("Я больше так не буду"));
+    QMessageBox msgBox(QMessageBox::Question, "!!!", "Нет, здесь по-прежнему ничего нет!", QMessageBox::Yes | QMessageBox::No); //Почему бы и да?
+    msgBox.setButtonText(QMessageBox::Yes, trUtf8("Okay"));
+    msgBox.setButtonText(QMessageBox::No, trUtf8("Не очень-то и хотелось"));
     msgBox.exec();
 }
 
@@ -405,5 +286,169 @@ void MainWindow::on_scale_slide_valueChanged(int value)
     if (value > 50)
     {
         ui->field->setIconSize(QSize(value-1, value-5));
+    }
+}
+
+void MainWindow::on_selection_comboBox_currentIndexChanged(int index)
+{
+    ui->field->clearSelection();
+    switch(index)
+    {
+        case 0:
+            ui->field->setSelectionMode(QAbstractItemView::SingleSelection);
+        break;
+        case 1:
+            ui->field->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        break;
+        case 2:
+            ui->field->setSelectionMode(QAbstractItemView::NoSelection);
+        break;
+        default: break;
+    }
+}
+
+//Очистка выделения таблицы (В противном случае при изенении типа блока и клике по таблице изменяется тип последних выделенных блоков)
+void MainWindow::on_br_btn_clicked()
+{
+    ui->field->clearSelection();
+}
+
+void MainWindow::on_ubr_btn_clicked()
+{
+    ui->field->clearSelection();
+}
+
+void MainWindow::on_emp_btn_clicked()
+{
+    ui->field->clearSelection();
+}
+
+void MainWindow::on_spwn_btn_clicked()
+{
+    ui->field->clearSelection();
+}
+//Установка блока
+void MainWindow::on_field_itemSelectionChanged()
+{
+    int row, column;
+    {
+        QList<QTableWidgetItem*> selection =  ui->field->selectedItems();
+        for (int i = 0; i < selection.count(); ++i)
+        {
+            QTableWidgetItem *itm = selection.at(i);
+            row = itm->row();
+            column = itm->column();
+            if (ui->field->item(row, column)->text() == "S") spwncnt--;
+            QTableWidgetItem *item = new QTableWidgetItem;
+            if (ui->ubr_btn->isChecked())  //Неразрушаеммый
+            {
+                if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
+                        {
+                            if((ui->field->item(row-1,column)->text() != "S") && (ui->field->item(row+1,column)->text() != "S") &&                 //Проверка соседних элементов на наличие в них точки спавна
+                                           (ui->field->item(row,column-1)->text() != "S") && (ui->field->item(row,column+1)->text() != "S") &&
+                                           (ui->field->item(row-1,column-1)->text() != "S") && (ui->field->item(row-1,column+1)->text() != "S") &&
+                                           (ui->field->item(row+1,column-1)->text() != "S") && (ui->field->item(row+1,column+1)->text() != "S"))
+                            {
+                                item->setText("2");
+                                item->setIcon(QIcon(":/textures/unbreakable.png"));
+                                ui->field->setItem(row, column, item);
+                            }
+                            else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                        }
+                        else //Если расположена на краю
+                        {    //Обходятся варианты расположения ячейки(От верхнего левого края по часовой стрелке) и производится поиск точки спавна в соседних ячейках
+                            if (((row == 0 && column ==0) && (ui->field->item(row+1,column+1)->text() != "S")) ||
+                               ((row == 0 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row+1,column)->text() != "S") &&
+                                                                                                       (ui->field->item(row+1,column-1)->text() != "S") &&
+                                                                                                       (ui->field->item(row+1,column+1)->text() != "S"))) ||
+                               ((row == 0 && column == ui->field->columnCount()-1) && (ui->field->item(row+1,column-1)->text() != "S")) ||
+                               (((row != 0 && row < ui->field->rowCount()-1) && column == ui->field->columnCount()-1) && ((ui->field->item(row,column-1)->text() != "S") &&
+                                                                                                                          (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                                          (ui->field->item(row+1,column-1)->text() != "S"))) ||
+                               ((row == ui->field->rowCount()-1 && column == ui->field->columnCount()-1) && (ui->field->item(row-1,column-1)->text() != "S")) ||
+                               ((row == ui->field->rowCount()-1 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row-1,column)->text() != "S") &&
+                                                                                                                             (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                                             (ui->field->item(row-1,column+1)->text() != "S"))) ||
+                               ((row == ui->field->rowCount()-1 && column == 0) && (ui->field->item(row-1,column+1)->text() != "S")) ||
+                               (((row != 0 && row < ui->field->rowCount()-1) && column == 0) && ((ui->field->item(row,column+1)->text() != "S") &&
+                                                                                                 (ui->field->item(row-1,column+1)->text() != "S") &&
+                                                                                                 (ui->field->item(row+1,column+1)->text() != "S"))))
+                            {
+                                item->setText("2");
+                                item->setIcon(QIcon(":/textures/unbreakable.png"));
+                                ui->field->setItem(row, column, item);
+                            }
+                            else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                        }
+            }
+            if (ui->br_btn->isChecked())   //Разрушаеммый
+            {   if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
+                {
+                    if((ui->field->item(row-1,column)->text() != "S") && (ui->field->item(row+1,column)->text() != "S") &&                 //Проверка соседних элементов на наличие в них точки спавна
+                                   (ui->field->item(row,column-1)->text() != "S") && (ui->field->item(row,column+1)->text() != "S") &&
+                                   (ui->field->item(row-1,column-1)->text() != "S") && (ui->field->item(row-1,column+1)->text() != "S") &&
+                                   (ui->field->item(row+1,column-1)->text() != "S") && (ui->field->item(row+1,column+1)->text() != "S"))
+                    {
+                        item->setText("1");
+                        item->setIcon(QIcon(":/textures/breakable.png"));
+                        ui->field->setItem(row, column, item);
+                    }
+                    else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                }
+                else //Если расположена на краю
+                {    //Обходятся варианты расположения ячейки(От верхнего левого края по часовой стрелке) и производится поиск точки спавна в соседних ячейках
+                    if (((row == 0 && column ==0) && (ui->field->item(row+1,column+1)->text() != "S")) ||
+                       ((row == 0 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row+1,column)->text() != "S") &&
+                                                                                               (ui->field->item(row+1,column-1)->text() != "S") &&
+                                                                                               (ui->field->item(row+1,column+1)->text() != "S"))) ||
+                       ((row == 0 && column == ui->field->columnCount()-1) && (ui->field->item(row+1,column-1)->text() != "S")) ||
+                       (((row != 0 && row < ui->field->rowCount()-1) && column == ui->field->columnCount()-1) && ((ui->field->item(row,column-1)->text() != "S") &&
+                                                                                                                  (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                                  (ui->field->item(row+1,column-1)->text() != "S"))) ||
+                       ((row == ui->field->rowCount()-1 && column == ui->field->columnCount()-1) && (ui->field->item(row-1,column-1)->text() != "S")) ||
+                       ((row == ui->field->rowCount()-1 && (column != 0 && column < ui->field->columnCount()-1)) && ((ui->field->item(row-1,column)->text() != "S") &&
+                                                                                                                     (ui->field->item(row-1,column-1)->text() != "S") &&
+                                                                                                                     (ui->field->item(row-1,column+1)->text() != "S"))) ||
+                       ((row == ui->field->rowCount()-1 && column == 0) && (ui->field->item(row-1,column+1)->text() != "S")) ||
+                       (((row != 0 && row < ui->field->rowCount()-1) && column == 0) && ((ui->field->item(row,column+1)->text() != "S") &&
+                                                                                         (ui->field->item(row-1,column+1)->text() != "S") &&
+                                                                                         (ui->field->item(row+1,column+1)->text() != "S"))))
+                    {
+                        item->setText("1");
+                        item->setIcon(QIcon(":/textures/breakable.png"));
+                        ui->field->setItem(row, column, item);
+                    }
+                    else QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                }
+            }
+            if (ui->emp_btn->isChecked()) //Пустой
+            {
+                item->setText("0");
+                ui->field->setItem(row, column, item);
+            }
+            if (ui->spwn_btn->isChecked()) //Спавн
+            {
+                if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1)))
+                {
+                    if((ui->field->item(row-1,column)->text() == "0") && (ui->field->item(row+1,column)->text() == "0") &&          //Проверка соседних блоков на пустоту
+                            (ui->field->item(row,column-1)->text() == "0") && (ui->field->item(row,column+1)->text() == "0") &&
+                            (ui->field->item(row-1,column-1)->text() == "0") && (ui->field->item(row-1,column+1)->text() == "0") &&
+                            (ui->field->item(row+1,column-1)->text() == "0") && (ui->field->item(row+1,column+1)->text() == "0"))
+                    {
+                        item->setText("S");
+                        ui->field->setItem(row, column, item);
+                        spwncnt++;
+                    }
+                    else
+                    {
+                        QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                    }
+                }
+                else
+                {
+                    QMessageBox::warning(this, "Ошибка", "Блоки вокруг точки спавна должны быть свободны!");
+                }
+            }
+        }
     }
 }

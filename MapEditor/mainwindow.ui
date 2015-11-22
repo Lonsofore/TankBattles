@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>680</width>
-    <height>510</height>
+    <height>560</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>680</width>
-    <height>510</height>
+    <height>560</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -92,23 +92,20 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetFixedSize</enum>
-      </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QVBoxLayout" name="tools_layout">
         <item>
          <widget class="QFrame" name="tools_frame">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>184</width>
+            <height>148</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>183</width>
+            <width>184</width>
             <height>148</height>
            </size>
           </property>
@@ -123,7 +120,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>167</width>
+             <width>181</width>
              <height>148</height>
             </rect>
            </property>
@@ -131,7 +128,7 @@
             <string notr="true">border-color: rgb(0, 0, 0);</string>
            </property>
            <property name="title">
-            <string>Инструменты</string>
+            <string>   Инструменты</string>
            </property>
            <property name="flat">
             <bool>false</bool>
@@ -139,82 +136,60 @@
            <property name="checkable">
             <bool>false</bool>
            </property>
-           <widget class="QRadioButton" name="ubr_btn">
-            <property name="geometry">
-             <rect>
-              <x>17</x>
-              <y>25</y>
-              <width>141</width>
-              <height>28</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Неразрушаеммый
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QRadioButton" name="br_btn">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <italic>false</italic>
+                <bold>false</bold>
+                <underline>false</underline>
+                <strikeout>false</strikeout>
+                <kerning>true</kerning>
+               </font>
+              </property>
+              <property name="acceptDrops">
+               <bool>false</bool>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="inputMethodHints">
+               <set>Qt::ImhNone</set>
+              </property>
+              <property name="text">
+               <string>Разрушаеммый
 блок</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="emp_btn">
-            <property name="geometry">
-             <rect>
-              <x>17</x>
-              <y>59</y>
-              <width>106</width>
-              <height>19</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Пустой блок</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="spwn_btn">
-            <property name="geometry">
-             <rect>
-              <x>17</x>
-              <y>118</y>
-              <width>105</width>
-              <height>19</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Блок спавна</string>
-            </property>
-           </widget>
-           <widget class="QRadioButton" name="br_btn">
-            <property name="geometry">
-             <rect>
-              <x>17</x>
-              <y>84</y>
-              <width>124</width>
-              <height>28</height>
-             </rect>
-            </property>
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <underline>false</underline>
-              <strikeout>false</strikeout>
-              <kerning>true</kerning>
-             </font>
-            </property>
-            <property name="acceptDrops">
-             <bool>false</bool>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="autoFillBackground">
-             <bool>false</bool>
-            </property>
-            <property name="inputMethodHints">
-             <set>Qt::ImhNone</set>
-            </property>
-            <property name="text">
-             <string>Разрушаеммый
- блок</string>
-            </property>
-           </widget>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="ubr_btn">
+              <property name="text">
+               <string>Неразрушаеммый
+блок</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="emp_btn">
+              <property name="text">
+               <string>Пустой блок</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="spwn_btn">
+              <property name="text">
+               <string>Блок спавна</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>
@@ -232,14 +207,14 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>183</width>
+            <height>132</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>183</width>
-            <height>126</height>
+            <height>132</height>
            </size>
           </property>
           <property name="frameShape">
@@ -346,60 +321,140 @@
           </widget>
          </widget>
         </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="scale_layout">
         <item>
-         <layout class="QVBoxLayout" name="scale_layout">
-          <item>
-           <widget class="QFrame" name="scale_frame">
-            <property name="maximumSize">
-             <size>
-              <width>187</width>
-              <height>56</height>
-             </size>
+         <widget class="QFrame" name="scale_frame">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>59</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>184</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QGroupBox" name="scale_groupbox">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>0</y>
+             <width>161</width>
+             <height>61</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Масштаб</string>
+           </property>
+           <widget class="QSlider" name="scale_slide">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>30</y>
+              <width>160</width>
+              <height>18</height>
+             </rect>
             </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
+            <property name="minimum">
+             <number>10</number>
             </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
+            <property name="maximum">
+             <number>201</number>
             </property>
-            <widget class="QGroupBox" name="scale_groupbox">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>0</y>
-               <width>161</width>
-               <height>61</height>
-              </rect>
+            <property name="value">
+             <number>70</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="Selection_frame">
+          <property name="minimumSize">
+           <size>
+            <width>184</width>
+            <height>84</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>184</width>
+            <height>91</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QGroupBox" name="selection_groupBox">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
              </property>
              <property name="title">
-              <string>Масштаб</string>
+              <string>Тип выделения</string>
              </property>
-             <widget class="QSlider" name="scale_slide">
+             <widget class="QComboBox" name="selection_comboBox">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>30</y>
-                <width>160</width>
-                <height>18</height>
+                <y>29</y>
+                <width>159</width>
+                <height>22</height>
                </rect>
               </property>
-              <property name="minimum">
-               <number>10</number>
+              <property name="minimumSize">
+               <size>
+                <width>159</width>
+                <height>0</height>
+               </size>
               </property>
-              <property name="maximum">
-               <number>201</number>
+              <property name="maximumSize">
+               <size>
+                <width>159</width>
+                <height>16777215</height>
+               </size>
               </property>
-              <property name="value">
-               <number>70</number>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
+              <item>
+               <property name="text">
+                <string>Единичное</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Множественное</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Отсутсвует</string>
+               </property>
+              </item>
              </widget>
             </widget>
-           </widget>
-          </item>
-         </layout>
+           </item>
+          </layout>
+         </widget>
         </item>
        </layout>
       </item>
@@ -448,14 +503,6 @@
    </widget>
    <addaction name="file"/>
    <addaction name="help"/>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="Load">
