@@ -42,11 +42,12 @@ Tank::Tank()
 
 void Tank::keyPressEvent(QKeyEvent *event)
 {
+    qDebug() << (uint) event->key(); // чтобы узнать код клавиши
     int x1,y1;
     QPixmap tank(baseImage);
-    switch (event->key())
+    switch ((uint) event->key())
     {
-        case Qt::Key_Up:
+        case 16777235: // Up
             x1 = x() + round(cos(degree * (PI / 180))*speed);
             y1 = y() + round(sin(degree * (PI / 180))*speed);
             if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
@@ -56,7 +57,7 @@ void Tank::keyPressEvent(QKeyEvent *event)
             }
         break;
 
-        case Qt::Key_Down:
+        case 16777237: // Down
             x1 = x() - round(cos(degree * (PI / 180))*speed);
             y1 = y() - round(sin(degree * (PI / 180))*speed);
             if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
@@ -66,7 +67,7 @@ void Tank::keyPressEvent(QKeyEvent *event)
             }
         break;
 
-        case Qt::Key_Left:
+        case 16777234: // Left
             if (degree - rspeed > -360)
                 degree -= rspeed;
             else
@@ -80,7 +81,7 @@ void Tank::keyPressEvent(QKeyEvent *event)
             hrotate();
         break;
 
-        case Qt::Key_Right:
+        case 16777236: // Right
             if (degree + rspeed < 360)
                 degree += rspeed;
             else
@@ -94,7 +95,8 @@ void Tank::keyPressEvent(QKeyEvent *event)
             hrotate();
         break;
 
-        case Qt::Key_Z:
+        case 90:   // Z
+        case 1071: // Я
             if (hdegree - hspeed > -360)
                 hdegree -= hspeed;
             else
@@ -102,7 +104,8 @@ void Tank::keyPressEvent(QKeyEvent *event)
             hrotate();
         break;
 
-        case Qt::Key_X:
+        case 88:   // X
+        case 1063: // Ч
             if (hdegree + hspeed < 360)
                 hdegree += hspeed;
             else
@@ -110,13 +113,11 @@ void Tank::keyPressEvent(QKeyEvent *event)
             hrotate();
         break;
 
-        case Qt::Key_Space:
+        case 32: // SPAAAAACE
             Bullet *bullet = new Bullet();
 
             x1 = x() + tank.size().width()/2 - 20 + round(cos(hdegree * (PI / 180)) * tank.size().width()/2);  // понятия не имею, что за 20
             y1 = y() + tank.size().height()/2 - 20 + round(sin(hdegree * (PI / 180)) * tank.size().height()/2);// я его просто подобрал
-
-            //bullet->setPos(x()+48,y());
             bullet->setPos(x1,y1);
 
             scene()->addItem(bullet);
