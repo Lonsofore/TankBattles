@@ -5,6 +5,8 @@
 #include "bullet.h"
 #include "enemy.h"
 #include "game.h"
+#include <QTime>
+#include <QCoreApplication>
 
 #include <math.h>
 #define PI 3.14159265
@@ -13,10 +15,21 @@
 
 extern Game * game;
 
+bool f = false;
+int fireCount = 0;
+
 Tank::Tank()
 {
     int x = 300;
     int y = 200;
+
+    // то, из-за чего программа жрет как майнкрафт
+    keyDelay = 20;
+
+    // стрельба
+    fireReady = true;
+    fireTime = 1000;
+    bulletSpeed = 50;
 
     // обнуление
     xfix = 0;
@@ -26,8 +39,8 @@ Tank::Tank()
     // платформа
     setPos(x,y);
     degree = 0;
-    speed = 5;
-    rspeed = 3;
+    speed = 1;
+    rspeed = 2;
     baseImage = ":/images/images/greenBase.png";
     setPixmap(QPixmap(baseImage));
 
@@ -35,7 +48,7 @@ Tank::Tank()
     head = new QGraphicsPixmapItem();
     head->setPos(x,y);
     hdegree = 0;
-    hspeed = 3;
+    hspeed = 2;
     headImage = ":/images/images/greenHead.png";
     head->setPixmap(QPixmap(headImage));
 
@@ -89,8 +102,17 @@ void Tank::keyPressEvent(QKeyEvent *event)
         case 32: // SPAAAAACE
             fr = true;
         break;
+
+        case 67:
+            delay(2000);
+            qDebug() << "test";
+        break;
     }
-    onKey();
+    if (f == false)
+    {
+        qDebug() << "yay!";
+        onKey();
+    }
     //game->health->setPos(game->player->x()+40,game->player->y()+50);
 }
 
@@ -132,13 +154,31 @@ void Tank::keyReleaseEvent(QKeyEvent *event) // то же самое, тольк
 
 void Tank::onKey()
 {
-    if (mf) moveForward();
-    if (mb) moveBack();
-    if (rl) rotateLeft();
-    if (rr) rotateRight();
-    if (hl) headLeft();
-    if (hr) headRight();
-    if (fr) fire();
+    f = true;
+    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true)
+    {
+        if (mf) moveForward();
+        if (mb) moveBack();
+        if (rl) rotateLeft();
+        if (rr) rotateRight();
+        if (hl) headLeft();
+        if (hr) headRight();
+
+        if (fr && fireReady) fire();
+        if (fireReady == false)
+        {
+            fireCount += keyDelay;
+        }
+        if (fireCount > fireTime)
+        {
+            fireReady = true;
+            fireCount = 0;
+        }
+
+        delay(keyDelay);
+    }
+    f = false;
+    qDebug() << "end";
 }
 
 void Tank::moveForward()
@@ -154,8 +194,8 @@ void Tank::moveForward()
     sn = sin(degree * (PI / 180))*speed;
 
     // исправление кривого передвижения из-за int координат
-    xfix += round(cs) - cs;
-    yfix += round(sn) - sn;
+    xfix = xfix + round(cs) - cs;
+    yfix = yfix + round(sn) - sn;
 
     // если есть целое значение
     if (round(xfix) != 0)
@@ -267,6 +307,8 @@ void Tank::headLeft()
 
 void Tank::fire()
 {
+    fireReady = false;
+
     int x1,y1;
     QPixmap tank(baseImage);
 
@@ -334,7 +376,14 @@ void Tank::spawn()
     scene()->addItem(enemy);
 }
 
-
+void Tank::delay( int millisecondsToWait )
+{
+    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
+    while( QTime::currentTime() < dieTime )
+    {
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+    }
+}
 
 
 

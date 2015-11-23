@@ -13,11 +13,11 @@ class Tank: public QObject, public QGraphicsPixmapItem
     Q_OBJECT
 public:
     Tank();
-    void keyPressEvent(QKeyEvent *event); // кнопки
-    void keyReleaseEvent(QKeyEvent *event);
-
-    // вызов действий
-    void onKey();
+    // вызов действий для кнопок
+    int keyDelay; // задержка между проверками кнопок
+    void keyPressEvent(QKeyEvent *event);   // считывание нажатий
+    void keyReleaseEvent(QKeyEvent *event); // и отжатий
+    void onKey(); // если кнопка нажата - тикер
     void moveForward();
     void moveBack();
     void rotateRight();
@@ -25,11 +25,14 @@ public:
     void headRight();
     void headLeft();
     void fire();
+    bool fireReady; // можно ли уже стрелять
+    int fireTime;   // время между выстрелами
+    int bulletSpeed;
 
-    void rotate(); // поворот платформы
-    int degree;    // угол платформы
-    int speed;     // скорость
-    int rspeed;    // скорость поворота
+    void rotate();  // поворот платформы
+    int degree;     // угол платформы
+    int speed;      // скорость
+    int rspeed;     // скорость поворота
     double xfix;    // суммирует дробные значения координат
     double yfix;    // x и y
     QString baseImage;  // изображение платформы
@@ -40,6 +43,9 @@ public:
     int hspeed;     // скорость поворота башни
     QString headImage;  // изображение башни
 
+    void delay(int millisecondsToWait);
+
+    QPixmap pixtank;
 public slots:
     void spawn();
 
