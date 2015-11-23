@@ -29,6 +29,8 @@ public:
     int fireTime;   // время между выстрелами
     int bulletSpeed;
 
+    int boost;
+
     void rotate();  // поворот платформы
     int degree;     // угол платформы
     int speed;      // скорость
@@ -43,9 +45,7 @@ public:
     int hspeed;     // скорость поворота башни
     QString headImage;  // изображение башни
 
-    void delay(int millisecondsToWait);
-
-    QPixmap pixtank;
+    void delay(int millisecondsToWait); // функция задержки
 public slots:
     void spawn();
 

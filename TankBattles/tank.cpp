@@ -25,6 +25,7 @@ Tank::Tank()
 
     // то, из-за чего программа жрет как майнкрафт
     keyDelay = 20;
+    boost = 40; // ускорение танка в начале движения
 
     // стрельба
     fireReady = true;
@@ -39,7 +40,7 @@ Tank::Tank()
     // платформа
     setPos(x,y);
     degree = 0;
-    speed = 1;
+    speed = 2;
     rspeed = 2;
     baseImage = ":/images/images/greenBase.png";
     setPixmap(QPixmap(baseImage));
@@ -155,7 +156,8 @@ void Tank::keyReleaseEvent(QKeyEvent *event) // то же самое, тольк
 void Tank::onKey()
 {
     f = true;
-    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true)
+    int acc = boost;
+    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false)
     {
         if (mf) moveForward();
         if (mb) moveBack();
@@ -175,7 +177,10 @@ void Tank::onKey()
             fireCount = 0;
         }
 
-        delay(keyDelay);
+        if (acc > 0)
+            acc--;
+
+        delay(keyDelay + acc);
     }
     f = false;
     qDebug() << "end";
