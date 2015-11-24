@@ -51,6 +51,10 @@ Player::Player()
     bulletready = new QMediaPlayer();
     bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
 
+    //звук поворота башни
+    tankhrotate = new QMediaPlayer();
+    tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
+
     // выделить танк на сцене - для действий с ним
     setFlag(QGraphicsItem::ItemIsFocusable);
     setFocus();
@@ -170,14 +174,25 @@ void Player::onKey(int acc)
 {
     action = true;
     //int acc = boost;
-    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false)
+    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState)
     {
         if (mf) moveForward();
         if (mb) moveBack();
         if (rl) rotateLeft();
         if (rr) rotateRight();
+
+
         if (hl) headLeft();
         if (hr) headRight();
+
+        if ((hr || hl) &&  tankhrotate->state() == QMediaPlayer::StoppedState) // если звук поворота еще не проигрывался
+            tankhrotate->play();
+
+        if (hr == false && hl == false && tankhrotate->state() == QMediaPlayer::PlayingState)
+        {
+            qDebug() << "yay";
+            tankhrotate->stop();
+        }
 
         if (fr && fireReady)
         {

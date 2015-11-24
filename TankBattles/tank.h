@@ -48,6 +48,7 @@ public:
 
     QMediaPlayer *bulletsound;
     QMediaPlayer *bulletready;
+    QMediaPlayer *tankhrotate;
 };
 
 #endif // TANK

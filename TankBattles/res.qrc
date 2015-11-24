@@ -3,6 +3,8 @@
         <file>sounds/dude.mp3</file>
         <file>sounds/tank_reload.mp3</file>
         <file>sounds/tank_fire.mp3</file>
+        <file>sounds/tank_hrotate.mp3</file>
+        <file>sounds/tank_hrotate.wav</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/bullet.png</file>
