@@ -15,6 +15,7 @@ Bullet::Bullet()
 {
     speed = game->player->bulletSpeed;
     degree = game->player->hdegree;
+
     image = ":/images/images/bullet.png";
     setPixmap(QPixmap(image));
     rotate();

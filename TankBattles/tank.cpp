@@ -44,7 +44,7 @@ Tank::Tank()
     degree = 0;
     speed = 2;
     rspeed = 2;
-    baseImage = ":/images/images/greenBase.png";
+    baseImage = ":/images/images/tanks/greenBase.png";
     setPixmap(QPixmap(baseImage));
 
     // башня
@@ -52,7 +52,7 @@ Tank::Tank()
     head->setPos(x,y);
     hdegree = 0;
     hspeed = 2;
-    headImage = ":/images/images/greenHead.png";
+    headImage = ":/images/images/tanks/greenHead.png";
     head->setPixmap(QPixmap(headImage));
 
     // звук выстрела
@@ -111,7 +111,7 @@ void Tank::keyPressEvent(QKeyEvent *event)
         break;
 
         case 67:
-            delay(2000);
+            setRotation(180);
             qDebug() << "test";
         break;
     }

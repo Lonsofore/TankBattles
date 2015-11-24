@@ -1,16 +1,24 @@
 <RCC>
     <qresource prefix="/sounds">
         <file>sounds/dude.mp3</file>
-        <file>sounds/hellmarch.mp3</file>
         <file>sounds/tank_reload.mp3</file>
         <file>sounds/tank_fire.mp3</file>
     </qresource>
     <qresource prefix="/images">
-        <file>images/tank.png</file>
-        <file>images/tank1.png</file>
         <file>images/bullet.png</file>
-        <file>images/tank2.png</file>
-        <file>images/greenBase.png</file>
-        <file>images/greenHead.png</file>
+        <file>images/tanks/greenBase.png</file>
+        <file>images/tanks/greenHead.png</file>
+        <file>images/menu/Exit.png</file>
+        <file>images/menu/ExitChose.png</file>
+        <file>images/menu/ExitSelect.png</file>
+        <file>images/menu/PvE.png</file>
+        <file>images/menu/PvEChose.png</file>
+        <file>images/menu/PvESelect.png</file>
+        <file>images/menu/PvP.png</file>
+        <file>images/menu/PvPChose.png</file>
+        <file>images/menu/PvPSelect.png</file>
+        <file>images/menu/Settings.png</file>
+        <file>images/menu/SettingsChose.png</file>
+        <file>images/menu/SettingsSelect.png</file>
     </qresource>
 </RCC>

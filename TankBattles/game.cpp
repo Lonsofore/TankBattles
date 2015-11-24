@@ -4,18 +4,40 @@
 #include <QFont>
 #include "enemy.h"
 #include <QMediaPlayer>
+#include "button.h"
+
+bool started = false;
 
 Game::Game(QWidget *parent){
+    int width = 800;
+    int height = 600;
+
     // создание сцены
     scene = new QGraphicsScene();
-    scene->setSceneRect(0,0,800,600); //разрешение экрана
-
-    // make the newly created scene the scene to visualize (since Game is a QGraphicsView Widget,
-    // it can be used to visualize scenes)
+    scene->setSceneRect(0,0,width,height); // разрешение сцены
     setScene(scene);
+
+    // чтобы не появлялись скроллбары
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setFixedSize(800,600);
+    setFixedSize(width,height); // разрешение экрана
+
+    //show();
+}
+
+void Game::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (started)
+        player->setFocus();
+}
+
+void Game::start()
+{
+    started = true;
+    scene->clear();
+
+    // фон карты
+    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
 
     // создание игрока
     player = new Tank();
@@ -44,11 +66,66 @@ Game::Game(QWidget *parent){
     music->setMedia(QUrl("qrc:/sounds/sounds/hellmarch.mp3"));
     music->play();
     */
-
-    show();
 }
 
-void Game::mouseReleaseEvent(QMouseEvent *event)
+void Game::menu()
 {
-    player->setFocus();
+    scene->clear();
+    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+
+    // надпись
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("TankBattles"));
+    QFont titleFont("Century Gothic",70);
+    title->setFont(titleFont);
+    int txPos = this->width()/2 - title->boundingRect().width()/2;
+    int tyPos = 50;
+    title->setPos(txPos,tyPos);
+    scene->addItem(title);
+
+
+    // кнопки
+    int xPos;
+    int yPos;
+    Button *pveButton = new Button(QString("PvE"),275,70);
+    xPos = this->width()/2 - pveButton->boundingRect().width()/2;
+    yPos = 175;
+    pveButton->setPos(xPos,yPos);
+    connect(pveButton,SIGNAL(clicked()),this,SLOT(start()));
+    scene->addItem(pveButton);
+
+    Button *pvpButton = new Button(QString("PvP"),275,70);
+    yPos = 250;
+    pvpButton->setPos(xPos,yPos);
+    connect(pvpButton,SIGNAL(clicked()),this,SLOT(close()));
+    scene->addItem(pvpButton);
+
+    Button *settingsButton = new Button(QString("Settings"),275,70);
+    yPos = 325;
+    settingsButton->setPos(xPos,yPos);
+    connect(settingsButton,SIGNAL(clicked()),this,SLOT(close()));
+    scene->addItem(settingsButton);
+
+    Button *exitButton = new Button(QString("Exit"),275,70);
+    yPos = 400;
+    exitButton->setPos(xPos,yPos);
+    connect(exitButton,SIGNAL(clicked()),this,SLOT(close()));
+    scene->addItem(exitButton);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
