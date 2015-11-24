@@ -1,6 +1,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "game.h"
+#include <QDebug>
 
 bool action = false;
 bool reload = false;
@@ -41,6 +42,14 @@ Player::Player()
     hspeed = 2;
     headImage = ":/images/images/tanks/greenHead.png";
     head->setPixmap(QPixmap(headImage));
+
+    // звук выстрела
+    bulletsound = new QMediaPlayer();
+    bulletsound->setMedia(QUrl("qrc:/sounds/sounds/tank_fire.mp3"));
+
+    //звук перезарядки
+    bulletready = new QMediaPlayer();
+    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
 
     // выделить танк на сцене - для действий с ним
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -196,8 +205,6 @@ void Player::onKey(int acc)
         delay(keyDelay + acc);
     }
     action = false;
-
-    //qDebug() << "stop";
 }
 
 void Player::spawn()
