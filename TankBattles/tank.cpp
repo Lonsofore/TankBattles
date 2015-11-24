@@ -15,7 +15,8 @@
 
 extern Game * game;
 
-bool f = false;
+bool action = false;
+bool reload = false;
 int fireCount = 0;
 
 Tank::Tank()
@@ -24,12 +25,13 @@ Tank::Tank()
     int y = 200;
 
     // то, из-за чего программа жрет как майнкрафт
-    keyDelay = 20;
+    keyDelay = 20; // задержка между действиями клавиш
     boost = 40; // ускорение танка в начале движения
+    iboost = 2; // по сколько отнимать от ускорения
 
     // стрельба
     fireReady = true;
-    fireTime = 1000;
+    fireTime = 2000;
     bulletSpeed = 50;
 
     // обнуление
@@ -55,7 +57,11 @@ Tank::Tank()
 
     // звук выстрела
     bulletsound = new QMediaPlayer();
-    bulletsound->setMedia(QUrl("qrc:/sounds/sounds/shot.mp3"));
+    bulletsound->setMedia(QUrl("qrc:/sounds/sounds/tank_fire.mp3"));
+
+    //звук перезарядки
+    bulletready = new QMediaPlayer();
+    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
 
     // выделить танк на сцене - для действий с ним
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -109,10 +115,13 @@ void Tank::keyPressEvent(QKeyEvent *event)
             qDebug() << "test";
         break;
     }
-    if (f == false)
+    if (action == false)
     {
-        qDebug() << "yay!";
-        onKey();
+        //qDebug() << "start";
+        if (mf || mb) // если танк двигается вперед или назад, то сделать ему замедление при начале движения
+            onKey(boost);
+        else
+            onKey(0);
     }
     //game->health->setPos(game->player->x()+40,game->player->y()+50);
 }
@@ -153,10 +162,10 @@ void Tank::keyReleaseEvent(QKeyEvent *event) // то же самое, тольк
     }
 }
 
-void Tank::onKey()
+void Tank::onKey(int acc)
 {
-    f = true;
-    int acc = boost;
+    action = true;
+    //int acc = boost;
     while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false)
     {
         if (mf) moveForward();
@@ -166,24 +175,33 @@ void Tank::onKey()
         if (hl) headLeft();
         if (hr) headRight();
 
-        if (fr && fireReady) fire();
-        if (fireReady == false)
+        if (fr && fireReady)
+        {
+            fire();
+            reload = false; // перезарядка еще на начата
+        }
+        if (fireReady == false) // счетчик для ожидания между выстрелами
         {
             fireCount += keyDelay;
         }
-        if (fireCount > fireTime)
+        if ((fireCount > fireTime - bulletready->duration()) && reload == false) // звук перезарядки
+        {
+            reload = true; // перезарядка уже начата (защита от нескольких)
+            bulletready->play();
+        }
+        if (fireCount > fireTime) // готовность выстрела
         {
             fireReady = true;
             fireCount = 0;
         }
 
         if (acc > 0)
-            acc--;
+            acc = acc - iboost; // создается замедление в начале движения
 
         delay(keyDelay + acc);
     }
-    f = false;
-    qDebug() << "end";
+    action = false;
+    //qDebug() << "stop";
 }
 
 void Tank::moveForward()
@@ -264,32 +282,40 @@ void Tank::moveBack()
 
 void Tank::rotateRight()
 {
-    if (degree + rspeed < 360)
-        degree += rspeed;
-    else
+    int deg = rspeed;
+    if (mb) //если едет назад
+        deg = -deg; // значит инверсия
+
+    degree += deg;
+    if (degree > 360 || degree < -360)
         degree = 0;
     rotate();
 
-    if (hdegree + rspeed < 360)
-        hdegree += rspeed;
-    else
+    hdegree += deg;
+    if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+
+    //qDebug() << degree;
 }
 
 void Tank::rotateLeft()
 {
-    if (degree - rspeed > -360)
-        degree -= rspeed;
-    else
+    int deg = rspeed;
+    if (mb) //если едет назад
+        deg = -deg; // значит инверсия
+
+    degree -= deg;
+    if (degree > 360 || degree < -360)
         degree = 0;
     rotate();
 
-    if (hdegree - rspeed > -360)
-        hdegree -= rspeed;
-    else
+    hdegree -= deg;
+    if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+
+    //qDebug() << degree;
 }
 
 void Tank::headRight()

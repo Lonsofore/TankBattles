@@ -2,7 +2,8 @@
     <qresource prefix="/sounds">
         <file>sounds/dude.mp3</file>
         <file>sounds/hellmarch.mp3</file>
-        <file>sounds/shot.mp3</file>
+        <file>sounds/tank_reload.mp3</file>
+        <file>sounds/tank_fire.mp3</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/tank.png</file>
