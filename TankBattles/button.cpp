@@ -3,6 +3,8 @@
 #include <QTime>
 #include <QCoreApplication>
 
+bool pressed = false;
+
 Button::Button(QString n, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
 {
     name = n;
@@ -17,6 +19,7 @@ Button::Button(QString n, int x, int y, QGraphicsItem *parent) : QGraphicsPixmap
 
 void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    pressed = true;
     QString image = ":/images/images/menu/" + name + "Select.png";
     setPixmap(QPixmap(image).scaled(width,height));
 
@@ -26,14 +29,20 @@ void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    QString image = ":/images/images/menu/" + name + "Chose.png";
-    setPixmap(QPixmap(image).scaled(width,height));
+    if (pressed == false)
+    {
+        QString image = ":/images/images/menu/" + name + "Chose.png";
+        setPixmap(QPixmap(image).scaled(width,height));
+    }
 }
 
 void Button::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    QString image = ":/images/images/menu/" + name + ".png";
-    setPixmap(QPixmap(image).scaled(width,height));
+    if (pressed == false)
+    {
+        QString image = ":/images/images/menu/" + name + ".png";
+        setPixmap(QPixmap(image).scaled(width,height));
+    }
 }
 
 void Button::delay( int millisecondsToWait )

@@ -74,21 +74,29 @@ void Tank::keyPressEvent(QKeyEvent *event)
     switch ((uint) event->key())
     {
         // Двигаться вперед
+        case 87: // W
+        case 1062: // Ц
         case 16777235: // Up
             mf = true;
         break;
 
         // Двигаться назад
+        case 83: // S
+        case 1067: // Ы
         case 16777237: // Down
             mb = true;
         break;
 
         // Поворот танка налево
+        case 65: // A
+        case 1060: // Ф
         case 16777234: // Left
             rl = true;
         break;
 
         // Поворот танка направо
+        case 68: // D
+        case 1042: // В
         case 16777236: // Right
             rr = true;
         break;
@@ -130,18 +138,26 @@ void Tank::keyReleaseEvent(QKeyEvent *event) // то же самое, тольк
 {
     switch ((uint) event->key())
     {
+        case 87: // W
+        case 1062: // Ц
         case 16777235: // Up
             mf = false;
         break;
 
+        case 83: // S
+        case 1067: // Ы
         case 16777237: // Down
             mb = false;
         break;
 
+        case 65: // A
+        case 1060: // Ф
         case 16777234: // Left
             rl = false;
         break;
 
+        case 68: // D
+        case 1042: // В
         case 16777236: // Right
             rr = false;
         break;
