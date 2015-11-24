@@ -15,9 +15,9 @@
 
 extern Game * game;
 
-bool action = false;
-bool reload = false;
-int fireCount = 0;
+//bool action = false;
+//bool reload = false;
+//int fireCount = 0;
 
 Tank::Tank()
 {
@@ -25,9 +25,9 @@ Tank::Tank()
     int y = 200;
 
     // то, из-за чего программа жрет как майнкрафт
-    keyDelay = 20; // задержка между действиями клавиш
     boost = 40; // ускорение танка в начале движения
     iboost = 2; // по сколько отнимать от ускорения
+    mf = mb = rr = rl = hr = hl = fr = false;
 
     // стрельба
     fireReady = true;
@@ -37,7 +37,6 @@ Tank::Tank()
     // обнуление
     xfix = 0;
     yfix = 0;
-    mf = mb = rr = rl = hr = hl = fr = false;
 
     // платформа
     setPos(x,y);
@@ -68,157 +67,7 @@ Tank::Tank()
     setFocus();
 }
 
-void Tank::keyPressEvent(QKeyEvent *event)
-{
-    //qDebug() << (uint) event->key(); // чтобы узнать код клавиши
-    switch ((uint) event->key())
-    {
-        // Двигаться вперед
-        case 87: // W
-        case 1062: // Ц
-        case 16777235: // Up
-            mf = true;
-        break;
 
-        // Двигаться назад
-        case 83: // S
-        case 1067: // Ы
-        case 16777237: // Down
-            mb = true;
-        break;
-
-        // Поворот танка налево
-        case 65: // A
-        case 1060: // Ф
-        case 16777234: // Left
-            rl = true;
-        break;
-
-        // Поворот танка направо
-        case 68: // D
-        case 1042: // В
-        case 16777236: // Right
-            rr = true;
-        break;
-
-        // Поворот башни налево
-        case 90:   // Z
-        case 1071: // Я
-            hl = true;
-        break;
-
-        // Поворот башни направо
-        case 88:   // X
-        case 1063: // Ч
-            hr = true;
-        break;
-
-        // Выстрел
-        case 32: // SPAAAAACE
-            fr = true;
-        break;
-
-        case 67:
-            setRotation(180);
-            qDebug() << "test";
-        break;
-    }
-    if (action == false)
-    {
-        //qDebug() << "start";
-        if (mf || mb) // если танк двигается вперед или назад, то сделать ему замедление при начале движения
-            onKey(boost);
-        else
-            onKey(0);
-    }
-    //game->health->setPos(game->player->x()+40,game->player->y()+50);
-}
-
-void Tank::keyReleaseEvent(QKeyEvent *event) // то же самое, только отмена
-{
-    switch ((uint) event->key())
-    {
-        case 87: // W
-        case 1062: // Ц
-        case 16777235: // Up
-            mf = false;
-        break;
-
-        case 83: // S
-        case 1067: // Ы
-        case 16777237: // Down
-            mb = false;
-        break;
-
-        case 65: // A
-        case 1060: // Ф
-        case 16777234: // Left
-            rl = false;
-        break;
-
-        case 68: // D
-        case 1042: // В
-        case 16777236: // Right
-            rr = false;
-        break;
-
-        case 90:   // Z
-        case 1071: // Я
-            hl = false;
-        break;
-
-        case 88:   // X
-        case 1063: // Ч
-            hr = false;
-        break;
-
-        case 32: // SPAAAAACE
-            fr = false;
-        break;
-    }
-}
-
-void Tank::onKey(int acc)
-{
-    action = true;
-    //int acc = boost;
-    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false)
-    {
-        if (mf) moveForward();
-        if (mb) moveBack();
-        if (rl) rotateLeft();
-        if (rr) rotateRight();
-        if (hl) headLeft();
-        if (hr) headRight();
-
-        if (fr && fireReady)
-        {
-            fire();
-            reload = false; // перезарядка еще на начата
-        }
-        if (fireReady == false) // счетчик для ожидания между выстрелами
-        {
-            fireCount += keyDelay;
-        }
-        if ((fireCount > fireTime - bulletready->duration()) && reload == false) // звук перезарядки
-        {
-            reload = true; // перезарядка уже начата (защита от нескольких)
-            bulletready->play();
-        }
-        if (fireCount > fireTime) // готовность выстрела
-        {
-            fireReady = true;
-            fireCount = 0;
-        }
-
-        if (acc > 0)
-            acc = acc - iboost; // создается замедление в начале движения
-
-        delay(keyDelay + acc);
-    }
-    action = false;
-    //qDebug() << "stop";
-}
 
 void Tank::moveForward()
 {
@@ -417,12 +266,6 @@ void Tank::hrotate() // поворот башни
     head->setPixmap(shipPixels);
 }
 
-void Tank::spawn()
-{
-    Enemy *enemy = new Enemy();
-    scene()->addItem(enemy);
-}
-
 void Tank::delay( int millisecondsToWait )
 {
     QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
@@ -431,8 +274,6 @@ void Tank::delay( int millisecondsToWait )
         QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
     }
 }
-
-
 
 
 

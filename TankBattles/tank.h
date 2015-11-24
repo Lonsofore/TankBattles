@@ -14,10 +14,6 @@ class Tank: public QObject, public QGraphicsPixmapItem
 public:
     Tank();
     // вызов действий для кнопок
-    int keyDelay; // задержка между проверками кнопок
-    void keyPressEvent(QKeyEvent *event);   // считывание нажатий
-    void keyReleaseEvent(QKeyEvent *event); // и отжатий
-    void onKey(int acc); // если кнопка нажата - тикер
     void moveForward();
     void moveBack();
     void rotateRight();
@@ -47,14 +43,11 @@ public:
     QString headImage;  // изображение башни
 
     void delay(int millisecondsToWait); // функция задержки
-public slots:
-    void spawn();
 
-private:
+    bool mf, mb, rr, rl, hr, hl, fr;
+
     QMediaPlayer *bulletsound;
     QMediaPlayer *bulletready;
-    // соответственно с объявленными функциями для действий
-    bool mf, mb, rr, rl, hr, hl, fr;
 };
 
 #endif // TANK

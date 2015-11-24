@@ -5,6 +5,7 @@
 #include "enemy.h"
 #include <QMediaPlayer>
 #include "button.h"
+#include "player.h"
 
 bool started = false;
 
@@ -40,7 +41,8 @@ void Game::start()
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
 
     // создание игрока
-    player = new Tank();
+    //player = new Tank();
+    player = new Player();
     scene->addItem(player);
     scene->addItem(player->head);
 
@@ -88,25 +90,25 @@ void Game::menu()
     int yPos;
     Button *pveButton = new Button(QString("PvE"),275,70);
     xPos = this->width()/2 - pveButton->boundingRect().width()/2;
-    yPos = 175;
+    yPos = 200;
     pveButton->setPos(xPos,yPos);
     connect(pveButton,SIGNAL(clicked()),this,SLOT(start()));
     scene->addItem(pveButton);
 
     Button *pvpButton = new Button(QString("PvP"),275,70);
-    yPos = 250;
+    yPos = 280;
     pvpButton->setPos(xPos,yPos);
     connect(pvpButton,SIGNAL(clicked()),this,SLOT(close()));
     scene->addItem(pvpButton);
 
     Button *settingsButton = new Button(QString("Settings"),275,70);
-    yPos = 325;
+    yPos = 360;
     settingsButton->setPos(xPos,yPos);
     connect(settingsButton,SIGNAL(clicked()),this,SLOT(close()));
     scene->addItem(settingsButton);
 
     Button *exitButton = new Button(QString("Exit"),275,70);
-    yPos = 400;
+    yPos = 440;
     exitButton->setPos(xPos,yPos);
     connect(exitButton,SIGNAL(clicked()),this,SLOT(close()));
     scene->addItem(exitButton);

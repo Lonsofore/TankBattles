@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     game.cpp \
     score.cpp \
     health.cpp \
-    button.cpp
+    button.cpp \
+    player.cpp
 
 HEADERS  += \
     tank.h \
@@ -29,7 +30,8 @@ HEADERS  += \
     game.h \
     score.h \
     health.h \
-    button.h
+    button.h \
+    player.h
 
 RESOURCES += \
     res.qrc
