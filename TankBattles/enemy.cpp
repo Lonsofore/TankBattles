@@ -40,14 +40,5 @@ void Enemy::move()
         delete this;
         //game->health->decrease(10);
     }
-
-    /*
-    setPos(x(),y()+10);
-    if (pos().y() > scene()->height())
-    {
-        scene()->removeItem(this);
-        delete this;
-    }
-    */
 }
 

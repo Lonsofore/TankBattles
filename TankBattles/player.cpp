@@ -8,6 +8,8 @@ bool reload = false;
 bool fireReady = true;
 int fireCount = 0;
 
+extern Game * game;
+
 Player::Player()
 {
     keyDelay = 20; // задержка между действиями клавиш
@@ -80,8 +82,9 @@ void Player::keyPressEvent(QKeyEvent *event)
             fr = true;
         break;
 
-        case 67:
-            qDebug() << "just yay";
+        case 81:
+        case 1049:
+            game->menu();
         break;
     }
     if (action == false)
@@ -139,10 +142,9 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
     }
 }
 
-void Player::onKey(int acc)
+void Player::onKey(int acc) // действия при нажатии клавиши. acc - задержка танка при старте
 {
     action = true;
-    //int acc = boost;
     while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState)
     {
         if (mf) moveForward();

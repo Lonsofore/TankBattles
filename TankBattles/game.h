@@ -15,19 +15,23 @@ class Game: public QGraphicsView{
 public:
     Game(QWidget * parent=0);
     void mouseReleaseEvent(QMouseEvent * event);
-    //void keyPressEvent(QKeyEvent * event);
 
-    void menu();
-    void switchButton();
-    int numsButtons; // сделано отдельно для обращения из класса button
-    int curButton;
+    void switchButton(); // сменить кнопку на выбранную
+    int numsButtons; // сделано отдельно для обращения из класса button - кол-во кнопок
+    int curButton; // какая кнопка выбрана в данный момент
+    bool pressed;  // была ли нажата кнопка
 
     QGraphicsScene * scene;
     Player * player;
     Score * score;
     Health * health;
+
+    void delay(int millisecondsToWait); // функция задержки
 public slots:
-    void start();
+    void menu(); // запустить меню
+    void pve();
+    void pvp();
+    void settings();
 };
 
 #endif // GAME

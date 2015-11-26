@@ -1,9 +1,12 @@
 <RCC>
     <qresource prefix="/sounds">
-        <file>sounds/dude.mp3</file>
         <file>sounds/tank_reload.mp3</file>
         <file>sounds/tank_fire.mp3</file>
         <file>sounds/tank_hrotate.wav</file>
+        <file>sounds/no1.wav</file>
+        <file>sounds/no2.wav</file>
+        <file>sounds/nothingtoseehere.wav</file>
+        <file>sounds/notsurprised.wav</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/bullet.png</file>

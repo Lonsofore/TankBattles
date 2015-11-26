@@ -7,7 +7,6 @@
 #include <QGraphicsView>
 
 extern Game * game;
-bool pressed = false;
 
 Button::Button(int n, QString text, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
 {
@@ -62,7 +61,7 @@ void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 
 void Button::select()
 {
-    if (pressed == false)
+    if (game->pressed == false)
     {
         QString image = ":/images/images/menu/" + name + "Select.png";
         setPixmap(QPixmap(image).scaled(width,height));
@@ -72,7 +71,7 @@ void Button::select()
 
 void Button::deselect()
 {
-    if (pressed == false)
+    if (game->pressed == false)
     {
         QString image = ":/images/images/menu/" + name + ".png";
         setPixmap(QPixmap(image).scaled(width,height));
@@ -81,12 +80,16 @@ void Button::deselect()
 
 void Button::click()
 {
-    pressed = true;
-    QString image = ":/images/images/menu/" + name + "Chose.png";
-    setPixmap(QPixmap(image).scaled(width,height));
+    if (game->pressed == false)
+    {
+        game->pressed = true;
 
-    delay(1000);
-    emit clicked();
+        QString image = ":/images/images/menu/" + name + "Chose.png";
+        setPixmap(QPixmap(image).scaled(width,height));
+
+        delay(1000);
+        emit clicked();
+    }
 }
 
 void Button::delay( int millisecondsToWait )
