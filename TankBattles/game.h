@@ -15,6 +15,7 @@ class Game: public QGraphicsView{
 public:
     Game(QWidget * parent=0);
     void mouseReleaseEvent(QMouseEvent * event);
+    void changeEvent(QEvent * event);
 
     void switchButton(); // сменить кнопку на выбранную
     int numsButtons; // сделано отдельно для обращения из класса button - кол-во кнопок

@@ -21,6 +21,7 @@ public:
     void playerRotate();
     void playerFire();
 
+    void playerReset(); // сбросить значения движений
 public slots:
     void spawn();
 

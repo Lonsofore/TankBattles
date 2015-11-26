@@ -8,6 +8,7 @@
 #include "player.h"
 #include <QTime>
 #include <QCoreApplication>
+#include <QFileDialog>
 
 bool started = false;
 const int numButton = 4;
@@ -39,6 +40,14 @@ void Game::mouseReleaseEvent(QMouseEvent *event)
 {
     if (started)
         player->setFocus();
+}
+
+void Game::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange && started == true)
+    {
+        player->playerReset();
+    }
 }
 
 void Game::switchButton() // смена кнопки
@@ -89,12 +98,21 @@ void Game::pve()
 
 void Game::pvp()
 {
+    /*
+    QString path = QDir::currentPath() + "/maps";
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    path,
+                                                    tr("Map (*.map)"));
+    qDebug() << fileName;
+    */
+
     scene->clear();
     QMediaPlayer *voice = new QMediaPlayer();
     voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
     voice->play();
     delay(1000);
     menu();
+
 }
 
 void Game::settings()
@@ -118,6 +136,7 @@ void Game::menu()
 
     // надпись
     QGraphicsTextItem *title = new QGraphicsTextItem(QString("TANKBATTLES"));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
     QFont titleFont("Century Gothic",70);
     title->setFont(titleFont);
     int txPos = this->width()/2 - title->boundingRect().width()/2;

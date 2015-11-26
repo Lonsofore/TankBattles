@@ -82,10 +82,12 @@ void Player::keyPressEvent(QKeyEvent *event)
             fr = true;
         break;
 
+            /*
         case 81:
         case 1049:
             game->menu();
         break;
+        */
     }
     if (action == false)
     {
@@ -210,6 +212,11 @@ void Player::playerFire()
 {
     fireReady = false;
     fire();
+}
+
+void Player::playerReset()
+{
+    mf = mb = rr = rl = hr = hl = fr = false;
 }
 
 void Player::spawn()
