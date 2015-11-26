@@ -8,6 +8,8 @@
 #include "player.h"
 
 bool started = false;
+const int numButton = 4;
+Button *menuButtons[numButton];
 
 Game::Game(QWidget *parent){
     int width = 800;
@@ -23,13 +25,54 @@ Game::Game(QWidget *parent){
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFixedSize(width,height); // разрешение экрана
 
-    //show();
+    // всего кнопок 4, текущая выделенная - 0
+    numsButtons = numButton;
+    curButton = 0;
+
+    show();
 }
 
 void Game::mouseReleaseEvent(QMouseEvent *event)
 {
     if (started)
         player->setFocus();
+}
+/*
+void Game::keyPressEvent(QKeyEvent *event)
+{
+    if (started == false)
+    {
+        switch ((uint) event->key())
+        {
+            case 16777235: // Up
+                if (curButton > 0)
+                    curButton--;
+                else
+                    curButton = 3;
+                switchButton();
+            break;
+
+            case 16777237: // Down
+                if (curButton < 3)
+                    curButton++;
+                else
+                    curButton = 0;
+                switchButton();
+            break;
+
+            case 16777220: // Enter
+                menuButtons[curButton]->clicked();
+            break;
+        }
+    }
+}
+*/
+void Game::switchButton() // смена кнопки
+{
+    for (int i=0; i<numButton; i++)
+        menuButtons[i]->deselect();
+
+    menuButtons[curButton]->select();
 }
 
 void Game::start()
@@ -41,7 +84,6 @@ void Game::start()
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
 
     // создание игрока
-    //player = new Tank();
     player = new Player();
     scene->addItem(player);
     scene->addItem(player->head);
@@ -88,31 +130,23 @@ void Game::menu()
 
     // кнопки
     int xPos;
-    int yPos;
-    Button *pveButton = new Button(QString("PvE"),275,70);
-    xPos = this->width()/2 - pveButton->boundingRect().width()/2;
-    yPos = 200;
-    pveButton->setPos(xPos,yPos);
-    connect(pveButton,SIGNAL(clicked()),this,SLOT(start()));
-    scene->addItem(pveButton);
+    int yPos = 200;
+    QString text[numButton] = {"PvE","PvP","Settings","Exit"};
 
-    Button *pvpButton = new Button(QString("PvP"),275,70);
-    yPos = 280;
-    pvpButton->setPos(xPos,yPos);
-    connect(pvpButton,SIGNAL(clicked()),this,SLOT(close()));
-    scene->addItem(pvpButton);
+    for (int i=0; i<numButton; i++)
+    {
+        menuButtons[i] = new Button(i,text[i],275,70);
+        xPos = this->width()/2 - menuButtons[i]->boundingRect().width()/2;
+        menuButtons[i]->setPos(xPos,yPos);
+        scene->addItem(menuButtons[i]);
+        yPos += 80; // для следующей кнопки
+    }
+    // действия кнопок
+    connect(menuButtons[0],SIGNAL(clicked()),this,SLOT(start()));
+    connect(menuButtons[3],SIGNAL(clicked()),this,SLOT(close()));
 
-    Button *settingsButton = new Button(QString("Settings"),275,70);
-    yPos = 360;
-    settingsButton->setPos(xPos,yPos);
-    connect(settingsButton,SIGNAL(clicked()),this,SLOT(close()));
-    scene->addItem(settingsButton);
-
-    Button *exitButton = new Button(QString("Exit"),275,70);
-    yPos = 440;
-    exitButton->setPos(xPos,yPos);
-    connect(exitButton,SIGNAL(clicked()),this,SLOT(close()));
-    scene->addItem(exitButton);
+    //menuButtons[curButton]->select();
+    switchButton();
 }
 
 

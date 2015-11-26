@@ -8,14 +8,19 @@ class Button:public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
-    Button(QString name, int x, int y, QGraphicsItem* parent=NULL);
+    Button(int n, QString text, int x, int y, QGraphicsItem* parent=NULL);
+    void keyPressEvent(QKeyEvent * event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+
     QString name;
     int height;
     int width;
+    int num;
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    void select();
+    void deselect();
+    void click();
 
     void delay(int millisecondsToWait); // функция задержки
 signals:

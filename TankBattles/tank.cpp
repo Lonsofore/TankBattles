@@ -15,25 +15,17 @@
 
 extern Game * game;
 
-//bool action = false;
-//bool reload = false;
-//int fireCount = 0;
-
 Tank::Tank()
 {
     int x = 300;
     int y = 200;
 
-    // то, из-за чего программа жрет как майнкрафт
-    boost = 40; // ускорение танка в начале движения
-    iboost = 2; // по сколько отнимать от ускорения
-    mf = mb = rr = rl = hr = hl = fr = false;
+    // отдельная функция для того, чтобы ее вызывать классом player
+    defaultTank(x,y);
+}
 
-    // стрельба
-    fireReady = true;
-    fireTime = 2000;
-    bulletSpeed = 50;
-
+void Tank::defaultTank(int x, int y)
+{
     // обнуление
     xfix = 0;
     yfix = 0;
@@ -62,9 +54,9 @@ Tank::Tank()
     bulletready = new QMediaPlayer();
     bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
 
-    // выделить танк на сцене - для действий с ним
-    setFlag(QGraphicsItem::ItemIsFocusable);
-    setFocus();
+    //звук поворота башни
+    tankhrotate = new QMediaPlayer();
+    tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
 }
 
 
@@ -148,9 +140,6 @@ void Tank::moveBack()
 void Tank::rotateRight()
 {
     int deg = rspeed;
-    if (mb) //если едет назад
-        deg = -deg; // значит инверсия
-
     degree += deg;
     if (degree > 360 || degree < -360)
         degree = 0;
@@ -160,16 +149,11 @@ void Tank::rotateRight()
     if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
-
-    //qDebug() << degree;
 }
 
 void Tank::rotateLeft()
 {
     int deg = rspeed;
-    if (mb) //если едет назад
-        deg = -deg; // значит инверсия
-
     degree -= deg;
     if (degree > 360 || degree < -360)
         degree = 0;
@@ -179,8 +163,32 @@ void Tank::rotateLeft()
     if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+}
 
-    //qDebug() << degree;
+void Tank::rotateRight(int deg)
+{
+    degree += deg;
+    if (degree > 360 || degree < -360)
+        degree = 0;
+    rotate();
+
+    hdegree += deg;
+    if (hdegree > 360 || hdegree < -360)
+        hdegree = 0;
+    hrotate();
+}
+
+void Tank::rotateLeft(int deg)
+{
+    degree -= deg;
+    if (degree > 360 || degree < -360)
+        degree = 0;
+    rotate();
+
+    hdegree -= deg;
+    if (hdegree > 360 || hdegree < -360)
+        hdegree = 0;
+    hrotate();
 }
 
 void Tank::headRight()
@@ -203,8 +211,6 @@ void Tank::headLeft()
 
 void Tank::fire()
 {
-    fireReady = false;
-
     int x1,y1;
     QPixmap tank(baseImage);
 
@@ -226,6 +232,7 @@ void Tank::fire()
     }
 }
 
+// с возвратом qpixmap какой-то гемор, потому функций сделано две
 void Tank::rotate() // поворот платформы
 {
     QPixmap shipPixels(baseImage);

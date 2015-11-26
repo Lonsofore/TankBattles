@@ -5,6 +5,7 @@
 
 bool action = false;
 bool reload = false;
+bool fireReady = true;
 int fireCount = 0;
 
 Player::Player()
@@ -19,41 +20,10 @@ Player::Player()
     mf = mb = rr = rl = hr = hl = fr = false;
 
     // стрельба
-    fireReady = true;
     fireTime = 2000;
     bulletSpeed = 50;
 
-    // обнуление
-    xfix = 0;
-    yfix = 0;
-
-    // платформа
-    setPos(x,y);
-    degree = 0;
-    speed = 2;
-    rspeed = 2;
-    baseImage = ":/images/images/tanks/greenBase.png";
-    setPixmap(QPixmap(baseImage));
-
-    // башня
-    head = new QGraphicsPixmapItem();
-    head->setPos(x,y);
-    hdegree = 0;
-    hspeed = 2;
-    headImage = ":/images/images/tanks/greenHead.png";
-    head->setPixmap(QPixmap(headImage));
-
-    // звук выстрела
-    bulletsound = new QMediaPlayer();
-    bulletsound->setMedia(QUrl("qrc:/sounds/sounds/tank_fire.mp3"));
-
-    //звук перезарядки
-    bulletready = new QMediaPlayer();
-    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
-
-    //звук поворота башни
-    tankhrotate = new QMediaPlayer();
-    tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
+    defaultTank(x,y);
 
     // выделить танк на сцене - для действий с ним
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -111,8 +81,7 @@ void Player::keyPressEvent(QKeyEvent *event)
         break;
 
         case 67:
-            setRotation(180);
-            qDebug() << "test";
+            qDebug() << "just yay";
         break;
     }
     if (action == false)
@@ -178,25 +147,25 @@ void Player::onKey(int acc)
     {
         if (mf) moveForward();
         if (mb) moveBack();
-        if (rl) rotateLeft();
-        if (rr) rotateRight();
 
+        // универсальный поворот
+        if (rl || rr) playerRotate();
 
+        // поворот башни
         if (hl) headLeft();
         if (hr) headRight();
 
+        // звук поворота башни
         if ((hr || hl) &&  tankhrotate->state() == QMediaPlayer::StoppedState) // если звук поворота еще не проигрывался
             tankhrotate->play();
 
         if (hr == false && hl == false && tankhrotate->state() == QMediaPlayer::PlayingState)
-        {
-            qDebug() << "yay";
             tankhrotate->stop();
-        }
 
+        // стрельба + звуки стрельбы
         if (fr && fireReady)
         {
-            fire();
+            playerFire();
             reload = false; // перезарядка еще на начата
         }
         if (fireReady == false) // счетчик для ожидания между выстрелами
@@ -220,6 +189,25 @@ void Player::onKey(int acc)
         delay(keyDelay + acc);
     }
     action = false;
+}
+
+void Player::playerRotate()
+{
+    int deg = rspeed;
+    if (mb) //если едет назад
+        deg = -deg; // значит инверсия
+
+    // выбор стороны поворота
+    if (rl)
+        rotateLeft(deg);
+    if (rr)
+        rotateRight(deg);
+}
+
+void Player::playerFire()
+{
+    fireReady = false;
+    fire();
 }
 
 void Player::spawn()

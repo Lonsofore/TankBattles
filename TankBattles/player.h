@@ -13,17 +13,21 @@ public:
     void keyPressEvent(QKeyEvent *event);   // считывание нажатий
     void keyReleaseEvent(QKeyEvent *event); // и отжатий
     void onKey(int acc); // если кнопка нажата - тикер
-    //bool fireReady; // можно ли уже стрелять
-    int fireTime;   // время между выстрелами
 
     int boost;  // ускорение в начале движения
     int iboost; // по сколько отнимать от ускорения
+    int fireTime;    // время между выстрелами
+
+    void playerRotate();
+    void playerFire();
 
 public slots:
     void spawn();
 
 private:
     // соответственно с объявленными функциями для действий
+    bool mf, mb, rr, rl, hr, hl, fr;
+
 
 };
 
