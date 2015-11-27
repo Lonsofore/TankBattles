@@ -1,7 +1,6 @@
 #ifndef TANK
 #define TANK
 
-#include <QGraphicsRectItem>
 #include <QObject>
 #include <QGraphicsItem>
 #include <QMediaPlayer>
@@ -26,6 +25,9 @@ public:
     void headLeft();  // и налево
     void fire(); // выстрел (ограничений между выстрелами нет!)
     int bulletSpeed; // скорость пули
+
+    // размер танка
+    int pixsize;
 
     // платформа
     void rotate();  // поворот платформы

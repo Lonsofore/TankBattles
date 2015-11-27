@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QCoreApplication>
 #include <QFileDialog>
+#include "block.h"
 
 bool started = false;
 const int numButton = 4;
@@ -57,7 +58,6 @@ void Game::switchButton() // смена кнопки
 
     menuButtons[curButton]->select();
 }
-
 void Game::pve()
 {
     started = true;
@@ -98,21 +98,86 @@ void Game::pve()
 
 void Game::pvp()
 {
-    /*
-    QString path = QDir::currentPath() + "/maps";
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                    path,
-                                                    tr("Map (*.map)"));
-    qDebug() << fileName;
-    */
+    scene->clear();
 
+    // фон карты
+    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+
+    // файл открываем
+    QString path = QDir::currentPath() + "/maps";
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
+
+    // проверка
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QTextStream in(&file);
+
+    //берем первую строку
+    QString line = in.readLine();
+    QStringList list1;
+    list1 = line.split(" ");
+    // размеры карты
+    yBlocks = list1[0].toInt();
+    xBlocks = list1[1].toInt();
+    // кол-во точек спавна
+    spawns = list1[2].toInt();
+
+    //qDebug() << yBlocks << " " << xBlocks << " " << spawns;
+
+    int sum = (xBlocks+1)*(yBlocks+1);
+    Block **pixBlocks=new Block *[sum];
+
+    QString img;
+    int width = 60; // размер блоков
+    int height = 60;
+    int x,y;
+
+    scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
+    setFixedSize(xBlocks*width,yBlocks*height);
+
+    for (int i = 0; i < yBlocks; i++)
+    {
+        line = in.readLine();
+        list1 = line.split(" ");
+        for (int j = 0; j < xBlocks; j++)
+        {
+            if (list1[j] != "S" && list1[j] != "0" && list1[j] != "")
+            {
+                x = width * j;
+                y = height * i;
+                img = ":/images/images/blocks/" + list1[j] + ".png";
+                pixBlocks[i+j] = new Block();
+                pixBlocks[i+j]->setPixmap(QPixmap(img).scaled(width,height));
+                pixBlocks[i+j]->setPos(x,y);
+                scene->addItem(pixBlocks[i+j]);
+            }
+
+        }
+    }
+    file.close();
+
+    // создание игрока
+    player = new Player();
+    scene->addItem(player);
+    scene->addItem(player->head);
+
+    // очки
+    score = new Score();
+    scene->addItem(score);
+
+
+
+    // заглушка
+    /*
     scene->clear();
     QMediaPlayer *voice = new QMediaPlayer();
     voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
     voice->play();
     delay(1000);
     menu();
-
+*/
 }
 
 void Game::settings()

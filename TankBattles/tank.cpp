@@ -26,6 +26,8 @@ Tank::Tank()
 
 void Tank::defaultTank(int x, int y)
 {
+    pixsize = 120;
+
     // обнуление
     xfix = 0;
     yfix = 0;
@@ -36,7 +38,7 @@ void Tank::defaultTank(int x, int y)
     speed = 2;
     rspeed = 2;
     baseImage = ":/images/images/tanks/greenBase.png";
-    setPixmap(QPixmap(baseImage));
+    setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
 
     // башня
     head = new QGraphicsPixmapItem();
@@ -44,7 +46,7 @@ void Tank::defaultTank(int x, int y)
     hdegree = 0;
     hspeed = 2;
     headImage = ":/images/images/tanks/greenHead.png";
-    head->setPixmap(QPixmap(headImage));
+    head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
 
     // звук выстрела
     bulletsound = new QMediaPlayer();
@@ -68,6 +70,7 @@ void Tank::moveForward()
     int yadd = 0;
     double sn, cs;
     QPixmap tank(baseImage);
+    tank.scaled(pixsize,pixsize);
 
     // чтобы высчитывать это только 1 раз
     cs = cos(degree * (PI / 180))*speed;
@@ -89,10 +92,13 @@ void Tank::moveForward()
         yfix = yfix - round(yfix);
     }
 
+    int height = this->pixmap().size().height();
+    int width = this->pixmap().size().width();
+
     // новые координаты
     x1 = x() + round(cs) - xadd;
     y1 = y() + round(sn) - yadd;
-    if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+    if (y1 > 0 && y1 < scene()->height()-height && x1 > 0 && x1 < scene()->width()-width)
     {
         setPos(x1,y1);
         head->setPos(x1,y1);
@@ -105,7 +111,6 @@ void Tank::moveBack()
     int xadd = 0;
     int yadd = 0;
     double sn, cs;
-    QPixmap tank(baseImage);
 
     // чтобы высчитывать это только 1 раз
     cs = cos(degree * (PI / 180))*speed;
@@ -127,10 +132,13 @@ void Tank::moveBack()
         yfix = yfix - round(yfix);
     }
 
+    int height = this->pixmap().size().height();
+    int width = this->pixmap().size().width();
+
     // новые координаты
     x1 = x() - round(cs) - xadd;
     y1 = y() - round(sn) - yadd;
-    if (y1 > 0 && y1 < scene()->height()-tank.size().height() && x1 > 0 && x1 < scene()->width()-tank.size().width())
+    if (y1 > 0 && y1 < scene()->height()-height && x1 > 0 && x1 < scene()->width()-width)
     {
         setPos(x1,y1);
         head->setPos(x1,y1);
@@ -212,12 +220,10 @@ void Tank::headLeft()
 void Tank::fire()
 {
     int x1,y1;
-    QPixmap tank(baseImage);
+    x1 = x() + pixsize/2 - 20 + round(cos(hdegree * (PI / 180)) * pixsize/2);   // понятия не имею, что за 20
+    y1 = y() + pixsize/2 - 20 + round(sin(hdegree * (PI / 180)) * pixsize/2); // я его просто подобрал
 
     Bullet *bullet = new Bullet();
-
-    x1 = x() + tank.size().width()/2 - 20 + round(cos(hdegree * (PI / 180)) * tank.size().width()/2);   // понятия не имею, что за 20
-    y1 = y() + tank.size().height()/2 - 20 + round(sin(hdegree * (PI / 180)) * tank.size().height()/2); // я его просто подобрал
     bullet->setPos(x1,y1);
     scene()->addItem(bullet);
 
@@ -250,7 +256,7 @@ void Tank::rotate() // поворот платформы
     p.end();
     shipPixels = rotatePixmap;
 
-    setPixmap(shipPixels);
+    setPixmap(shipPixels.scaled(pixsize,pixsize));
 }
 
 void Tank::hrotate() // поворот башни
@@ -270,7 +276,7 @@ void Tank::hrotate() // поворот башни
     p.end();
     shipPixels = rotatePixmap;
 
-    head->setPixmap(shipPixels);
+    head->setPixmap(shipPixels.scaled(pixsize,pixsize));
 }
 
 void Tank::delay( int millisecondsToWait )

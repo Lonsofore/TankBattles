@@ -24,5 +24,7 @@
         <file>images/menu/Settings.png</file>
         <file>images/menu/SettingsChose.png</file>
         <file>images/menu/SettingsSelect.png</file>
+        <file>images/blocks/1.png</file>
+        <file>images/blocks/2.png</file>
     </qresource>
 </RCC>
