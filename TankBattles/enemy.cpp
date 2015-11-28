@@ -9,6 +9,8 @@ extern Game * game;
 
 Enemy::Enemy()
 {
+    test = 2;
+
     setPos(0, 0);
 
     setRect(0,0,100,100);

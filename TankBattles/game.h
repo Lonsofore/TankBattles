@@ -29,13 +29,13 @@ public:
     int xBlocks;
     int yBlocks;
     int spawns;
-    Block **pixBlocks;
 
     // игрок
     Player * player;
     Score * score;
     Health * health;
 
+    void moveToCenter();
     void delay(int millisecondsToWait); // функция задержки
 public slots:
     void menu(); // запустить меню

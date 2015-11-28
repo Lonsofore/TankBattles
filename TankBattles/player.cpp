@@ -13,8 +13,8 @@ extern Game * game;
 Player::Player()
 {
     keyDelay = 20; // задержка между действиями клавиш
-    int x = 300;
-    int y = 200;
+    int x = 100;
+    int y = 100;
 
     // то, из-за чего программа жрет как майнкрафт
     boost = 40; // ускорение танка в начале движения
@@ -82,12 +82,13 @@ void Player::keyPressEvent(QKeyEvent *event)
             fr = true;
         break;
 
-            /*
-        case 81:
-        case 1049:
-            game->menu();
+        case 91:
+            this->changeSize(pixsize-10);
         break;
-        */
+
+        case 93:
+            this->changeSize(pixsize+10);
+        break;
     }
     if (action == false)
     {

@@ -17,6 +17,8 @@ public:
     int speed;
     int degree;
     QString image;
+    int pixsize;
+
 public slots:
     void move();
 };

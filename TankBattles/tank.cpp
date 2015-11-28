@@ -7,6 +7,7 @@
 #include "game.h"
 #include <QTime>
 #include <QCoreApplication>
+#include <typeinfo>
 
 #include <math.h>
 #define PI 3.14159265
@@ -26,7 +27,8 @@ Tank::Tank()
 
 void Tank::defaultTank(int x, int y)
 {
-    pixsize = 120;
+    // размер танка
+    pixsize = 200;
 
     // обнуление
     xfix = 0;
@@ -39,6 +41,7 @@ void Tank::defaultTank(int x, int y)
     rspeed = 2;
     baseImage = ":/images/images/tanks/greenBase.png";
     setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
+    setZValue(2); // "высота" платформы
 
     // башня
     head = new QGraphicsPixmapItem();
@@ -47,6 +50,7 @@ void Tank::defaultTank(int x, int y)
     hspeed = 2;
     headImage = ":/images/images/tanks/greenHead.png";
     head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
+    head->setZValue(3);
 
     // звук выстрела
     bulletsound = new QMediaPlayer();
@@ -63,7 +67,7 @@ void Tank::defaultTank(int x, int y)
 
 
 
-void Tank::moveForward()
+void Tank::moveForward(bool check)
 {
     int x1,y1;
     int xadd = 0;
@@ -102,10 +106,16 @@ void Tank::moveForward()
     {
         setPos(x1,y1);
         head->setPos(x1,y1);
+
+        if (check != true)
+        {
+            while (isCollide() == true)
+                moveBack(check = true);
+        }
     }
 }
 
-void Tank::moveBack()
+void Tank::moveBack(bool check)
 {
     int x1,y1;
     int xadd = 0;
@@ -142,10 +152,16 @@ void Tank::moveBack()
     {
         setPos(x1,y1);
         head->setPos(x1,y1);
+
+        if (check != true)
+        {
+            while (isCollide() == true)
+                moveForward(check = true);
+        }
     }
 }
 
-void Tank::rotateRight()
+void Tank::rotateRight(bool check)
 {
     int deg = rspeed;
     degree += deg;
@@ -157,9 +173,15 @@ void Tank::rotateRight()
     if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            rotateLeft(check = true);
+    }
 }
 
-void Tank::rotateLeft()
+void Tank::rotateLeft(bool check)
 {
     int deg = rspeed;
     degree -= deg;
@@ -171,9 +193,15 @@ void Tank::rotateLeft()
     if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            rotateRight(check = true);
+    }
 }
 
-void Tank::rotateRight(int deg)
+void Tank::rotateRight(int deg, bool check)
 {
     degree += deg;
     if (degree > 360 || degree < -360)
@@ -184,9 +212,15 @@ void Tank::rotateRight(int deg)
     if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            rotateLeft(deg, check = true);
+    }
 }
 
-void Tank::rotateLeft(int deg)
+void Tank::rotateLeft(int deg, bool check)
 {
     degree -= deg;
     if (degree > 360 || degree < -360)
@@ -197,24 +231,42 @@ void Tank::rotateLeft(int deg)
     if (hdegree > 360 || hdegree < -360)
         hdegree = 0;
     hrotate();
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            rotateRight(deg, check = true);
+    }
 }
 
-void Tank::headRight()
+void Tank::headRight(bool check)
 {
     if (hdegree + hspeed < 360)
         hdegree += hspeed;
     else
         hdegree = 0;
     hrotate();
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            headLeft(check = true);
+    }
 }
 
-void Tank::headLeft()
+void Tank::headLeft(bool check)
 {
     if (hdegree - hspeed > -360)
         hdegree -= hspeed;
     else
         hdegree = 0;
     hrotate();
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            headRight(check = true);
+    }
 }
 
 void Tank::fire()
@@ -236,6 +288,29 @@ void Tank::fire()
             bulletsound->play();
             break;
     }
+}
+
+void Tank::changeSize(int n)
+{
+    pixsize = n;
+    setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
+    rotate();
+    hrotate();
+}
+
+bool Tank::isCollide()
+{
+    QList<QGraphicsItem *> colliding_items = collidingItems();
+    for (int i = 0, n = colliding_items.size(); i < n; ++i)
+        if (typeid(*(colliding_items[i])) == typeid(Block))
+            return true;
+
+    QList<QGraphicsItem *> colliding_items1 = head->collidingItems();
+    for (int j = 0, n = colliding_items1.size(); j < n; ++j)
+        if (typeid(*(colliding_items1[j])) == typeid(Block))
+            return true;
+
+    return false;
 }
 
 // с возвратом qpixmap какой-то гемор, потому функций сделано две

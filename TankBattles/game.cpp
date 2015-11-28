@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QFileDialog>
 #include "block.h"
+#include <QDesktopWidget>
 
 bool started = false;
 const int numButton = 4;
@@ -58,6 +59,16 @@ void Game::switchButton() // смена кнопки
 
     menuButtons[curButton]->select();
 }
+
+void Game::moveToCenter()
+{
+    QDesktopWidget desktop;
+    QRect rect = desktop.availableGeometry(desktop.primaryScreen()); // прямоугольник с размерами экрана
+    QPoint center = rect.center(); //координаты центра экрана
+    center.setX(center.x() - (this->width()/2));  // учитываем половину ширины окна
+    center.setY(center.y() - (this->height()/2));  // .. половину высоты
+    move(center);
+}
 void Game::pve()
 {
     started = true;
@@ -98,6 +109,7 @@ void Game::pve()
 
 void Game::pvp()
 {
+    started = true;
     scene->clear();
 
     // фон карты
@@ -126,9 +138,6 @@ void Game::pvp()
 
     //qDebug() << yBlocks << " " << xBlocks << " " << spawns;
 
-    int sum = (xBlocks+1)*(yBlocks+1);
-    Block **pixBlocks=new Block *[sum];
-
     QString img;
     int width = 60; // размер блоков
     int height = 60;
@@ -136,7 +145,9 @@ void Game::pvp()
 
     scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
     setFixedSize(xBlocks*width,yBlocks*height);
+    moveToCenter();
 
+    int num = 0;
     for (int i = 0; i < yBlocks; i++)
     {
         line = in.readLine();
@@ -145,13 +156,14 @@ void Game::pvp()
         {
             if (list1[j] != "S" && list1[j] != "0" && list1[j] != "")
             {
+                Block *block = new Block(list1[j].toInt());
                 x = width * j;
                 y = height * i;
                 img = ":/images/images/blocks/" + list1[j] + ".png";
-                pixBlocks[i+j] = new Block();
-                pixBlocks[i+j]->setPixmap(QPixmap(img).scaled(width,height));
-                pixBlocks[i+j]->setPos(x,y);
-                scene->addItem(pixBlocks[i+j]);
+                block->setPixmap(QPixmap(img).scaled(width,height));
+                block->setPos(x,y);
+                scene->addItem(block);
+                num++;
             }
 
         }
@@ -193,6 +205,7 @@ void Game::settings()
 
 void Game::menu()
 {
+    started = false;
     scene->clear();
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
 

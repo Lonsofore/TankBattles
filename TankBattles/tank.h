@@ -15,19 +15,21 @@ public:
     void defaultTank(int x, int y); // функция установления стандартных значений (для вызова из класса player)
 
     // вызов действий для кнопок
-    void moveForward(); // движение вперед
-    void moveBack();    // движение назад
-    void rotateRight(); // неопределенные функции поворота базы
-    void rotateLeft();  //
-    void rotateRight(int deg); // определенные
-    void rotateLeft(int deg);  //
-    void headRight(); // поворот башни направо
-    void headLeft();  // и налево
+    void moveForward(bool check = 0); // движение вперед
+    void moveBack(bool check = 0);    // движение назад
+    void rotateRight(bool check = 0); // неопределенные функции поворота базы
+    void rotateLeft(bool check = 0);  //
+    void rotateRight(int deg, bool check = 0); // определенные
+    void rotateLeft(int deg, bool check = 0);  //
+    void headRight(bool check = 0); // поворот башни направо
+    void headLeft(bool check = 0);  // и налево
     void fire(); // выстрел (ограничений между выстрелами нет!)
     int bulletSpeed; // скорость пули
 
     // размер танка
     int pixsize;
+    void changeSize(int n); // изменить размер
+    bool isCollide(); // не касается ли чего-то
 
     // платформа
     void rotate();  // поворот платформы
