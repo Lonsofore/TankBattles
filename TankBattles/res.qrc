@@ -11,24 +11,16 @@
         <file>sounds/break2.mp3</file>
         <file>sounds/break3.mp3</file>
         <file>sounds/nobreak.mp3</file>
+        <file>sounds/ambient.mp3</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/bullet.png</file>
         <file>images/tanks/greenBase.png</file>
-        <file>images/tanks/greenHead.png</file>
-        <file>images/menu/Exit.png</file>
-        <file>images/menu/ExitChose.png</file>
-        <file>images/menu/ExitSelect.png</file>
-        <file>images/menu/PvE.png</file>
-        <file>images/menu/PvEChose.png</file>
-        <file>images/menu/PvESelect.png</file>
-        <file>images/menu/PvP.png</file>
-        <file>images/menu/PvPChose.png</file>
-        <file>images/menu/PvPSelect.png</file>
-        <file>images/menu/Settings.png</file>
-        <file>images/menu/SettingsChose.png</file>
-        <file>images/menu/SettingsSelect.png</file>
         <file>images/blocks/1.png</file>
         <file>images/blocks/2.png</file>
+        <file>images/menu/Chose.png</file>
+        <file>images/menu/Select.png</file>
+        <file>images/menu/Shape.png</file>
+        <file>images/tanks/greenHead.png</file>
     </qresource>
 </RCC>

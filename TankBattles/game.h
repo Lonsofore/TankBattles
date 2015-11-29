@@ -15,7 +15,11 @@ class Game: public QGraphicsView{
     Q_OBJECT
 public:
     Game(QWidget * parent=0);
+
+    // запреты на то, чтобы пользователь снял фокус с танка
     void mouseReleaseEvent(QMouseEvent * event);
+    void focusOutEvent(QFocusEvent * event);
+    void wheelEvent(QWheelEvent * event);
     void changeEvent(QEvent * event);
 
     // меню
@@ -29,6 +33,7 @@ public:
     int xBlocks;
     int yBlocks;
     int spawns;
+    QPoint **spawnPoints;
 
     // игрок
     Player * player;

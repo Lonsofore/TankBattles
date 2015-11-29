@@ -8,6 +8,7 @@
 #include <QTime>
 #include <QCoreApplication>
 #include <typeinfo>
+#include <cstdlib>
 
 #include <math.h>
 #define PI 3.14159265
@@ -18,14 +19,11 @@ extern Game * game;
 
 Tank::Tank()
 {
-    int x = 300;
-    int y = 200;
-
     // отдельная функция для того, чтобы ее вызывать классом player
-    defaultTank(x,y);
+    defaultTank();
 }
 
-void Tank::defaultTank(int x, int y)
+void Tank::defaultTank()
 {
     // размер танка
     pixsize = 200;
@@ -35,22 +33,25 @@ void Tank::defaultTank(int x, int y)
     yfix = 0;
 
     // платформа
-    setPos(x,y);
     degree = 0;
     speed = 2;
     rspeed = 2;
     baseImage = ":/images/images/tanks/greenBase.png";
     setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
+    //setPos(x,y);
     setZValue(2); // "высота" платформы
 
     // башня
     head = new QGraphicsPixmapItem();
-    head->setPos(x,y);
     hdegree = 0;
     hspeed = 2;
     headImage = ":/images/images/tanks/greenHead.png";
     head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
+    //head->setPos(x,y);
     head->setZValue(3);
+
+    //точка спавна
+    randomSpawn();
 
     // звук выстрела
     bulletsound = new QMediaPlayer();
@@ -288,6 +289,29 @@ void Tank::fire()
             bulletsound->play();
             break;
     }
+}
+
+void Tank::randomSpawn()
+{
+    int x,y;
+    if (game->spawns > 0)
+    {
+        int random = rand()%game->spawns;
+        x = game->spawnPoints[random]->x() - pixsize/2;
+        y = game->spawnPoints[random]->y() - pixsize/4;
+    }
+    else
+    {
+        x = 200;
+        y = 200;
+    }
+
+    setPos(x,y);
+    head->setPos(x,y);
+
+    degree = 0;
+    hdegree = 0;
+    rotateLeft(0);
 }
 
 void Tank::changeSize(int n)

@@ -12,7 +12,7 @@ class Tank: public QObject, public QGraphicsPixmapItem
     Q_OBJECT
 public:
     Tank();
-    void defaultTank(int x, int y); // функция установления стандартных значений (для вызова из класса player)
+    void defaultTank(); // функция установления стандартных значений (для вызова из класса player)
 
     // вызов действий для кнопок
     void moveForward(bool check = 0); // движение вперед
@@ -25,6 +25,7 @@ public:
     void headLeft(bool check = 0);  // и налево
     void fire(); // выстрел (ограничений между выстрелами нет!)
     int bulletSpeed; // скорость пули
+    void randomSpawn();
 
     // размер танка
     int pixsize;

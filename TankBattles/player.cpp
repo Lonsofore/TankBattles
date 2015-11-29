@@ -13,8 +13,6 @@ extern Game * game;
 Player::Player()
 {
     keyDelay = 20; // задержка между действиями клавиш
-    int x = 100;
-    int y = 100;
 
     // то, из-за чего программа жрет как майнкрафт
     boost = 40; // ускорение танка в начале движения
@@ -25,7 +23,8 @@ Player::Player()
     fireTime = 2000;
     bulletSpeed = 50;
 
-    defaultTank(x,y);
+    defaultTank();
+    game->centerOn(this);
 
     // выделить танк на сцене - для действий с ним
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -82,18 +81,29 @@ void Player::keyPressEvent(QKeyEvent *event)
             fr = true;
         break;
 
-        case 91:
+        // цифры (для тестов)
+        case 49:
             this->changeSize(pixsize-10);
+            qDebug() << pixsize;
         break;
 
-        case 93:
+        case 50:
             this->changeSize(pixsize+10);
+            qDebug() << pixsize;
+        break;
+
+        case 51:
+            randomSpawn();
+        break;
+
+        case 52:
+
         break;
     }
     if (action == false)
     {
         //qDebug() << "start";
-        if (mf || mb) // если танк двигается вперед или назад, то сделать ему замедление при начале движения
+        if (mf || mb) // если танк движется вперед или назад, то сделать ему замедление при начале движения
             onKey(boost);
         else
             onKey(0);
@@ -150,6 +160,8 @@ void Player::onKey(int acc) // действия при нажатии клави
     action = true;
     while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState)
     {
+        game->centerOn(this);
+
         if (mf) moveForward();
         if (mb) moveBack();
 

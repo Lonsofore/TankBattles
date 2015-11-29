@@ -35,6 +35,8 @@ Game::Game(QWidget *parent){
     curButton = 0;
     pressed = false;
 
+    spawns = 0;
+
     show();
 }
 
@@ -42,6 +44,18 @@ void Game::mouseReleaseEvent(QMouseEvent *event)
 {
     if (started)
         player->setFocus();
+}
+
+void Game::focusOutEvent(QFocusEvent *event)
+{
+    if (started)
+        player->playerReset();
+}
+
+void Game::wheelEvent(QWheelEvent * event)
+{
+    if (started)
+        centerOn(player);
 }
 
 void Game::changeEvent(QEvent *event)
@@ -60,6 +74,7 @@ void Game::switchButton() // смена кнопки
     menuButtons[curButton]->select();
 }
 
+// перемещает окно в центр экрана
 void Game::moveToCenter()
 {
     QDesktopWidget desktop;
@@ -69,6 +84,7 @@ void Game::moveToCenter()
     center.setY(center.y() - (this->height()/2));  // .. половину высоты
     move(center);
 }
+
 void Game::pve()
 {
     started = true;
@@ -109,7 +125,6 @@ void Game::pve()
 
 void Game::pvp()
 {
-    started = true;
     scene->clear();
 
     // фон карты
@@ -135,6 +150,7 @@ void Game::pvp()
     xBlocks = list1[1].toInt();
     // кол-во точек спавна
     spawns = list1[2].toInt();
+    spawnPoints=new QPoint*[spawns];
 
     //qDebug() << yBlocks << " " << xBlocks << " " << spawns;
 
@@ -144,7 +160,7 @@ void Game::pvp()
     int x,y;
 
     scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
-    setFixedSize(xBlocks*width,yBlocks*height);
+    //setFixedSize(xBlocks*width,yBlocks*height);
     moveToCenter();
 
     int num = 0;
@@ -163,9 +179,14 @@ void Game::pvp()
                 block->setPixmap(QPixmap(img).scaled(width,height));
                 block->setPos(x,y);
                 scene->addItem(block);
-                num++;
             }
 
+            if (list1[j] == "S")
+            {
+                // создание массива точек для спавна
+                spawnPoints[num] = new QPoint(width*j,height*i);
+                num++;
+            }
         }
     }
     file.close();
@@ -179,7 +200,13 @@ void Game::pvp()
     score = new Score();
     scene->addItem(score);
 
+    // музыка
+    QMediaPlayer * music = new QMediaPlayer();
+    music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+    music->setVolume(50); // уровень громкости (из 100)
+    music->play();
 
+    started = true;
 
     // заглушка
     /*
@@ -226,11 +253,11 @@ void Game::menu()
     // кнопки
     int xPos;
     int yPos = 200; // y координата верхней кнопки
-    QString text[numButton] = {"PvE","PvP","Settings","Exit"};
+    QString text[numButton] = {"PvE","PvP","SETTINGS","EXIT"};
 
     for (int i=0; i<numButton; i++)
     {
-        menuButtons[i] = new Button(i,text[i],275,70);
+        menuButtons[i] = new Button(i, text[i], 275, 70);
         xPos = this->width()/2 - menuButtons[i]->boundingRect().width()/2;
         menuButtons[i]->setPos(xPos,yPos);
         scene->addItem(menuButtons[i]);
