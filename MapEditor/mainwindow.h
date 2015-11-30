@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "preview.h"
 
 namespace Ui {
 class MainWindow;
@@ -14,9 +15,17 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    //const int getelem(int row, int column);
+
+public slots:
+
+    void GetItem(int row, int column);
+
+    void GetSize();
+
+    //void GetItem(int row, int column);
 
 private slots:
-
 
     void on_apply_button_clicked();
 
@@ -45,6 +54,12 @@ private slots:
     void on_spwn_btn_clicked();
 
     void on_field_itemSelectionChanged();
+
+signals:
+//void redirectData(QString data);
+    void ReturnValue(int itm);
+
+    void ReturnSize(int x, int y);
 
 private:
     Ui::MainWindow *ui;

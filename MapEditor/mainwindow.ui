@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>680</width>
-    <height>560</height>
+    <width>686</width>
+    <height>568</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -118,11 +118,23 @@
           <widget class="QGroupBox" name="tools_groupbox">
            <property name="geometry">
             <rect>
-             <x>0</x>
+             <x>10</x>
              <y>0</y>
-             <width>181</width>
-             <height>148</height>
+             <width>170</width>
+             <height>142</height>
             </rect>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>170</width>
+             <height>45</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>170</width>
+             <height>200</height>
+            </size>
            </property>
            <property name="styleSheet">
             <string notr="true">border-color: rgb(0, 0, 0);</string>
@@ -207,13 +219,13 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>183</width>
+            <width>184</width>
             <height>132</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>183</width>
+            <width>184</width>
             <height>132</height>
            </size>
           </property>
@@ -229,19 +241,19 @@
              <x>10</x>
              <y>0</y>
              <width>170</width>
-             <height>116</height>
+             <height>126</height>
             </rect>
            </property>
            <property name="minimumSize">
             <size>
              <width>170</width>
-             <height>116</height>
+             <height>126</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>170</width>
-             <height>116</height>
+             <height>126</height>
             </size>
            </property>
            <property name="title">
@@ -260,7 +272,7 @@
              <number>5</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>600</number>
             </property>
            </widget>
            <widget class="QLabel" name="X_label">
@@ -289,7 +301,7 @@
              <number>5</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>600</number>
             </property>
            </widget>
            <widget class="QLabel" name="Y_label">
@@ -308,7 +320,7 @@
            <widget class="QPushButton" name="apply_button">
             <property name="geometry">
              <rect>
-              <x>10</x>
+              <x>14</x>
               <y>90</y>
               <width>141</width>
               <height>27</height>
@@ -330,13 +342,13 @@
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>59</height>
+            <height>65</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>184</width>
-            <height>80</height>
+            <height>69</height>
            </size>
           </property>
           <property name="frameShape">
@@ -350,9 +362,15 @@
             <rect>
              <x>10</x>
              <y>0</y>
-             <width>161</width>
+             <width>170</width>
              <height>61</height>
             </rect>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>170</width>
+             <height>0</height>
+            </size>
            </property>
            <property name="title">
             <string>Масштаб</string>
@@ -360,11 +378,23 @@
            <widget class="QSlider" name="scale_slide">
             <property name="geometry">
              <rect>
-              <x>0</x>
+              <x>13</x>
               <y>30</y>
-              <width>160</width>
+              <width>138</width>
               <height>18</height>
              </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>138</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>136</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="minimum">
              <number>10</number>
@@ -402,58 +432,68 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <widget class="QGroupBox" name="selection_groupBox">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
+          <widget class="QGroupBox" name="selection_groupBox">
+           <property name="geometry">
+            <rect>
+             <x>9</x>
+             <y>-1</y>
+             <width>170</width>
+             <height>81</height>
+            </rect>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>170</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>170</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Тип выделения</string>
+           </property>
+           <widget class="QComboBox" name="selection_comboBox">
+            <property name="geometry">
+             <rect>
+              <x>7</x>
+              <y>37</y>
+              <width>154</width>
+              <height>22</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>154</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>154</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string>Единичное</string>
              </property>
-             <property name="title">
-              <string>Тип выделения</string>
+            </item>
+            <item>
+             <property name="text">
+              <string>Множественное</string>
              </property>
-             <widget class="QComboBox" name="selection_comboBox">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>29</y>
-                <width>159</width>
-                <height>22</height>
-               </rect>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>159</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>159</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <item>
-               <property name="text">
-                <string>Единичное</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Множественное</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Отсутсвует</string>
-               </property>
-              </item>
-             </widget>
-            </widget>
-           </item>
-          </layout>
+            </item>
+            <item>
+             <property name="text">
+              <string>Отсутсвует</string>
+             </property>
+            </item>
+           </widget>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -481,8 +521,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>680</width>
-     <height>20</height>
+     <width>686</width>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="file">

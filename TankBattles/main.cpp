@@ -10,7 +10,7 @@ Game * game;
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
+    QCoreApplication::addLibraryPath("./");
     game = new Game();
     game->show();
     game->menu();
