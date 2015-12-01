@@ -10,6 +10,8 @@
 #include "button.h"
 #include "player.h"
 #include "block.h"
+#include "numupdown.h"
+#include "textpanel.h"
 
 class Game: public QGraphicsView{
     Q_OBJECT
@@ -23,10 +25,20 @@ public:
     void changeEvent(QEvent * event);
 
     // меню
-    void switchButton(); // сменить кнопку на выбранную
-    int numsButtons; // сделано отдельно для обращения из класса button - кол-во кнопок
-    int curButton; // какая кнопка выбрана в данный момент
+    Button **menuButtons;
+    int numButtons; // сделано отдельно для обращения из класса button - кол-во кнопок
     bool pressed;  // была ли нажата кнопка
+
+    TextPanel *text1;
+    TextPanel *text2;
+    numUpDown *num1;
+    numUpDown *num2;
+    numUpDown *res;
+    Button *apply;
+    Button *back;
+
+    int veffects;
+    int vmusic;
 
     // сцена
     QGraphicsScene * scene;
@@ -43,6 +55,8 @@ public:
     void moveToCenter();
     void delay(int millisecondsToWait); // функция задержки
 public slots:
+    void applySettings();
+    void switchButton(int n); // сменить кнопку на выбранную
     void menu(); // запустить меню
     void pve();
     void pvp();

@@ -22,7 +22,9 @@ SOURCES += main.cpp \
     health.cpp \
     button.cpp \
     player.cpp \
-    block.cpp
+    block.cpp \
+    textpanel.cpp \
+    numupdown.cpp
 
 HEADERS  += \
     tank.h \
@@ -33,7 +35,9 @@ HEADERS  += \
     health.h \
     button.h \
     player.h \
-    block.h
+    block.h \
+    textpanel.h \
+    numupdown.h
 
 RESOURCES += \
     res.qrc

@@ -22,5 +22,6 @@
         <file>images/menu/Select.png</file>
         <file>images/menu/Shape.png</file>
         <file>images/tanks/greenHead.png</file>
+        <file>images/menu/Panel.png</file>
     </qresource>
 </RCC>

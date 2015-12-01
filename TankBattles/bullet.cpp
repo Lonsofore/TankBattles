@@ -73,6 +73,7 @@ void Bullet::move()
                 int random = 1 + rand()%3;
                 QMediaPlayer *sound = new QMediaPlayer();
                 sound->setMedia(QUrl("qrc:/sounds/sounds/break" + QString::number(random) + ".mp3"));
+                sound->setVolume(game->veffects);
                 sound->play();
 
                 scene()->removeItem(colliding_items[i]);
@@ -85,6 +86,7 @@ void Bullet::move()
             {
                 QMediaPlayer *sound = new QMediaPlayer();
                 sound->setMedia(QUrl("qrc:/sounds/sounds/nobreak.mp3"));
+                sound->setVolume(game->veffects);
                 sound->play();
 
                 scene()->removeItem(this);

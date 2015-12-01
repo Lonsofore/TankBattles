@@ -35,19 +35,11 @@ void Button::keyPressEvent(QKeyEvent *event)
     switch ((uint) event->key())
     {
         case 16777235: // Up
-            if (num > 0)
-                game->curButton--;
-            else
-                game->curButton = game->numsButtons-1;
-            game->switchButton();
+            emit changed(num-1);
         break;
 
         case 16777237: // Down
-            if (num < game->numsButtons-1)
-                game->curButton++;
-            else
-                game->curButton = 0;
-            game->switchButton();
+            emit changed(num+1);
         break;
 
         case 16777220: // Enter
@@ -63,8 +55,21 @@ void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    game->curButton = num;
-    game->switchButton();
+    select();
+    emit changed(num);
+}
+
+void Button::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    deselect();
+}
+
+void Button::setText(QString name)
+{
+    text->setPlainText(name);
+    int xPos = this->width/2 - text->boundingRect().width()/2;
+    int yPos = this->height/2 - text->boundingRect().height()/2 - 5;
+    text->setPos(xPos,yPos);
 }
 
 void Button::select()

@@ -56,14 +56,20 @@ void Tank::defaultTank()
     // звук выстрела
     bulletsound = new QMediaPlayer();
     bulletsound->setMedia(QUrl("qrc:/sounds/sounds/tank_fire.mp3"));
+    bulletsound->setVolume(game->veffects);
 
     //звук перезарядки
     bulletready = new QMediaPlayer();
     bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
+    bulletready->setVolume(game->veffects);
 
     //звук поворота башни
+    //playlist = new QMediaPlaylist;
+    //playlist->addMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
+
     tankhrotate = new QMediaPlayer();
     tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
+    tankhrotate->setVolume(game->veffects);
 }
 
 

@@ -11,10 +11,11 @@
 #include <QFileDialog>
 #include "block.h"
 #include <QDesktopWidget>
+#include "numupdown.h"
 
 bool started = false;
-const int numButton = 4;
-Button *menuButtons[numButton];
+bool inmenu = false;
+int curButton;
 
 Game::Game(QWidget *parent){
     int width = 800;
@@ -30,12 +31,13 @@ Game::Game(QWidget *parent){
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFixedSize(width,height); // разрешение экрана
 
-    // всего кнопок 4, текущая выделенная - 0
-    numsButtons = numButton;
-    curButton = 0;
+    // всего кнопок в меню 4
     pressed = false;
 
     spawns = 0;
+
+    vmusic = 50;
+    veffects = 100;
 
     show();
 }
@@ -44,6 +46,8 @@ void Game::mouseReleaseEvent(QMouseEvent *event)
 {
     if (started)
         player->setFocus();
+    if (inmenu)
+        menuButtons[curButton]->setFocus();
 }
 
 void Game::focusOutEvent(QFocusEvent *event)
@@ -66,9 +70,19 @@ void Game::changeEvent(QEvent *event)
     }
 }
 
-void Game::switchButton() // смена кнопки
+void Game::switchButton(int n) // смена кнопки
 {
-    for (int i=0; i<numButton; i++)
+    if (n>=0)
+    {
+        if (n < numButtons)
+            curButton = n;
+        else
+            curButton = 0;
+    }
+    else
+        curButton = numButtons - 1;
+
+    for (int i=0; i<numButtons; i++)
         menuButtons[i]->deselect();
 
     menuButtons[curButton]->select();
@@ -203,7 +217,7 @@ void Game::pvp()
     // музыка
     QMediaPlayer * music = new QMediaPlayer();
     music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    music->setVolume(50); // уровень громкости (из 100)
+    music->setVolume(vmusic); // уровень громкости (из 100)
     music->play();
 
     started = true;
@@ -222,21 +236,136 @@ void Game::pvp()
 void Game::settings()
 {
     scene->clear();
+    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+    //delete [] menuButtons;
+    inmenu = false;
+    pressed = false;
+
+    // надпись
+    /*
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("SETTINGS"));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont titleFont("Century Gothic",70);
+    title->setFont(titleFont);
+    int txPos = this->width()/2 - title->boundingRect().width()/2;
+    int tyPos = 50;
+    title->setPos(txPos,tyPos);
+    scene->addItem(title);
+    */
+
+    // точки
+    int xPos;
+    int yPos = 120; //верхняя точка
+
+    QString resArray[11] = {"640x480",
+                            "800x480",
+                            "800x600",
+                            "960x540",
+                            "1024x768",
+                            "1280x720",
+                            "1366x768",
+                            "1440x900",
+                            "1600x900",
+                            "1680x1050",
+                            "1920x1080",};
+
+    int n;
+    for (int i=0; i<11; i++) // вычисление текущего разрешения
+    {
+        QStringList list;
+        list = resArray[i].split("x");
+        int width = list[0].toInt();
+        int height = list[1].toInt();
+        if (width == this->width() && height == this->height())
+            n = i;
+    }
+
+    int n1,n2;
+    QString arr[11] = {"0","10","20","30","40","50","60","70","80","90","100"};
+    for (int i=0; i<11; i++)
+    {
+        if (arr[i].toInt() == vmusic)
+            n1 = i;
+        if (arr[i].toInt() == veffects)
+            n2 = i;
+    }
+
+    res = new numUpDown(resArray, n, 300, 70);
+    xPos = this->width()/2 - res->boundingRect().width()/2;
+    res->setPos(xPos,yPos);
+    scene->addItem(res);
+
+    text1 = new TextPanel("Music", 180, 70);
+    yPos += 80;
+    text1->setPos(xPos,yPos);
+    scene->addItem(text1);
+
+    int xPos1 = xPos + text1->boundingRect().width();
+    num1 = new numUpDown(arr, n1, 120, 70);
+    num1->setPos(xPos1,yPos);
+    scene->addItem(num1);
+
+    text2 = new TextPanel("Sound", 180, 70);
+    yPos += 80;
+    text2->setPos(xPos,yPos);
+    scene->addItem(text2);
+
+    num2 = new numUpDown(arr, n2, 120, 70);
+    num2->setPos(xPos1,yPos);
+    scene->addItem(num2);
+
+    yPos += 80;
+    apply = new Button(0, "Apply", 300, 70);
+    apply->setPos(xPos,yPos);
+    scene->addItem(apply);
+    connect(apply,SIGNAL(clicked()),this,SLOT(applySettings()));
+
+    yPos += 80;
+    back = new Button(1, "Back", 300, 70);
+    back->setPos(xPos,yPos);
+    scene->addItem(back);
+    connect(back,SIGNAL(clicked()),this,SLOT(menu()));
+
+    // заглушка
+    /*
+    scene->clear();
     int random = 1 + rand()%2;
     QMediaPlayer *voice = new QMediaPlayer();
     voice->setMedia(QUrl("qrc:/sounds/sounds/no" + QString::number(random) + ".wav"));
     voice->play();
     delay(1000);
     menu();
+    */
 }
+
+void Game::applySettings()
+{
+    QString text = res->text->toPlainText();
+    QStringList list;
+    list = text.split("x");
+    int width = list[0].toInt();
+    int height = list[1].toInt();
+    setFixedSize(width,height);
+    scene->setSceneRect(0,0,width,height); // разрешение сцены
+
+    vmusic = num1->text->toPlainText().toInt();
+    veffects = num2->text->toPlainText().toInt();
+
+    moveToCenter(); // окно по центру
+    settings(); //возврат в настройки
+}
+
 
 void Game::menu()
 {
     started = false;
+    inmenu = true;
     scene->clear();
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
 
-    curButton = 0;
+    // кол-во кнопок
+    numButtons = 4;
+    // не нажата
     pressed = false;
 
     // надпись
@@ -249,18 +378,27 @@ void Game::menu()
     title->setPos(txPos,tyPos);
     scene->addItem(title);
 
-
     // кнопки
     int xPos;
     int yPos = 200; // y координата верхней кнопки
-    QString text[numButton] = {"PvE","PvP","SETTINGS","EXIT"};
 
-    for (int i=0; i<numButton; i++)
+    // названия для кнопок
+    QString *text;
+    text = new QString[numButtons];
+    text[0] = "PvE";
+    text[1] = "PvP";
+    text[2] = "SETTINGS";
+    text[3] = "EXIT";
+
+    menuButtons = new Button*[numButtons];
+
+    for (int i=0; i<numButtons; i++)
     {
         menuButtons[i] = new Button(i, text[i], 275, 70);
         xPos = this->width()/2 - menuButtons[i]->boundingRect().width()/2;
         menuButtons[i]->setPos(xPos,yPos);
         scene->addItem(menuButtons[i]);
+        connect(menuButtons[i],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
         yPos += 80; // для следующей кнопки
     }
     // действия кнопок
@@ -269,7 +407,8 @@ void Game::menu()
     connect(menuButtons[2],SIGNAL(clicked()),this,SLOT(settings()));
     connect(menuButtons[3],SIGNAL(clicked()),this,SLOT(close()));
 
-    switchButton();
+    //curButton = 0;
+    switchButton(0); // по умолчанию выбрать первую кнопку
 }
 
 void Game::delay( int millisecondsToWait )
@@ -280,11 +419,6 @@ void Game::delay( int millisecondsToWait )
         QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
     }
 }
-
-
-
-
-
 
 
 
