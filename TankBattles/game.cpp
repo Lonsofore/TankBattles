@@ -174,7 +174,8 @@ void Game::pvp()
     int x,y;
 
     scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
-    //setFixedSize(xBlocks*width,yBlocks*height);
+    if (xBlocks*width <= maxwidth && yBlocks*height <= maxheight)
+        setFixedSize(xBlocks*width,yBlocks*height);
     moveToCenter();
 
     int num = 0;
@@ -347,6 +348,9 @@ void Game::applySettings()
     int height = list[1].toInt();
     setFixedSize(width,height);
     scene->setSceneRect(0,0,width,height); // разрешение сцены
+
+    maxwidth = width;
+    maxheight = height;
 
     vmusic = num1->text->toPlainText().toInt();
     veffects = num2->text->toPlainText().toInt();

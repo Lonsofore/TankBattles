@@ -40,6 +40,9 @@ public:
     int veffects;
     int vmusic;
 
+    int maxwidth;
+    int maxheight;
+
     // сцена
     QGraphicsScene * scene;
     int xBlocks;
