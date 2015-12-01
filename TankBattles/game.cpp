@@ -102,6 +102,7 @@ void Game::moveToCenter()
 void Game::pve()
 {
     started = true;
+    inmenu = false;
     scene->clear();
 
     // фон карты
@@ -222,6 +223,7 @@ void Game::pvp()
     music->play();
 
     started = true;
+    inmenu = false;
 
     // заглушка
     /*
