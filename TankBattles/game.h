@@ -56,7 +56,6 @@ public:
     Health * health;
 
     void moveToCenter();
-    void delay(int millisecondsToWait); // функция задержки
 public slots:
     void applySettings();
     void switchButton(int n); // сменить кнопку на выбранную

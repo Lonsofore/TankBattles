@@ -52,9 +52,6 @@ public:
     QMediaPlayer *bulletsound; // выстрел
     QMediaPlayer *bulletready; // перезарядка
     QMediaPlayer *tankhrotate; // поворот башни
-    //QMediaPlaylist *playlist;
-
-    void delay(int millisecondsToWait); // функция задержки
 };
 
 #endif // TANK

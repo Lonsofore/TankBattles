@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include "delay.h"
 
 extern Game * game;
 
@@ -104,16 +105,6 @@ void Button::click()
         emit clicked();
     }
 }
-
-void Button::delay( int millisecondsToWait )
-{
-    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
-    while( QTime::currentTime() < dieTime )
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-    }
-}
-
 
 
 

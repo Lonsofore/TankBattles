@@ -24,8 +24,6 @@ public:
     void select();
     void deselect();
     void click();
-
-    void delay(int millisecondsToWait); // функция задержки
 signals:
     void changed(int n);
     void entered(int n);

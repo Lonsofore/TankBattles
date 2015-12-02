@@ -64,9 +64,6 @@ void Tank::defaultTank()
     bulletready->setVolume(game->veffects);
 
     //звук поворота башни
-    //playlist = new QMediaPlaylist;
-    //playlist->addMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
-
     tankhrotate = new QMediaPlayer();
     tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
     tankhrotate->setVolume(game->veffects);
@@ -279,8 +276,9 @@ void Tank::headLeft(bool check)
 void Tank::fire()
 {
     int x1,y1;
-    x1 = x() + pixsize/2 - 20 + round(cos(hdegree * (PI / 180)) * pixsize/2);   // понятия не имею, что за 20
-    y1 = y() + pixsize/2 - 20 + round(sin(hdegree * (PI / 180)) * pixsize/2); // я его просто подобрал
+    // левая верхняя позиция танка + половина размера танка (чтобы из середины)
+    x1 = x() + pixsize/2 + round(cos(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - pixsize/10;
+    y1 = y() + pixsize/2 + round(sin(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - pixsize/10;
 
     Bullet *bullet = new Bullet();
     bullet->setPos(x1,y1);
@@ -382,15 +380,6 @@ void Tank::hrotate() // поворот башни
     shipPixels = rotatePixmap;
 
     head->setPixmap(shipPixels.scaled(pixsize,pixsize));
-}
-
-void Tank::delay( int millisecondsToWait )
-{
-    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
-    while( QTime::currentTime() < dieTime )
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-    }
 }
 
 

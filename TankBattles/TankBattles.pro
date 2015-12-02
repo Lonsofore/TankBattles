@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     player.cpp \
     block.cpp \
     textpanel.cpp \
-    numupdown.cpp
+    numupdown.cpp \
+    delay.cpp
 
 HEADERS  += \
     tank.h \
@@ -37,7 +38,8 @@ HEADERS  += \
     player.h \
     block.h \
     textpanel.h \
-    numupdown.h
+    numupdown.h \
+    delay.h
 
 RESOURCES += \
     res.qrc

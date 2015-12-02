@@ -12,12 +12,15 @@
 #include "block.h"
 #include <QDesktopWidget>
 #include "numupdown.h"
+#include "delay.h"
+#include <QMediaPlaylist>
 
 bool started = false;
 bool inmenu = false;
 int curButton;
 
 Game::Game(QWidget *parent){
+    // размеры окна по умолчанию
     int width = 800;
     int height = 600;
 
@@ -34,10 +37,66 @@ Game::Game(QWidget *parent){
     // всего кнопок в меню 4
     pressed = false;
 
+    // кол-во спавнов на карте
     spawns = 0;
 
+    // открываем файл настроек
+    QFile file("settings.cfg");
+    file.open(QIODevice::ReadWrite);
+    QTextStream in(&file);
+
+    // разрешение экрана
+    maxwidth = 800;
+    maxheight = 600;
+    QString line = in.readLine();
+    qDebug() << line;
+    if (line != "")
+    {
+        QStringList list;
+        list = line.split("x");
+        int width = list[0].toInt();
+        int height = list[1].toInt();
+        if (width >= 640 && height >= 480)
+        {
+            maxheight = height;
+            maxwidth = width;
+        }
+    }
+    else
+    {
+        in << maxwidth << "x" << maxheight << endl;
+    }
+    setFixedSize(maxwidth,maxheight);
+    scene->setSceneRect(0,0,maxwidth,maxheight); // разрешение сцены
+    moveToCenter(); // окно по центру
+
+    // громкость музыки
     vmusic = 50;
+    line = in.readLine();
+    if (line != "")
+    {
+        if (line.toInt() >= 0 && line.toInt() <= 100)
+            vmusic = line.toInt();
+    }
+    else
+    {
+        in << vmusic << endl;
+    }
+
+    // громкость эффектов
     veffects = 100;
+    line = in.readLine();
+    if (line != "")
+    {
+        if (line.toInt() >= 0 && line.toInt() <= 100)
+            veffects = line.toInt();
+    }
+    else
+    {
+        in << veffects << endl;
+    }
+
+    file.close();
 
     show();
 }
@@ -101,45 +160,6 @@ void Game::moveToCenter()
 
 void Game::pve()
 {
-    started = true;
-    inmenu = false;
-    scene->clear();
-
-    // фон карты
-    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
-
-    // создание игрока
-    player = new Player();
-    scene->addItem(player);
-    scene->addItem(player->head);
-
-    // очки
-    score = new Score();
-    scene->addItem(score);
-
-    // здоровье
-    /*
-    health = new Health();
-    health->setPos(player->x()+40,player->y()+50);
-    scene->addItem(health);
-    */
-
-    // враги
-    QTimer * timer = new QTimer();
-    QObject::connect(timer,SIGNAL(timeout()),player,SLOT(spawn()));
-    timer->start(2000);
-
-
-    // фоновая музыка
-    /*
-    QMediaPlayer * music = new QMediaPlayer();
-    music->setMedia(QUrl("qrc:/sounds/sounds/hellmarch.mp3"));
-    music->play();
-    */
-}
-
-void Game::pvp()
-{
     scene->clear();
 
     // фон карты
@@ -152,7 +172,10 @@ void Game::pvp()
     // проверка
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        menu();
         return;
+    }
 
     QTextStream in(&file);
 
@@ -175,7 +198,7 @@ void Game::pvp()
     int x,y;
 
     scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
-    if (xBlocks*width <= maxwidth && yBlocks*height <= maxheight)
+    if (xBlocks*width <= maxwidth && yBlocks*height <= maxheight) // если разрешение, выставленное игроком, больше того, что на карте
         setFixedSize(xBlocks*width,yBlocks*height);
     moveToCenter();
 
@@ -218,22 +241,27 @@ void Game::pvp()
 
     // музыка
     QMediaPlayer * music = new QMediaPlayer();
-    music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+    QMediaPlaylist * playlist = new QMediaPlaylist();
+    playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    music->setPlaylist(playlist);
+    //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
     music->play();
 
     started = true;
     inmenu = false;
+}
 
+void Game::pvp()
+{
     // заглушка
-    /*
     scene->clear();
     QMediaPlayer *voice = new QMediaPlayer();
     voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
     voice->play();
     delay(1000);
     menu();
-*/
 }
 
 void Game::settings()
@@ -241,6 +269,7 @@ void Game::settings()
     scene->clear();
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
     //delete [] menuButtons;
+
     inmenu = false;
     pressed = false;
 
@@ -348,17 +377,36 @@ void Game::applySettings()
     list = text.split("x");
     int width = list[0].toInt();
     int height = list[1].toInt();
-    setFixedSize(width,height);
-    scene->setSceneRect(0,0,width,height); // разрешение сцены
 
-    maxwidth = width;
-    maxheight = height;
+    // если юзер изменил разрешение
+    if (width != maxwidth && height != maxheight)
+    {
+        setFixedSize(width,height);
+        scene->setSceneRect(0,0,width,height); // разрешение сцены
+        moveToCenter(); // окно по центру
+
+        maxwidth = this->width();
+        maxheight = this->height();
+    }
 
     vmusic = num1->text->toPlainText().toInt();
     veffects = num2->text->toPlainText().toInt();
 
-    moveToCenter(); // окно по центру
-    settings(); //возврат в настройки
+    // удаляем прошлые настройки
+    QFile("settings.cfg").remove();
+
+    // открываем файл настроек
+    QFile file("settings.cfg");
+    file.open(QIODevice::WriteOnly);
+    QTextStream in(&file);
+
+    // записываем новые настройки
+    in << maxwidth << "x" << maxheight << endl;
+    in << vmusic << endl;
+    in << veffects << endl;
+
+    //возврат в настройки
+    settings();
 }
 
 
@@ -366,8 +414,13 @@ void Game::menu()
 {
     started = false;
     inmenu = true;
+
     scene->clear();
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+
+    // максимальные поддерживаемые размеры карты. если больше - будет обрезаться
+    //maxwidth = this->width();
+    //maxheight = this->height();
 
     // кол-во кнопок
     numButtons = 4;
@@ -416,17 +469,6 @@ void Game::menu()
     //curButton = 0;
     switchButton(0); // по умолчанию выбрать первую кнопку
 }
-
-void Game::delay( int millisecondsToWait )
-{
-    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
-    while( QTime::currentTime() < dieTime )
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-    }
-}
-
-
 
 
 

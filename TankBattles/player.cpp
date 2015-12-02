@@ -1,6 +1,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "game.h"
+#include "delay.h"
 #include <QDebug>
 
 bool action = false;
@@ -65,12 +66,16 @@ void Player::keyPressEvent(QKeyEvent *event)
         break;
 
         // Поворот башни налево
+        case 81:   // Q
+        case 1049: // Й
         case 90:   // Z
         case 1071: // Я
             hl = true;
         break;
 
         // Поворот башни направо
+        case 69:   // E
+        case 1059: // У
         case 88:   // X
         case 1063: // Ч
             hr = true;
@@ -139,11 +144,15 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
             rr = false;
         break;
 
+        case 81:   // Q
+        case 1049: // Й
         case 90:   // Z
         case 1071: // Я
             hl = false;
         break;
 
+        case 69:   // E
+        case 1059: // У
         case 88:   // X
         case 1063: // Ч
             hr = false;

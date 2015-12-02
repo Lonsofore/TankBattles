@@ -8,7 +8,6 @@
 
 extern Game * game;
 const int anum = 11;
-//QString array[anum];
 
 numUpDown::numUpDown(QString arr[], int n, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
 {
@@ -89,13 +88,4 @@ void numUpDown::click()
     setText();
 
     emit clicked();
-}
-
-void numUpDown::delay( int millisecondsToWait )
-{
-    QTime dieTime = QTime::currentTime().addMSecs( millisecondsToWait );
-    while( QTime::currentTime() < dieTime )
-    {
-        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
-    }
 }

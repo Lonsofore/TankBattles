@@ -26,8 +26,6 @@ public:
     void click();
 
     QGraphicsTextItem* text;
-
-    void delay(int millisecondsToWait); // функция задержки
 signals:
     void clicked();
     void entered(int n);
