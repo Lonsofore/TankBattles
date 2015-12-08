@@ -50,10 +50,6 @@ Game::Game(QWidget *parent){
     maxwidth = 800;
     maxheight = 600;
     QString line = in.readLine();
-<<<<<<< HEAD
-=======
-    //qDebug() << line;
->>>>>>> origin/master
     if (line != "")
     {
         QStringList list;
@@ -104,7 +100,6 @@ Game::Game(QWidget *parent){
 
     show();
 }
-//Прием данных
 
 void Game::mouseReleaseEvent(QMouseEvent *event)
 {
@@ -165,7 +160,6 @@ void Game::moveToCenter()
 
 void Game::pve()
 {
-
     scene->clear();
 
     // файл открываем
@@ -269,11 +263,6 @@ void Game::pve()
     enmy->changePos(100,100);
 
     // создание игрока
-    //Tank * enmy;
-    enmy = new Tank();
-    scene->addItem(enmy);
-    scene->addItem(enmy->head);
-    enmy->ChangePosition(10, 60);
     player = new Player();
     scene->addItem(player);
     scene->addItem(player->head);
@@ -294,19 +283,11 @@ void Game::pve()
 
     started = true;
     inmenu = false;
-<<<<<<< HEAD
 
     //Подготовка к приему данных
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(45454, QUdpSocket::ShareAddress);
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-=======
-    //Подготовка к приему данных
-    udpSocket = new QUdpSocket(this);
-    udpSocket->bind(45454, QUdpSocket::ShareAddress);
-    connect(udpSocket, SIGNAL(readyRead()),
-            this, SLOT(processPendingDatagrams()));
->>>>>>> origin/master
 }
 
 void Game::pvp()
@@ -537,11 +518,7 @@ void Game::processPendingDatagrams()
         list = datagram.split(' ');
         //xval = datagram.at(1);
         //yval = datagram.at(3);
-<<<<<<< HEAD
         enmy->changePos(list.at(0).toInt(),list.at(1).toInt());
-=======
-        enmy->ChangePosition(list.at(0).toInt(),list.at(1).toInt());
->>>>>>> origin/master
     }
 }
 

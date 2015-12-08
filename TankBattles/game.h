@@ -12,10 +12,6 @@
 #include "block.h"
 #include "numupdown.h"
 #include "textpanel.h"
-QT_BEGIN_NAMESPACE
-class QUdpSocket;
-class QAction;
-QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 class QUdpSocket;
@@ -64,31 +60,22 @@ public:
     Player * player;
     Score * score;
     Health * health;
-<<<<<<< HEAD
 
     // просто танк
     Tank * enmy;
 
-=======
-    Tank * enmy;
->>>>>>> origin/master
     void moveToCenter();
 public slots:
-    void processPendingDatagrams();
     void applySettings();
     void switchButton(int n); // сменить кнопку на выбранную
     void menu(); // запустить меню
     void pve();
     void pvp();
     void settings();
-<<<<<<< HEAD
     void processPendingDatagrams();
-=======
->>>>>>> origin/master
 private:
     QUdpSocket *udpSocket;
 };
-
 
 #endif // GAME
 
