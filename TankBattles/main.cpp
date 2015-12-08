@@ -3,7 +3,6 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include "game.h"
-#include <QTimer>
 
 Game * game;
 

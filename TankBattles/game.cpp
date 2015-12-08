@@ -14,6 +14,7 @@
 #include "numupdown.h"
 #include "delay.h"
 #include <QMediaPlaylist>
+#include <QtNetwork>
 
 bool started = false;
 bool inmenu = false;
@@ -49,7 +50,6 @@ Game::Game(QWidget *parent){
     maxwidth = 800;
     maxheight = 600;
     QString line = in.readLine();
-    qDebug() << line;
     if (line != "")
     {
         QStringList list;
@@ -162,9 +162,6 @@ void Game::pve()
 {
     scene->clear();
 
-    // фон карты
-    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
-
     // файл открываем
     QString path = QDir::currentPath() + "/maps";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
@@ -176,6 +173,9 @@ void Game::pve()
         menu();
         return;
     }
+
+    // фон карты
+    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     QTextStream in(&file);
 
@@ -190,18 +190,44 @@ void Game::pve()
     spawns = list1[2].toInt();
     spawnPoints=new QPoint*[spawns];
 
-    //qDebug() << yBlocks << " " << xBlocks << " " << spawns;
-
     QString img;
     int width = 60; // размер блоков
     int height = 60;
     int x,y;
 
-    scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
-    if (xBlocks*width <= maxwidth && yBlocks*height <= maxheight) // если разрешение, выставленное игроком, больше того, что на карте
-        setFixedSize(xBlocks*width,yBlocks*height);
+    dop = 2*width; // дополнительное кол-во блоков за картой
+    scene->setSceneRect(0,0,xBlocks*width+dop*2,yBlocks*height+dop*2); // разрешение сцены
+
+    // если разрешение, выставленное игроком, больше того, что на карте
+    if (xBlocks*width <= maxwidth) // по ширине
+        setFixedWidth(xBlocks*width);
+    if (yBlocks*height <= maxheight) // по высоте
+        setFixedHeight(yBlocks*height);
+
     moveToCenter();
 
+    // создание линий ограничения
+    int pwidth = 10; // ширина линии
+    QPen pen;
+    pen.setStyle(Qt::SolidLine);
+    pen.setColor(QColor(179, 179, 179, 255));
+    pen.setJoinStyle(Qt::MiterJoin);
+    pen.setWidth(pwidth);
+
+    int pp = pwidth + 4; // чтобы линии были не вплотную к блокам
+    // чтобы понятнее было:
+    // p1 p2
+    // p4 p3
+    QPointF p1(dop-pp, dop-pp);
+    QPointF p2(xBlocks*width+dop+pp, dop-pp);
+    QPointF p3(xBlocks*width+dop+pp, yBlocks*height+dop+pp);
+    QPointF p4(dop-pp, yBlocks*height+dop+pp);
+    scene->addLine(QLineF(p1,p2),pen);
+    scene->addLine(QLineF(p2,p3),pen);
+    scene->addLine(QLineF(p3,p4),pen);
+    scene->addLine(QLineF(p4,p1),pen);
+
+    // считывание карты из файла
     int num = 0;
     for (int i = 0; i < yBlocks; i++)
     {
@@ -212,8 +238,8 @@ void Game::pve()
             if (list1[j] != "S" && list1[j] != "0" && list1[j] != "")
             {
                 Block *block = new Block(list1[j].toInt());
-                x = width * j;
-                y = height * i;
+                x = width * j + dop;
+                y = height * i + dop;
                 img = ":/images/images/blocks/" + list1[j] + ".png";
                 block->setPixmap(QPixmap(img).scaled(width,height));
                 block->setPos(x,y);
@@ -223,12 +249,18 @@ void Game::pve()
             if (list1[j] == "S")
             {
                 // создание массива точек для спавна
-                spawnPoints[num] = new QPoint(width*j,height*i);
+                spawnPoints[num] = new QPoint(width*j+dop,height*i+dop);
                 num++;
             }
         }
     }
     file.close();
+
+    // тестовый танк
+    enmy = new Tank();
+    scene->addItem(enmy);
+    scene->addItem(enmy->head);
+    enmy->changePos(100,100);
 
     // создание игрока
     player = new Player();
@@ -236,14 +268,14 @@ void Game::pve()
     scene->addItem(player->head);
 
     // очки
-    score = new Score();
-    scene->addItem(score);
+    //score = new Score();
+    //scene->addItem(score);
 
     // музыка
     QMediaPlayer * music = new QMediaPlayer();
     QMediaPlaylist * playlist = new QMediaPlaylist();
     playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
     music->setPlaylist(playlist);
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
@@ -251,6 +283,11 @@ void Game::pve()
 
     started = true;
     inmenu = false;
+
+    //Подготовка к приему данных
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(45454, QUdpSocket::ShareAddress);
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
 }
 
 void Game::pvp()
@@ -267,7 +304,7 @@ void Game::pvp()
 void Game::settings()
 {
     scene->clear();
-    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
     //delete [] menuButtons;
 
     inmenu = false;
@@ -470,7 +507,20 @@ void Game::menu()
     switchButton(0); // по умолчанию выбрать первую кнопку
 }
 
-
+void Game::processPendingDatagrams()
+{
+    while (udpSocket->hasPendingDatagrams()) {
+        QByteArray datagram;
+        QString xval, yval; //Говнокод!!1111
+        datagram.resize(udpSocket->pendingDatagramSize());
+        udpSocket->readDatagram(datagram.data(), datagram.size());
+        QList<QByteArray> list;
+        list = datagram.split(' ');
+        //xval = datagram.at(1);
+        //yval = datagram.at(3);
+        enmy->changePos(list.at(0).toInt(),list.at(1).toInt());
+    }
+}
 
 
 

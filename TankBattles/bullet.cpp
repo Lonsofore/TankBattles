@@ -82,7 +82,7 @@ void Bullet::move()
                 delete(this);
                 return;
             }
-            else
+            if (block->num == 2) // неразрушаемый
             {
                 QMediaPlayer *sound = new QMediaPlayer();
                 sound->setMedia(QUrl("qrc:/sounds/sounds/nobreak.mp3"));

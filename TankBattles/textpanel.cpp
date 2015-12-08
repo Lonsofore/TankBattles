@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QFontDatabase>
 
 TextPanel::TextPanel(QString t, int x, int y)
 {
@@ -13,7 +14,10 @@ TextPanel::TextPanel(QString t, int x, int y)
     QString image = ":/images/images/menu/Panel.png";
     setPixmap(QPixmap(image).scaled(width,height));
 
-    // draw the text
+    // шрифт
+    int id = QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
+
+    // текст
     text = new QGraphicsTextItem(t,this);
     text->setDefaultTextColor(QColor(71, 71, 71, 255));
     QFont font("Century Gothic",38);

@@ -12,6 +12,7 @@
         <file>sounds/break3.mp3</file>
         <file>sounds/nobreak.mp3</file>
         <file>sounds/ambient.mp3</file>
+        <file>sounds/spin.mp3</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/bullet.png</file>
@@ -23,5 +24,13 @@
         <file>images/menu/Shape.png</file>
         <file>images/tanks/greenHead.png</file>
         <file>images/menu/Panel.png</file>
+        <file>images/blocks/3.png</file>
+        <file>images/tanks/empty.png</file>
+        <file>images/died.png</file>
+        <file>images/out.png</file>
+    </qresource>
+    <qresource prefix="/fonts">
+        <file>fonts/CITYNL.TTF</file>
+        <file>fonts/GOTHIC.TTF</file>
     </qresource>
 </RCC>

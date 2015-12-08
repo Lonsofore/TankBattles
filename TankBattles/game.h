@@ -13,6 +13,11 @@
 #include "numupdown.h"
 #include "textpanel.h"
 
+QT_BEGIN_NAMESPACE
+class QUdpSocket;
+class QAction;
+QT_END_NAMESPACE
+
 class Game: public QGraphicsView{
     Q_OBJECT
 public:
@@ -45,6 +50,7 @@ public:
 
     // сцена
     QGraphicsScene * scene;
+    int dop;
     int xBlocks;
     int yBlocks;
     int spawns;
@@ -55,6 +61,9 @@ public:
     Score * score;
     Health * health;
 
+    // просто танк
+    Tank * enmy;
+
     void moveToCenter();
 public slots:
     void applySettings();
@@ -63,6 +72,9 @@ public slots:
     void pve();
     void pvp();
     void settings();
+    void processPendingDatagrams();
+private:
+    QUdpSocket *udpSocket;
 };
 
 #endif // GAME

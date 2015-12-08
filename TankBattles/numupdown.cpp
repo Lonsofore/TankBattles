@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QFontDatabase>
 
 extern Game * game;
 const int anum = 11;
@@ -23,7 +24,10 @@ numUpDown::numUpDown(QString arr[], int n, int x, int y, QGraphicsItem *parent) 
     QString image = ":/images/images/menu/Shape.png";
     setPixmap(QPixmap(image).scaled(width,height));
 
-    // draw the text
+    // шрифт
+    int id = QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
+
+    // текст
     text = new QGraphicsTextItem(array[num],this);
     text->setDefaultTextColor(QColor(71, 71, 71, 255));
     QFont font("Century Gothic",38);

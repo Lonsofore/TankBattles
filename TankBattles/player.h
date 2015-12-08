@@ -2,6 +2,9 @@
 #define PLAYER
 
 #include "tank.h"
+#include "textpanel.h"
+#include "caution.h"
+#include <QPixmap>
 
 class Player: public Tank
 {
@@ -21,6 +24,8 @@ public:
     void playerRotate();
     void playerFire();
 
+    void spawnPlayer();
+
     void playerReset(); // сбросить значения движений
 public slots:
     void spawn();
@@ -29,7 +34,8 @@ private:
     // соответственно с объявленными функциями для действий
     bool mf, mb, rr, rl, hr, hl, fr;
 
-
+    Caution *caution;
+    Caution *died;
 };
 
 #endif // PLAYER

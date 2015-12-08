@@ -7,8 +7,13 @@
 #include "game.h"
 #include <QTime>
 #include <QCoreApplication>
+#include "delay.h"
 #include <typeinfo>
 #include <cstdlib>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include <math.h>
 #define PI 3.14159265
@@ -106,16 +111,14 @@ void Tank::moveForward(bool check)
     // новые координаты
     x1 = x() + round(cs) - xadd;
     y1 = y() + round(sn) - yadd;
-    if (y1 > 0 && y1 < scene()->height()-height && x1 > 0 && x1 < scene()->width()-width)
-    {
-        setPos(x1,y1);
-        head->setPos(x1,y1);
 
-        if (check != true)
-        {
-            while (isCollide() == true)
-                moveBack(check = true);
-        }
+    setPos(x1,y1);
+    head->setPos(x1,y1);
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            moveBack(check = true);
     }
 }
 
@@ -152,16 +155,14 @@ void Tank::moveBack(bool check)
     // новые координаты
     x1 = x() - round(cs) - xadd;
     y1 = y() - round(sn) - yadd;
-    if (y1 > 0 && y1 < scene()->height()-height && x1 > 0 && x1 < scene()->width()-width)
-    {
-        setPos(x1,y1);
-        head->setPos(x1,y1);
 
-        if (check != true)
-        {
-            while (isCollide() == true)
-                moveForward(check = true);
-        }
+    setPos(x1,y1);
+    head->setPos(x1,y1);
+
+    if (check != true)
+    {
+        while (isCollide() == true)
+            moveForward(check = true);
     }
 }
 
@@ -300,6 +301,13 @@ void Tank::randomSpawn()
     int x,y;
     if (game->spawns > 0)
     {
+        int stime;
+        long ltime;
+
+        ltime = time(NULL);
+        stime = (unsigned) ltime/2;
+        srand(stime);
+
         int random = rand()%game->spawns;
         x = game->spawnPoints[random]->x() - pixsize/2;
         y = game->spawnPoints[random]->y() - pixsize/4;
@@ -328,15 +336,27 @@ void Tank::changeSize(int n)
 
 bool Tank::isCollide()
 {
-    QList<QGraphicsItem *> colliding_items = collidingItems();
+    QList<QGraphicsItem *> colliding_items = collidingItems();    
     for (int i = 0, n = colliding_items.size(); i < n; ++i)
         if (typeid(*(colliding_items[i])) == typeid(Block))
-            return true;
+        {
+            Block * block = dynamic_cast <Block *> (colliding_items[i]);
+            if (block->num == 3) // трава
+                return false;
+            else
+                return true;
+        }
 
     QList<QGraphicsItem *> colliding_items1 = head->collidingItems();
     for (int j = 0, n = colliding_items1.size(); j < n; ++j)
         if (typeid(*(colliding_items1[j])) == typeid(Block))
-            return true;
+        {
+            Block * block1 = dynamic_cast <Block *> (colliding_items1[j]);
+            if (block1->num == 3) // трава
+                return false;
+            else
+                return true;
+        }
 
     return false;
 }
@@ -382,7 +402,25 @@ void Tank::hrotate() // поворот башни
     head->setPixmap(shipPixels.scaled(pixsize,pixsize));
 }
 
+void Tank::changePos(int x, int y)
+{
+    setPos(x,y);
+    head->setPos(x,y);
+}
 
+void Tank::deleteTank()
+{
+    setPixmap(QPixmap(":/images/images/tanks/empty.png").scaled(pixsize,pixsize));
+    head->setPixmap(QPixmap(":/images/images/tanks/empty.png").scaled(pixsize,pixsize));
+}
+
+void Tank::spawnTank()
+{
+    delay(3000);
+    setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
+    head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
+    randomSpawn();
+}
 
 
 

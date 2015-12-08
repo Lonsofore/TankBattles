@@ -5,7 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui \
-        multimedia
+        multimedia \
+        network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,7 +26,8 @@ SOURCES += main.cpp \
     block.cpp \
     textpanel.cpp \
     numupdown.cpp \
-    delay.cpp
+    delay.cpp \
+    caution.cpp
 
 HEADERS  += \
     tank.h \
@@ -39,7 +41,8 @@ HEADERS  += \
     block.h \
     textpanel.h \
     numupdown.h \
-    delay.h
+    delay.h \
+    caution.h
 
 RESOURCES += \
     res.qrc

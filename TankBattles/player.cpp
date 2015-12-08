@@ -2,12 +2,19 @@
 #include "enemy.h"
 #include "game.h"
 #include "delay.h"
+#include "caution.h"
 #include <QDebug>
 
 bool action = false;
 bool reload = false;
 bool fireReady = true;
 int fireCount = 0;
+
+bool out = false;
+int outCount = 0;
+int outTimer = 5;
+
+int spin = 0;
 
 extern Game * game;
 
@@ -167,15 +174,113 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
 void Player::onKey(int acc) // действия при нажатии клавиши. acc - задержка танка при старте
 {
     action = true;
-    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true || fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState)
+    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
+           fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState || out == true)
     {
         game->centerOn(this);
 
+        // движение вперед, назад
         if (mf) moveForward();
         if (mb) moveBack();
 
+        // если вышел за границы
+        if (this->x() < game->dop - pixsize/2 ||
+            this->x() > game->scene->width()-game->dop*2 + 20 ||
+            this->y() < game->dop - pixsize/2 ||
+            this->y() > game->scene->height()-game->dop*2 + 20)
+        {
+            int x1, y1;
+
+            // координата Х в центре экрана
+            if (this->x() + pixsize/2 < game->width()/2)
+                x1 = game->width()/2;
+            if (this->x() + pixsize/2 > game->scene->width() - game->width()/2)
+                x1 = game->scene->width() - game->width()/2;
+            if (this->x() + pixsize/2 > game->width()/2 && this->x() + pixsize/2 < game->scene->width() - game->width()/2)
+                x1 = this->x() + pixsize/2;
+
+            // координата Y в центре экрана
+            if (this->y() + pixsize/2 < game->height()/2)
+                y1 = game->height()/2;
+            if (this->y() + pixsize/2 > game->scene->height() - game->height()/2)
+                y1 = game->scene->height() - game->height()/2;
+            if (this->y() + pixsize/2 > game->height()/2 && this->y() + pixsize/2 < game->scene->height() - game->height()/2)
+                y1 = this->y() + pixsize/2;
+
+            if (out == false)
+            {
+                out = true;
+
+                QString image = ":/images/images/out.png";
+                caution = new Caution(image, "CAUTION", 5);
+                caution->setPos(x1-200,y1-88);
+                caution->setZValue(10);
+                game->scene->addItem(caution);
+            }
+            caution->setPos(x1-200, y1-88);
+
+
+            outCount += keyDelay;
+            if (outCount > 1000)
+            {
+                outCount = 0;
+                if (outTimer > 0)
+                {
+                    //qDebug() << outTimer;
+                    outTimer--;
+                    caution->decTimer();
+                }
+                else
+                {
+                    // DIE MOTHERFUCKER!
+                    //qDebug() << "you died";
+                    out = false;
+                    outTimer = 5;
+                    delete caution;
+
+                    QString image1 = ":/images/images/died.png";
+                    died = new Caution(image1, "WASTED");
+                    died->setPos(x1-200,y1-88);
+                    died->setZValue(10);
+                    game->scene->addItem(died);
+
+                    // убить
+                    deleteTank();
+                    // и воскресить
+                    spawnPlayer();
+                    // BUHAHA
+                }
+            }
+        }
+        else
+        {
+            if (out == true)
+            {
+                out = false;
+                outTimer = 5;
+                delete caution;
+                //delete noise;
+            }
+        }
+
         // универсальный поворот
-        if (rl || rr) playerRotate();
+        if (rl || rr)
+        {
+            playerRotate();
+            spin++;
+        }
+
+        // ты ничего не видел
+        if (rl == false && rr == false)
+            spin = 0;
+
+        // совершенно ничего
+        if (spin == 540)
+        {
+            QMediaPlayer *sound = new QMediaPlayer();
+            sound->setMedia(QUrl("qrc:/sounds/sounds/spin.mp3"));
+            sound->play();
+        }
 
         // поворот башни
         if (hl) headLeft();
@@ -234,6 +339,14 @@ void Player::playerFire()
 {
     fireReady = false;
     fire();
+}
+
+void Player::spawnPlayer()
+{
+    spawnTank();
+    delete died;
+    game->centerOn(this);
+    setFocus();
 }
 
 void Player::playerReset()
