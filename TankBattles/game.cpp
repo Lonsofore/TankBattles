@@ -14,6 +14,7 @@
 #include "numupdown.h"
 #include "delay.h"
 #include <QMediaPlaylist>
+#include <QtNetwork>
 
 bool started = false;
 bool inmenu = false;
@@ -49,7 +50,7 @@ Game::Game(QWidget *parent){
     maxwidth = 800;
     maxheight = 600;
     QString line = in.readLine();
-    qDebug() << line;
+    //qDebug() << line;
     if (line != "")
     {
         QStringList list;
@@ -100,6 +101,7 @@ Game::Game(QWidget *parent){
 
     show();
 }
+//Прием данных
 
 void Game::mouseReleaseEvent(QMouseEvent *event)
 {
@@ -160,6 +162,7 @@ void Game::moveToCenter()
 
 void Game::pve()
 {
+
     scene->clear();
 
     // фон карты
@@ -231,6 +234,11 @@ void Game::pve()
     file.close();
 
     // создание игрока
+    //Tank * enmy;
+    enmy = new Tank();
+    scene->addItem(enmy);
+    scene->addItem(enmy->head);
+    enmy->ChangePosition(10, 60);
     player = new Player();
     scene->addItem(player);
     scene->addItem(player->head);
@@ -243,7 +251,7 @@ void Game::pve()
     QMediaPlayer * music = new QMediaPlayer();
     QMediaPlaylist * playlist = new QMediaPlaylist();
     playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
     music->setPlaylist(playlist);
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
@@ -251,6 +259,11 @@ void Game::pve()
 
     started = true;
     inmenu = false;
+    //Подготовка к приему данных
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(45454, QUdpSocket::ShareAddress);
+    connect(udpSocket, SIGNAL(readyRead()),
+            this, SLOT(processPendingDatagrams()));
 }
 
 void Game::pvp()
@@ -470,7 +483,20 @@ void Game::menu()
     switchButton(0); // по умолчанию выбрать первую кнопку
 }
 
-
+void Game::processPendingDatagrams()
+{
+    while (udpSocket->hasPendingDatagrams()) {
+        QByteArray datagram;
+        QString xval, yval; //Говнокод!!1111
+        datagram.resize(udpSocket->pendingDatagramSize());
+        udpSocket->readDatagram(datagram.data(), datagram.size());
+        QList<QByteArray> list;
+        list = datagram.split(' ');
+        //xval = datagram.at(1);
+        //yval = datagram.at(3);
+        enmy->ChangePosition(list.at(0).toInt(),list.at(1).toInt());
+    }
+}
 
 
 

@@ -12,6 +12,10 @@
 #include "block.h"
 #include "numupdown.h"
 #include "textpanel.h"
+QT_BEGIN_NAMESPACE
+class QUdpSocket;
+class QAction;
+QT_END_NAMESPACE
 
 class Game: public QGraphicsView{
     Q_OBJECT
@@ -54,16 +58,20 @@ public:
     Player * player;
     Score * score;
     Health * health;
-
+    Tank * enmy;
     void moveToCenter();
 public slots:
+    void processPendingDatagrams();
     void applySettings();
     void switchButton(int n); // сменить кнопку на выбранную
     void menu(); // запустить меню
     void pve();
     void pvp();
     void settings();
+private:
+    QUdpSocket *udpSocket;
 };
+
 
 #endif // GAME
 
