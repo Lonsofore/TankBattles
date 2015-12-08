@@ -26,10 +26,14 @@ public:
     void fire(); // выстрел (ограничений между выстрелами нет!)
     int bulletSpeed; // скорость пули
     void randomSpawn();
+<<<<<<< HEAD
     void changePos(int x, int y);
     void deleteTank();
     void spawnTank();
 
+=======
+    void ChangePosition(int x, int y);
+>>>>>>> origin/master
     // размер танка
     int pixsize;
     void changeSize(int n); // изменить размер

@@ -122,6 +122,12 @@ void Tank::moveForward(bool check)
     }
 }
 
+void Tank::ChangePosition(int x, int y)
+{
+    setPos(x,y);
+    head->setPos(x,y);
+}
+
 void Tank::moveBack(bool check)
 {
     int x1,y1;
