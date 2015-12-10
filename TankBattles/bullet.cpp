@@ -15,11 +15,15 @@ extern Game * game;
 int count;
 bool isfire;
 
-Bullet::Bullet()
+Bullet::Bullet(QGraphicsPixmapItem *parent)
 {
+    // родительский танк
+    tank = new Tank;
+    tank = dynamic_cast <Tank *> (parent);
+
     speed = 40;
-    degree = game->player->hdegree;
-    pixsize = game->player->pixsize*0.16;
+    degree = tank->hdegree;
+    pixsize = tank->pixsize*0.16;
 
     image = ":/images/images/bullet.png";
     setPixmap(QPixmap(image).scaled(pixsize,pixsize));
@@ -93,7 +97,10 @@ void Bullet::anim()
         QPixmap pix1;
         pix1 = rotatePix(pix,degree+90).scaled(pixsize,pixsize);
 
-        pm->setPos(sx,sy);
+        int x1 = tank->x() + tank->pixsize/2 + round(cos(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
+        int y1 = tank->y() + tank->pixsize/2 + round(sin(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
+
+        pm->setPos(x1,y1);
         pm->setPixmap(pix1);
 
         isfire = true;
@@ -103,13 +110,6 @@ void Bullet::anim()
 
 void Bullet::move()
 {
-    // записывание начальных координат
-    if (count == 0)
-    {
-        sx = x();
-        sy = y();
-    }
-
     // collide
     QList<QGraphicsItem *> colliding_items = collidingItems();
 

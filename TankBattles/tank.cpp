@@ -216,7 +216,7 @@ void Tank::fire()
     x1 = x() + pixsize/2 + round(cos(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
     y1 = y() + pixsize/2 + round(sin(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
 
-    Bullet *bullet = new Bullet();
+    Bullet *bullet = new Bullet(this);
     bullet->setPos(x1,y1);
     scene()->addItem(bullet);
 

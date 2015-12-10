@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QList>
 #include <QPixmap>
+#include "tank.h"
 
 class Bullet: public QObject,public QGraphicsPixmapItem
 {
@@ -12,17 +13,17 @@ class Bullet: public QObject,public QGraphicsPixmapItem
 private:
 
 public:
-    Bullet();
+    Bullet(QGraphicsPixmapItem *parent = 0);
+
     void rotate();
+    QPixmap rotatePix(QPixmap pix, int deg);
+
     int speed;
     int degree;
     QString image;
     int pixsize;
 
-    float sx;
-    float sy;
-
-    QPixmap rotatePix(QPixmap pix, int deg);
+    Tank *tank;
     QGraphicsPixmapItem *pm;
 
 public slots:
