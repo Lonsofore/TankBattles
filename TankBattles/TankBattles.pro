@@ -17,7 +17,6 @@ TEMPLATE = app
 SOURCES += main.cpp \
     tank.cpp \
     bullet.cpp \
-    enemy.cpp \
     game.cpp \
     score.cpp \
     health.cpp \
@@ -32,7 +31,6 @@ SOURCES += main.cpp \
 HEADERS  += \
     tank.h \
     bullet.h \
-    enemy.h \
     game.h \
     score.h \
     health.h \

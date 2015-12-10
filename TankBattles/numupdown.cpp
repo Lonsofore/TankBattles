@@ -25,7 +25,7 @@ numUpDown::numUpDown(QString arr[], int n, int x, int y, QGraphicsItem *parent) 
     setPixmap(QPixmap(image).scaled(width,height));
 
     // шрифт
-    int id = QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
+    QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
 
     // текст
     text = new QGraphicsTextItem(array[num],this);

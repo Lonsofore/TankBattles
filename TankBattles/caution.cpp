@@ -32,7 +32,7 @@ Caution::Caution(QString image, QString text, int t)
     if (timer > 0)
     {
         // шрифт цифр
-        int id = QFontDatabase::addApplicationFont(":/fonts/fonts/CITYNL.TTF");
+        QFontDatabase::addApplicationFont(":/fonts/fonts/CITYNL.TTF");
 
         // цифры
         QString str = "00:0" + QString::number(timer);

@@ -19,8 +19,15 @@ public:
     QString image;
     int pixsize;
 
+    float sx;
+    float sy;
+
+    QPixmap rotatePix(QPixmap pix, int deg);
+    QGraphicsPixmapItem *pm;
+
 public slots:
     void move();
+    void anim();
 };
 
 #endif // BULLET

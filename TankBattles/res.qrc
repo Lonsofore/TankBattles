@@ -28,6 +28,9 @@
         <file>images/tanks/empty.png</file>
         <file>images/died.png</file>
         <file>images/out.png</file>
+        <file>images/fire/0.png</file>
+        <file>images/fire/1.png</file>
+        <file>images/fire/2.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>fonts/CITYNL.TTF</file>

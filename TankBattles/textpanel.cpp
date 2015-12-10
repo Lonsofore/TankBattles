@@ -15,7 +15,7 @@ TextPanel::TextPanel(QString t, int x, int y)
     setPixmap(QPixmap(image).scaled(width,height));
 
     // шрифт
-    int id = QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
+    QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
 
     // текст
     text = new QGraphicsTextItem(t,this);

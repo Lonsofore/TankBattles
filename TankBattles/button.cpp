@@ -20,7 +20,7 @@ Button::Button(int n, QString name, int x, int y, QGraphicsItem *parent) : QGrap
     setPixmap(QPixmap(image).scaled(width,height));
 
     // добавление шрифта
-    int id = QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
+    QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
 
     // текст
     text = new QGraphicsTextItem(name,this);
