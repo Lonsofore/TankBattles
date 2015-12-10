@@ -91,6 +91,7 @@ void Bullet::anim()
         isfire = false;
         delete pm;
     }
+
     if (count < 3)
     {
         QPixmap pix(":/images/images/fire/" + QString::number(count) + ".png");
@@ -186,6 +187,12 @@ void Bullet::move()
 
     if (pos().y() < 0 || pos().y() > scene()->height() || pos().x() < 0 || pos().x() > scene()->width())
     {
+        if (isfire == true)
+        {
+            isfire = false;
+            delete pm;
+        }
+
         scene()->removeItem(this);
         delete this;
     }
