@@ -1,5 +1,4 @@
 #include "button.h"
-#include "game.h"
 #include <QGraphicsPixmapItem>
 #include <QTime>
 #include <QCoreApplication>
@@ -8,7 +7,7 @@
 #include <QFontDatabase>
 #include "delay.h"
 
-extern Game * game;
+bool pressed = false;
 
 Button::Button(int n, QString name, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
 {
@@ -79,7 +78,7 @@ void Button::setText(QString name)
 
 void Button::select()
 {
-    if (game->pressed == false)
+    if (pressed == false)
     {
         QString image = ":/images/images/menu/Select.png";
         setPixmap(QPixmap(image).scaled(width,height));
@@ -89,7 +88,7 @@ void Button::select()
 
 void Button::deselect()
 {
-    if (game->pressed == false)
+    if (pressed == false)
     {
         QString image = ":/images/images/menu/Shape.png";
         setPixmap(QPixmap(image).scaled(width,height));
@@ -98,14 +97,15 @@ void Button::deselect()
 
 void Button::click()
 {
-    if (game->pressed == false)
+    if (pressed == false)
     {
-        game->pressed = true;
+        pressed = true;
 
         QString image = ":/images/images/menu/Chose.png";
         setPixmap(QPixmap(image).scaled(width,height));
 
         delay(1000);
+        pressed = false;
         emit clicked();
     }
 }

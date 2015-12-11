@@ -17,7 +17,9 @@
 #include <QtNetwork>
 #include <QSound>
 
-bool started = false;
+bool inpve = false;
+bool inpvp = false;
+bool insett = false;
 bool inmenu = false;
 int curButton;
 
@@ -103,61 +105,36 @@ Game::Game(QWidget *parent){
     show();
 }
 
-void Game::mouseReleaseEvent(QMouseEvent *event)
+void Game::change(QString name)
 {
-    if (started)
-        player->setFocus();
-    if (inmenu)
-        menuButtons[curButton]->setFocus();
-}
+    inmenu = false;
+    inpve = false;
+    inpvp = false;
+    insett = false;
 
-void Game::focusOutEvent(QFocusEvent *event)
-{
-    if (started)
-        player->playerReset();
-}
-
-void Game::wheelEvent(QWheelEvent * event)
-{
-    if (started)
-        centerOn(player);
-}
-
-void Game::changeEvent(QEvent *event)
-{
-    if (event->type() == QEvent::WindowStateChange && started == true)
+    if (name == "menu")
     {
-        player->playerReset();
+        inmenu = true;
+        return;
     }
-}
 
-void Game::switchButton(int n) // смена кнопки
-{
-    if (n>=0)
+    if (name == "pve")
     {
-        if (n < numButtons)
-            curButton = n;
-        else
-            curButton = 0;
+        inpve = true;
+        return;
     }
-    else
-        curButton = numButtons - 1;
 
-    for (int i=0; i<numButtons; i++)
-        menuButtons[i]->deselect();
+    if (name == "pvp")
+    {
+        inpvp = true;
+        return;
+    }
 
-    menuButtons[curButton]->select();
-}
-
-// перемещает окно в центр экрана
-void Game::moveToCenter()
-{
-    QDesktopWidget desktop;
-    QRect rect = desktop.availableGeometry(desktop.primaryScreen()); // прямоугольник с размерами экрана
-    QPoint center = rect.center(); //координаты центра экрана
-    center.setX(center.x() - (this->width()/2));  // учитываем половину ширины окна
-    center.setY(center.y() - (this->height()/2));  // .. половину высоты
-    move(center);
+    if (name == "sett")
+    {
+        insett = true;
+        return;
+    }
 }
 
 void Game::pve()
@@ -284,8 +261,7 @@ void Game::pve()
     music->setVolume(vmusic); // уровень громкости (из 100)
     music->play();
 
-    started = true;
-    inmenu = false;
+    change("pve");
 
     //Подготовка к приему данных
     udpSocket = new QUdpSocket(this);
@@ -295,6 +271,8 @@ void Game::pve()
 
 void Game::pvp()
 {
+    change("pvp");
+
     // заглушка
     scene->clear();
     QMediaPlayer *voice = new QMediaPlayer();
@@ -309,8 +287,7 @@ void Game::settings()
     scene->clear();
     setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
-    inmenu = false;
-    pressed = false;
+    change("sett");
 
     // надпись
     /*
@@ -451,8 +428,7 @@ void Game::applySettings()
 
 void Game::menu()
 {
-    started = false;
-    inmenu = true;
+    change("menu");
 
     scene->clear();
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
@@ -506,6 +482,63 @@ void Game::menu()
 
     //curButton = 0;
     switchButton(0); // по умолчанию выбрать первую кнопку
+}
+
+void Game::switchButton(int n) // смена кнопки
+{
+    if (n>=0)
+    {
+        if (n < numButtons)
+            curButton = n;
+        else
+            curButton = 0;
+    }
+    else
+        curButton = numButtons - 1;
+
+    for (int i=0; i<numButtons; i++)
+        menuButtons[i]->deselect();
+
+    menuButtons[curButton]->select();
+}
+
+// перемещает окно в центр экрана
+void Game::moveToCenter()
+{
+    QDesktopWidget desktop;
+    QRect rect = desktop.availableGeometry(desktop.primaryScreen()); // прямоугольник с размерами экрана
+    QPoint center = rect.center(); //координаты центра экрана
+    center.setX(center.x() - (this->width()/2));  // учитываем половину ширины окна
+    center.setY(center.y() - (this->height()/2));  // .. половину высоты
+    move(center);
+}
+
+void Game::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (inpve)
+        player->setFocus();
+    if (inmenu)
+        menuButtons[curButton]->setFocus();
+}
+
+void Game::focusOutEvent(QFocusEvent *event)
+{
+    if (inpve)
+        player->playerReset();
+}
+
+void Game::wheelEvent(QWheelEvent * event)
+{
+    if (inpve)
+        centerOn(player);
+}
+
+void Game::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange && inpve == true)
+    {
+        player->playerReset();
+    }
 }
 
 void Game::processPendingDatagrams()

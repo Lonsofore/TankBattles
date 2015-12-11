@@ -23,12 +23,6 @@ class Game: public QGraphicsView{
 public:
     Game(QWidget * parent=0);
 
-    // запреты на то, чтобы пользователь снял фокус с танка
-    void mouseReleaseEvent(QMouseEvent * event);
-    void focusOutEvent(QFocusEvent * event);
-    void wheelEvent(QWheelEvent * event);
-    void changeEvent(QEvent * event);
-
     // меню
     Button **menuButtons;
     int numButtons; // сделано отдельно для обращения из класса button - кол-во кнопок
@@ -66,6 +60,13 @@ public:
     Tank * enmy;
 
     void moveToCenter();
+    void change(QString name);
+
+    // запреты на то, чтобы пользователь снял фокус с танка
+    void mouseReleaseEvent(QMouseEvent * event);
+    void focusOutEvent(QFocusEvent * event);
+    void wheelEvent(QWheelEvent * event);
+    void changeEvent(QEvent * event);
 public slots:
     void applySettings();
     void switchButton(int n); // сменить кнопку на выбранную
