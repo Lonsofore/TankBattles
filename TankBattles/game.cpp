@@ -2,7 +2,6 @@
 #include <QTimer>
 #include <QGraphicsTextItem>
 #include <QFont>
-#include "enemy.h"
 #include <QMediaPlayer>
 #include "button.h"
 #include "player.h"
@@ -14,7 +13,9 @@
 #include "numupdown.h"
 #include "delay.h"
 #include <QMediaPlaylist>
+#include <QFontDatabase>
 #include <QtNetwork>
+#include <QSound>
 
 bool started = false;
 bool inmenu = false;
@@ -95,8 +96,9 @@ Game::Game(QWidget *parent){
     {
         in << veffects << endl;
     }
-
     file.close();
+
+    numtank = 0;
 
     show();
 }
@@ -260,7 +262,7 @@ void Game::pve()
     enmy = new Tank();
     scene->addItem(enmy);
     scene->addItem(enmy->head);
-    enmy->changePos(100,100);
+    enmy->changePos(200,100);
 
     // создание игрока
     player = new Player();
@@ -271,11 +273,12 @@ void Game::pve()
     //score = new Score();
     //scene->addItem(score);
 
+
     // музыка
     QMediaPlayer * music = new QMediaPlayer();
     QMediaPlaylist * playlist = new QMediaPlaylist();
     playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
     music->setPlaylist(playlist);
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
@@ -305,7 +308,6 @@ void Game::settings()
 {
     scene->clear();
     setBackgroundBrush(QBrush(QColor(229,229,229,255)));
-    //delete [] menuButtons;
 
     inmenu = false;
     pressed = false;
@@ -324,7 +326,7 @@ void Game::settings()
 
     // точки
     int xPos;
-    int yPos = 120; //верхняя точка
+    int yPos = this->height()/2 - 195; //верхняя точка
 
     QString resArray[11] = {"640x480",
                             "800x480",
@@ -455,14 +457,13 @@ void Game::menu()
     scene->clear();
     setBackgroundBrush(QBrush(QColor(230,230,230,255)));
 
-    // максимальные поддерживаемые размеры карты. если больше - будет обрезаться
-    //maxwidth = this->width();
-    //maxheight = this->height();
-
     // кол-во кнопок
     numButtons = 4;
     // не нажата
     pressed = false;
+
+    // шрифт
+    QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
 
     // надпись
     QGraphicsTextItem *title = new QGraphicsTextItem(QString("TANKBATTLES"));
@@ -470,13 +471,13 @@ void Game::menu()
     QFont titleFont("Century Gothic",70);
     title->setFont(titleFont);
     int txPos = this->width()/2 - title->boundingRect().width()/2;
-    int tyPos = 50;
+    int tyPos = this->height()/2 - 270;
     title->setPos(txPos,tyPos);
     scene->addItem(title);
 
     // кнопки
     int xPos;
-    int yPos = 200; // y координата верхней кнопки
+    int yPos = tyPos + 150; // y координата верхней кнопки
 
     // названия для кнопок
     QString *text;

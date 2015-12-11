@@ -3,7 +3,6 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include "bullet.h"
-#include "enemy.h"
 #include "game.h"
 #include <QTime>
 #include <QCoreApplication>
@@ -78,44 +77,16 @@ void Tank::defaultTank()
 
 void Tank::moveForward(bool check)
 {
-    int x1,y1;
-    int xadd = 0;
-    int yadd = 0;
-    double sn, cs;
-    QPixmap tank(baseImage);
-    tank.scaled(pixsize,pixsize);
-
-    // чтобы высчитывать это только 1 раз
-    cs = cos(degree * (PI / 180))*speed;
-    sn = sin(degree * (PI / 180))*speed;
-
-    // исправление кривого передвижения из-за int координат
-    xfix = xfix + round(cs) - cs;
-    yfix = yfix + round(sn) - sn;
-
-    // если есть целое значение
-    if (round(xfix) != 0)
-    {
-        xadd = round(xfix);
-        xfix = xfix - round(xfix);
-    }
-    if (round(yfix) != 0)
-    {
-        yadd = round(yfix);
-        yfix = yfix - round(yfix);
-    }
-
-    int height = this->pixmap().size().height();
-    int width = this->pixmap().size().width();
+    float x1,y1;
 
     // новые координаты
-    x1 = x() + round(cs) - xadd;
-    y1 = y() + round(sn) - yadd;
+    x1 = x() + cos(degree * (PI / 180))*speed;
+    y1 = y() + sin(degree * (PI / 180))*speed;
 
     setPos(x1,y1);
     head->setPos(x1,y1);
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             moveBack(check = true);
@@ -124,62 +95,42 @@ void Tank::moveForward(bool check)
 
 void Tank::moveBack(bool check)
 {
-    int x1,y1;
-    int xadd = 0;
-    int yadd = 0;
-    double sn, cs;
-
-    // чтобы высчитывать это только 1 раз
-    cs = cos(degree * (PI / 180))*speed;
-    sn = sin(degree * (PI / 180))*speed;
-
-    // исправление кривого передвижения из-за int координат
-    xfix -= round(cs) - cs;
-    yfix -= round(sn) - sn;
-
-    // если есть целое значение
-    if (round(xfix) != 0)
-    {
-        xadd = round(xfix);
-        xfix = xfix - round(xfix);
-    }
-    if (round(yfix) != 0)
-    {
-        yadd = round(yfix);
-        yfix = yfix - round(yfix);
-    }
-
-    int height = this->pixmap().size().height();
-    int width = this->pixmap().size().width();
+    float x1,y1;
 
     // новые координаты
-    x1 = x() - round(cs) - xadd;
-    y1 = y() - round(sn) - yadd;
+    x1 = x() - cos(degree * (PI / 180))*speed;
+    y1 = y() - sin(degree * (PI / 180))*speed;
 
     setPos(x1,y1);
     head->setPos(x1,y1);
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             moveForward(check = true);
     }
 }
 
+// проверка градуса поворота
+int Tank::checkDegree(int deg)
+{
+    if (deg > 360)
+        deg -= 360;
+    if (deg < 0)
+        deg += 360;
+    return deg;
+}
+
 void Tank::rotateRight(bool check)
 {
     int deg = rspeed;
-    degree += deg;
-    if (degree > 360 || degree < -360)
-        degree = 0;
+    degree = checkDegree(degree + deg);
     rotate();
 
-    hdegree += deg;
-    if (hdegree > 360 || hdegree < -360)
-        hdegree = 0;
+    hdegree = checkDegree(hdegree + deg);
     hrotate();
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             rotateLeft(check = true);
@@ -189,17 +140,13 @@ void Tank::rotateRight(bool check)
 void Tank::rotateLeft(bool check)
 {
     int deg = rspeed;
-    degree -= deg;
-    if (degree > 360 || degree < -360)
-        degree = 0;
+    degree = checkDegree(degree - deg);
     rotate();
 
-    hdegree -= deg;
-    if (hdegree > 360 || hdegree < -360)
-        hdegree = 0;
+    hdegree = checkDegree(hdegree - deg);
     hrotate();
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             rotateRight(check = true);
@@ -208,17 +155,13 @@ void Tank::rotateLeft(bool check)
 
 void Tank::rotateRight(int deg, bool check)
 {
-    degree += deg;
-    if (degree > 360 || degree < -360)
-        degree = 0;
+    degree = checkDegree(degree + deg);
     rotate();
 
-    hdegree += deg;
-    if (hdegree > 360 || hdegree < -360)
-        hdegree = 0;
+    hdegree = checkDegree(hdegree + deg);
     hrotate();
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             rotateLeft(deg, check = true);
@@ -227,17 +170,13 @@ void Tank::rotateRight(int deg, bool check)
 
 void Tank::rotateLeft(int deg, bool check)
 {
-    degree -= deg;
-    if (degree > 360 || degree < -360)
-        degree = 0;
+    degree = checkDegree(degree - deg);
     rotate();
 
-    hdegree -= deg;
-    if (hdegree > 360 || hdegree < -360)
-        hdegree = 0;
+    hdegree = checkDegree(hdegree - deg);
     hrotate();
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             rotateRight(deg, check = true);
@@ -246,13 +185,10 @@ void Tank::rotateLeft(int deg, bool check)
 
 void Tank::headRight(bool check)
 {
-    if (hdegree + hspeed < 360)
-        hdegree += hspeed;
-    else
-        hdegree = 0;
+    hdegree = checkDegree(hdegree + hspeed);
     hrotate();
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             headLeft(check = true);
@@ -261,13 +197,10 @@ void Tank::headRight(bool check)
 
 void Tank::headLeft(bool check)
 {
-    if (hdegree - hspeed > -360)
-        hdegree -= hspeed;
-    else
-        hdegree = 0;
+    hdegree = checkDegree(hdegree - hspeed);
     hrotate();
 
-    if (check != true)
+    if (check == false)
     {
         while (isCollide() == true)
             headRight(check = true);
@@ -277,11 +210,13 @@ void Tank::headLeft(bool check)
 void Tank::fire()
 {
     int x1,y1;
-    // левая верхняя позиция танка + половина размера танка (чтобы из середины)
-    x1 = x() + pixsize/2 + round(cos(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - pixsize/10;
-    y1 = y() + pixsize/2 + round(sin(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - pixsize/10;
+    int bulsize = pixsize*0.16;
 
-    Bullet *bullet = new Bullet();
+    // левая верхняя позиция танка + половина размера танка (чтобы из середины)
+    x1 = x() + pixsize/2 + round(cos(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
+    y1 = y() + pixsize/2 + round(sin(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
+
+    Bullet *bullet = new Bullet(this);
     bullet->setPos(x1,y1);
     scene()->addItem(bullet);
 
@@ -299,16 +234,17 @@ void Tank::fire()
 void Tank::randomSpawn()
 {
     int x,y;
-    if (game->spawns > 0)
+    if (game->spawns > 0) // TODO: сделать проверку, нет ли там уже игрока
     {
         int stime;
         long ltime;
+        int random;
 
         ltime = time(NULL);
         stime = (unsigned) ltime/2;
         srand(stime);
 
-        int random = rand()%game->spawns;
+        random = rand()%game->spawns;
         x = game->spawnPoints[random]->x() - pixsize/2;
         y = game->spawnPoints[random]->y() - pixsize/4;
     }
@@ -334,10 +270,18 @@ void Tank::changeSize(int n)
     hrotate();
 }
 
+// возвращает true, если танк с чем-то соприкасается и пускать туда нельзя
+// возвращает false, если танк не соприкасается ни с чем и все ок
 bool Tank::isCollide()
 {
     QList<QGraphicsItem *> colliding_items = collidingItems();    
     for (int i = 0, n = colliding_items.size(); i < n; ++i)
+    {
+        if (typeid(*(colliding_items[i])) == typeid(Tank))
+        {
+                return true;
+        }
+
         if (typeid(*(colliding_items[i])) == typeid(Block))
         {
             Block * block = dynamic_cast <Block *> (colliding_items[i]);
@@ -346,9 +290,11 @@ bool Tank::isCollide()
             else
                 return true;
         }
+    }
 
     QList<QGraphicsItem *> colliding_items1 = head->collidingItems();
     for (int j = 0, n = colliding_items1.size(); j < n; ++j)
+    {
         if (typeid(*(colliding_items1[j])) == typeid(Block))
         {
             Block * block1 = dynamic_cast <Block *> (colliding_items1[j]);
@@ -357,6 +303,7 @@ bool Tank::isCollide()
             else
                 return true;
         }
+    }
 
     return false;
 }
@@ -416,13 +363,10 @@ void Tank::deleteTank()
 
 void Tank::spawnTank()
 {
-    delay(3000);
     setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
     head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
     randomSpawn();
 }
-
-
 
 
 

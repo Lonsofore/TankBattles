@@ -62,6 +62,7 @@ public:
     Health * health;
 
     // просто танк
+    int numtank;
     Tank * enmy;
 
     void moveToCenter();

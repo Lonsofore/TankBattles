@@ -27,8 +27,6 @@ public:
     void spawnPlayer();
 
     void playerReset(); // сбросить значения движений
-public slots:
-    void spawn();
 
 private:
     // соответственно с объявленными функциями для действий

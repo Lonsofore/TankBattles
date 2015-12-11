@@ -1,8 +1,10 @@
 #include "player.h"
-#include "enemy.h"
 #include "game.h"
 #include "delay.h"
 #include "caution.h"
+#include <QtConcurrent/QtConcurrentRun>
+#include <QtConcurrent/QtConcurrent>
+#include <QFuture>
 #include <QDebug>
 
 bool action = false;
@@ -29,7 +31,6 @@ Player::Player()
 
     // стрельба
     fireTime = 2000;
-    bulletSpeed = 50;
 
     defaultTank();
     game->centerOn(this);
@@ -239,7 +240,7 @@ void Player::onKey(int acc) // действия при нажатии клави
                     delete caution;
 
                     QString image1 = ":/images/images/died.png";
-                    died = new Caution(image1, "WASTED");
+                    died = new Caution(image1, "YOU DIED");
                     died->setPos(x1-200,y1-88);
                     died->setZValue(10);
                     game->scene->addItem(died);
@@ -352,10 +353,4 @@ void Player::spawnPlayer()
 void Player::playerReset()
 {
     mf = mb = rr = rl = hr = hl = fr = false;
-}
-
-void Player::spawn()
-{
-    Enemy *enemy = new Enemy();
-    scene()->addItem(enemy);
 }

@@ -14,9 +14,10 @@ public:
     Tank();
     void defaultTank(); // функция установления стандартных значений (для вызова из класса player)
 
-    // вызов действий для кнопок
+    // действия
     void moveForward(bool check = 0); // движение вперед
     void moveBack(bool check = 0);    // движение назад
+    int checkDegree(int deg); // проверка, находится на угол поворота в пределах 0,360
     void rotateRight(bool check = 0); // неопределенные функции поворота базы
     void rotateLeft(bool check = 0);  //
     void rotateRight(int deg, bool check = 0); // определенные
@@ -24,11 +25,10 @@ public:
     void headRight(bool check = 0); // поворот башни направо
     void headLeft(bool check = 0);  // и налево
     void fire(); // выстрел (ограничений между выстрелами нет!)
-    int bulletSpeed; // скорость пули
-    void randomSpawn();
-    void changePos(int x, int y);
-    void deleteTank();
-    void spawnTank();
+    void randomSpawn(); // рандомный спавн танка
+    void changePos(int x, int y); // смена позиции танка за заданную
+    void deleteTank(); // удалить танк (просто скрывает его картинку!)
+    void spawnTank(); // спавн танка (устанавливает обычную картинку и рандомно спавнит)
 
     // размер танка
     int pixsize;
