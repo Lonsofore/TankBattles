@@ -9,6 +9,7 @@ class QLabel;
 class QPushButton;
 class QTimer;
 class QUdpSocket;
+class QTcpSocket;
 QT_END_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -36,6 +37,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QUdpSocket *udpSocket;
+    QTcpSocket *tcpSocket;
     void startBroadcasting();
     void broadcastDatagram();
     int x, y;

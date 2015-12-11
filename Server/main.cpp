@@ -1,11 +1,11 @@
-#include "mainwindow.h"
-#include <QApplication>
+#include <QCoreApplication>
+#include <iostream>
+#include "server.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-
+    QCoreApplication a(argc, argv);
+    server s(7);
+    std::cout << "Awaiting Connection\n";
     return a.exec();
 }
