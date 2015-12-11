@@ -23,22 +23,15 @@ class Game: public QGraphicsView{
 public:
     Game(QWidget * parent=0);
 
-    // меню
-    Button **menuButtons;
-    int numButtons; // сделано отдельно для обращения из класса button - кол-во кнопок
-    bool pressed;  // была ли нажата кнопка
+    // кнопки для менюшек
+    Button **btns;
+    numUpDown **udBtns;
 
-    TextPanel *text1;
-    TextPanel *text2;
-    numUpDown *num1;
-    numUpDown *num2;
-    numUpDown *res;
-    Button *apply;
-    Button *back;
-
-    int veffects;
+    // громкость музыки и эффектов
     int vmusic;
+    int veffects;
 
+    // максимальное допустимое разрешение экрана (для обрезки пустых мест карты)
     int maxwidth;
     int maxheight;
 
@@ -67,13 +60,22 @@ public:
     void focusOutEvent(QFocusEvent * event);
     void wheelEvent(QWheelEvent * event);
     void changeEvent(QEvent * event);
+
 public slots:
-    void applySettings();
     void switchButton(int n); // сменить кнопку на выбранную
+
     void menu(); // запустить меню
     void pve();
+
     void pvp();
+    void pvp1();
+    void pvp2();
+
     void settings();
+    void pSettings();
+    void mSettings();
+    void applySettings();
+
     void processPendingDatagrams();
 private:
     QUdpSocket *udpSocket;

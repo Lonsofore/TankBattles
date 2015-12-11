@@ -1,18 +1,18 @@
 #include "numupdown.h"
-#include "game.h"
 #include <QGraphicsPixmapItem>
+#include <QKeyEvent>
 #include <QTime>
 #include <QCoreApplication>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QFontDatabase>
 
-extern Game * game;
 const int anum = 11;
 
-numUpDown::numUpDown(QString arr[], int n, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
+numUpDown::numUpDown(int n, QString arr[], int def, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
 {
     num = n;
+    curr = def;
     width = x;
     height = y;
 
@@ -28,7 +28,7 @@ numUpDown::numUpDown(QString arr[], int n, int x, int y, QGraphicsItem *parent) 
     QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
 
     // текст
-    text = new QGraphicsTextItem(array[num],this);
+    text = new QGraphicsTextItem(array[curr],this);
     text->setDefaultTextColor(QColor(71, 71, 71, 255));
     QFont font("Century Gothic",38);
     text->setFont(font);
@@ -40,6 +40,24 @@ numUpDown::numUpDown(QString arr[], int n, int x, int y, QGraphicsItem *parent) 
     setFlag(QGraphicsItem::ItemIsFocusable); // кнопку можно выделить (для нажатий клавиш)
 }
 
+void numUpDown::keyPressEvent(QKeyEvent *event)
+{
+    switch ((uint) event->key())
+    {
+        case 16777235: // Up
+            emit changed(num-1);
+        break;
+
+        case 16777237: // Down
+            emit changed(num+1);
+        break;
+
+        case 16777220: // Enter
+            click();
+        break;
+    }
+}
+
 void numUpDown::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     click();
@@ -48,7 +66,7 @@ void numUpDown::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void numUpDown::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     select();
-    emit entered(num);
+    emit entered(curr);
 }
 
 void numUpDown::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -58,7 +76,7 @@ void numUpDown::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 
 void numUpDown::setText()
 {
-    text->setPlainText(array[num]);
+    text->setPlainText(array[curr]);
 
     int xPos = this->width/2 - text->boundingRect().width()/2;
     int yPos = this->height/2 - text->boundingRect().height()/2 - 5;
@@ -84,10 +102,10 @@ void numUpDown::click()
     //QString image = ":/images/images/menu/Chose.png";
     //setPixmap(QPixmap(image).scaled(width,height));
 
-    if (num < anum-1)
-        num++;
+    if (curr < anum-1)
+        curr++;
     else
-        num = 0;
+        curr = 0;
 
     setText();
 

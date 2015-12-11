@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QFontDatabase>
+#include <QKeyEvent>
 #include "delay.h"
 
 bool pressed = false;

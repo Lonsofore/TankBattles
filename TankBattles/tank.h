@@ -17,7 +17,6 @@ public:
     // действия
     void moveForward(bool check = 0); // движение вперед
     void moveBack(bool check = 0);    // движение назад
-    int checkDegree(int deg); // проверка, находится на угол поворота в пределах 0,360
     void rotateRight(bool check = 0); // неопределенные функции поворота базы
     void rotateLeft(bool check = 0);  //
     void rotateRight(int deg, bool check = 0); // определенные
@@ -29,6 +28,9 @@ public:
     void changePos(int x, int y); // смена позиции танка за заданную
     void deleteTank(); // удалить танк (просто скрывает его картинку!)
     void spawnTank(); // спавн танка (устанавливает обычную картинку и рандомно спавнит)
+
+    int checkDegree(int deg); // проверка, находится на угол поворота в пределах 0,360
+                              // возвращает угол в допустимых пределах
 
     // размер танка
     int pixsize;

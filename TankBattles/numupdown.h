@@ -9,7 +9,8 @@ class numUpDown:public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
-    numUpDown(QString arr[], int n, int x, int y, QGraphicsItem* parent=NULL);
+    numUpDown(int n, QString arr[], int def, int x, int y, QGraphicsItem* parent=NULL);
+    void keyPressEvent(QKeyEvent * event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
@@ -18,6 +19,7 @@ public:
     int height;
     int width;
     int num;
+    int curr;
 
     void setText();
 
@@ -27,6 +29,7 @@ public:
 
     QGraphicsTextItem* text;
 signals:
+    void changed(int n);
     void clicked();
     void entered(int n);
 private:
