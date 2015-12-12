@@ -21,7 +21,7 @@ private:
     QNetworkSession *networkSession;
     QUdpSocket *udpSocket;
     void broadcastDatagram();
-    int x, y, port;
+    int x[2], y[2], TAngle[2], HAngle[2], port, cid;
     //QTcpServer *server;
     QHash<QTcpSocket*, QByteArray*> buffers; //We need a buffer to store data until block has completely received
     QHash<QTcpSocket*, qint32*> sizes;

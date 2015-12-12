@@ -4,6 +4,7 @@
 #include <QGraphicsView>
 #include <QWidget>
 #include <QGraphicsScene>
+#include <QTcpSocket>
 #include "tank.h"
 #include "score.h"
 #include "health.h"
@@ -16,6 +17,7 @@
 QT_BEGIN_NAMESPACE
 class QUdpSocket;
 class QAction;
+class QTcpSocket;
 QT_END_NAMESPACE
 
 class Game: public QGraphicsView{
@@ -60,7 +62,8 @@ public:
     void focusOutEvent(QFocusEvent * event);
     void wheelEvent(QWheelEvent * event);
     void changeEvent(QEvent * event);
-
+private slots:
+    void SendData();
 public slots:
     void switchButton(int n); // сменить кнопку на выбранную
 
@@ -79,6 +82,9 @@ public slots:
     void processPendingDatagrams();
 private:
     QUdpSocket *udpSocket;
+    QTcpSocket *tcpSocket;
+    int usrid;
+    bool isrecieving; 
 };
 
 #endif // GAME

@@ -355,6 +355,14 @@ void Tank::changePos(int x, int y)
     head->setPos(x,y);
 }
 
+void Tank::changeAngle(int TAngle, int HAngle)
+{
+    this->degree = TAngle;
+    this->rotateLeft(0);
+    this->hdegree = HAngle;
+    this->rotateLeft(0);
+}
+
 void Tank::deleteTank()
 {
     setPixmap(QPixmap(":/images/images/tanks/empty.png").scaled(pixsize,pixsize));

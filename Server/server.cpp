@@ -35,8 +35,11 @@ server::server(int port1)
 
 void server::broadcastDatagram()
 {
-    std::cout << "SENDING: X=" << x << ",Y=" << y << "\n";
-    QByteArray datagram = QByteArray::number(x) + ' ' + QByteArray::number(y);
+    std::cout << "SENDING: X=" << x << ",Y=" << y << " FROM CLIENT # " << cid << "\n";
+    QByteArray datagram = QByteArray::number(0) + ' ' + QByteArray::number(x[0]) + ' ' + QByteArray::number(y[0])+ ' ' +
+            QByteArray::number(TAngle[0]) + ' ' + QByteArray::number(HAngle[0]) +  '|';
+       datagram += QByteArray::number(1) + ' ' + QByteArray::number(x[1]) + ' ' + QByteArray::number(y[1])+ ' ' +
+               QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) +  '|';
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
                              QHostAddress::Broadcast, 45454);
 }
@@ -54,8 +57,11 @@ void server::dataRecieved(QByteArray data)
             enmy->changePos(list.at(0).toInt(),list.at(1).toInt());*/
     QList<QByteArray> list;
     list = data.split(' ');
-    x = list.at(0).toInt();
-    y = list.at(1).toInt();
+    cid = list.at(0).toInt();
+    x[cid] = list.at(1).toInt();
+    y[cid] = list.at(2).toInt();
+    TAngle[cid] = list.at(3).toInt();
+    HAngle[cid] = list.at(4).toInt();
     broadcastDatagram();
 }
 
@@ -66,6 +72,7 @@ void server::newConnection()
         QTcpSocket *socket = tcpServer->nextPendingConnection();
         connect(socket, SIGNAL(readyRead()), SLOT(readyRead()));
         connect(socket, SIGNAL(disconnected()), SLOT(disconnected()));
+        std::cout << "CONNECTED: " << socket->peerAddress().toString().toStdString() << std::endl;
         QByteArray *buffer = new QByteArray();
         qint32 *s = new qint32(0);
         buffers.insert(socket, buffer);

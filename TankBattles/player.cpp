@@ -6,7 +6,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFuture>
 #include <QDebug>
-
+#include <qglobal.h>
 bool action = false;
 bool reload = false;
 bool fireReady = true;
@@ -170,9 +170,10 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
             fr = false;
         break;
     }
+
 }
 
-void Player::onKey(int acc) // действия при нажатии клавиши. acc - задержка танка при старте
+void Player::onKey(int acc) // player = действия при нажатии клавиши. acc - задержка танка при старте
 {
     action = true;
     while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
@@ -184,7 +185,7 @@ void Player::onKey(int acc) // действия при нажатии клави
         if (mf) moveForward();
         if (mb) moveBack();
 
-        // если вышел за границы
+        // если вышел за границplayer = ы
         if (this->x() < game->dop - pixsize/2 ||
             this->x() > game->scene->width()-game->dop*2 + 20 ||
             this->y() < game->dop - pixsize/2 ||
@@ -317,10 +318,11 @@ void Player::onKey(int acc) // действия при нажатии клави
 
         if (acc > 0)
             acc = acc - iboost; // создается замедление в начале движения
-
+        emit KeyPressed();
         delay(keyDelay + acc);
     }
     action = false;
+
 }
 
 void Player::playerRotate()
@@ -353,4 +355,20 @@ void Player::spawnPlayer()
 void Player::playerReset()
 {
     mf = mb = rr = rl = hr = hl = fr = false;
+}
+double Player::GetX() const
+{
+    return qRound(this->x());
+}
+double Player::GetY() const
+{
+    return qRound(this->y());
+}
+int Player::GetTAngle() const
+{
+    return this->degree;
+}
+int Player::GetHAngle() const
+{
+    return this->hdegree;
 }

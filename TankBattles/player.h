@@ -23,11 +23,15 @@ public:
 
     void playerRotate();
     void playerFire();
-
+    double GetX() const;
+    double GetY() const;
+    int GetTAngle() const;
+    int GetHAngle() const;
     void spawnPlayer();
 
     void playerReset(); // сбросить значения движений
-
+signals:
+    void KeyPressed();
 private:
     // соответственно с объявленными функциями для действий
     bool mf, mb, rr, rl, hr, hl, fr;

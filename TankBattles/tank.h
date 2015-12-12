@@ -26,6 +26,7 @@ public:
     void fire(); // выстрел (ограничений между выстрелами нет!)
     void randomSpawn(); // рандомный спавн танка
     void changePos(int x, int y); // смена позиции танка за заданную
+    void changeAngle(int TAngle, int HAngle); //смена угла башни и платформы
     void deleteTank(); // удалить танк (просто скрывает его картинку!)
     void spawnTank(); // спавн танка (устанавливает обычную картинку и рандомно спавнит)
 

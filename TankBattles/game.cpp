@@ -16,6 +16,7 @@
 #include <QFontDatabase>
 #include <QtNetwork>
 #include <QSound>
+//    connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
 
 // где находится игрок
 bool inpve = false;  // пве
@@ -35,7 +36,7 @@ const int nSett1UpDn = 3;
 const int nPvpBtns = 3;
 
 int curButton;
-
+static inline QByteArray IntToArray(qint32 source);
 Game::Game(QWidget *parent){
     // размеры окна по умолчанию
     int width = 800;
@@ -390,7 +391,7 @@ void Game::pve()
     player = new Player();
     scene->addItem(player);
     scene->addItem(player->head);
-
+    connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
     // очки
     //score = new Score();
     //scene->addItem(score);
@@ -400,7 +401,7 @@ void Game::pve()
     QMediaPlayer * music = new QMediaPlayer();
     QMediaPlaylist * playlist = new QMediaPlaylist();
     playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
     music->setPlaylist(playlist);
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
@@ -409,6 +410,9 @@ void Game::pve()
     change("pve");
 
     //Подготовка к приему данных
+    tcpSocket = new QTcpSocket();
+    tcpSocket->connectToHost("192.168.1.3", 7);
+    tcpSocket->waitForConnected(3000000);
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(45454, QUdpSocket::ShareAddress);
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
@@ -471,11 +475,14 @@ void Game::pvp1()
 
     // заглушка
     scene->clear();
-    QMediaPlayer *voice = new QMediaPlayer();
-    voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
-    voice->play();
-    delay(1000);
-    menu();
+    //QMediaPlayer *voice = new QMediaPlayer();
+    //voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
+    //voice->play();
+    //delay(1000);
+    //menu();
+    usrid = 1;
+
+    pve();
 }
 
 void Game::pvp2()
@@ -484,11 +491,13 @@ void Game::pvp2()
 
     // заглушка
     scene->clear();
-    QMediaPlayer *voice = new QMediaPlayer();
-    voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
-    voice->play();
+    //QMediaPlayer *voice = new QMediaPlayer();
+    //voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
+    //voice->play();
     delay(1000);
-    menu();
+    //menu();
+    usrid = 0;
+    pve();
 }
 
 void Game::settings()
@@ -807,18 +816,51 @@ void Game::changeEvent(QEvent *event)
 }
 
 void Game::processPendingDatagrams()
-{
+{   int otherplayer; //Временный костыль
+    if (usrid == 1) otherplayer = 0;
+    if (usrid == 0) otherplayer = 1;
+    isrecieving = 1;
     while (udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;
-        QString xval, yval; //Говнокод!!1111
         datagram.resize(udpSocket->pendingDatagramSize());
         udpSocket->readDatagram(datagram.data(), datagram.size());
-        QList<QByteArray> list;
-        list = datagram.split(' ');
-        //xval = datagram.at(1);
-        //yval = datagram.at(3);
-        enmy->changePos(list.at(0).toInt(),list.at(1).toInt());
+        QList<QByteArray> playersList;
+        playersList = datagram.split('|');
+        //Здесь будет цикл
+        QString temp;
+        temp +=QString::fromLatin1(playersList.at(otherplayer).data());
+        QList<QString> dataList;
+        dataList =  temp.split(' ');
+        enmy->changePos(dataList.at(1).toInt(),dataList.at(2).toInt());
+        enmy->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt());
     }
+    isrecieving = 0;
+}
+
+void Game::SendData()
+{
+    //while(isrecieving) {wait();} ищу замену для wait
+    if(tcpSocket->state() == QAbstractSocket::ConnectedState)
+        {
+            QByteArray data = QByteArray::number(usrid) + ' ' + QByteArray::number(player->GetX()) + ' ' + QByteArray::number(player->GetY()) + ' '
+                    + QByteArray::number(player->GetTAngle()) + ' ' + QByteArray::number(player->GetHAngle());
+            tcpSocket->write(IntToArray(data.size())); //write size of data
+            tcpSocket->write(data); //write the data itself
+            tcpSocket->waitForBytesWritten();
+            return;
+        }
+        else
+            //QMessageBox::information(this, "ERROR", "Connection error");
+            return;
+}
+
+QByteArray IntToArray(qint32 source)
+{
+    //Avoid use of cast, this is the Qt way to serialize objects
+    QByteArray temp;
+    QDataStream data(&temp, QIODevice::ReadWrite);
+    data << source;
+    return temp;
 }
 
 
