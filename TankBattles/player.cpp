@@ -1,12 +1,10 @@
 #include "player.h"
 #include "game.h"
 #include "delay.h"
-#include "caution.h"
-#include <QtConcurrent/QtConcurrentRun>
-#include <QtConcurrent/QtConcurrent>
-#include <QFuture>
-#include <QDebug>
 #include <qglobal.h>
+
+#include <QDebug>
+
 bool action = false;
 bool reload = false;
 bool fireReady = true;
@@ -17,6 +15,9 @@ int outCount = 0;
 int outTimer = 5;
 
 int spin = 0;
+
+int nMenuBtns = 4;
+int curBtn;
 
 extern Game * game;
 
@@ -43,85 +44,100 @@ Player::Player()
 void Player::keyPressEvent(QKeyEvent *event)
 {
     //qDebug() << (uint) event->key(); // чтобы узнать код клавиши
-    switch ((uint) event->key())
-    {
-        // Двигаться вперед
-        case 87: // W
-        case 1062: // Ц
-        case 16777235: // Up
-            mf = true;
-        break;
+    //if (ingame)
+    //{
+        switch ((uint) event->key())
+        {
+            // Двигаться вперед
+            case 87: // W
+            case 1062: // Ц
+            case 16777235: // Up
+                mf = true;
+            break;
 
-        // Двигаться назад
-        case 83: // S
-        case 1067: // Ы
-        case 16777237: // Down
-            mb = true;
-        break;
+            // Двигаться назад
+            case 83: // S
+            case 1067: // Ы
+            case 16777237: // Down
+                mb = true;
+            break;
 
-        // Поворот танка налево
-        case 65: // A
-        case 1060: // Ф
-        case 16777234: // Left
-            rl = true;
-        break;
+            // Поворот танка налево
+            case 65: // A
+            case 1060: // Ф
+            case 16777234: // Left
+                rl = true;
+            break;
 
-        // Поворот танка направо
-        case 68: // D
-        case 1042: // В
-        case 16777236: // Right
-            rr = true;
-        break;
+            // Поворот танка направо
+            case 68: // D
+            case 1042: // В
+            case 16777236: // Right
+                rr = true;
+            break;
 
-        // Поворот башни налево
-        case 81:   // Q
-        case 1049: // Й
-        case 90:   // Z
-        case 1071: // Я
-            hl = true;
-        break;
+            // Поворот башни налево
+            case 81:   // Q
+            case 1049: // Й
+            case 90:   // Z
+            case 1071: // Я
+                hl = true;
+            break;
 
-        // Поворот башни направо
-        case 69:   // E
-        case 1059: // У
-        case 88:   // X
-        case 1063: // Ч
-            hr = true;
-        break;
+            // Поворот башни направо
+            case 69:   // E
+            case 1059: // У
+            case 88:   // X
+            case 1063: // Ч
+                hr = true;
+            break;
 
-        // Выстрел
-        case 32: // SPAAAAACE
-            fr = true;
-        break;
+            // Выстрел
+            case 32: // SPAAAAACE
+                fr = true;
+            break;
 
-        // цифры (для тестов)
-        case 49:
-            this->changeSize(pixsize-10);
-            qDebug() << pixsize;
-        break;
+            // Меню
+            case 16777216: // Esc
+                //ingame = false;
+                emit tomenu();
+            break;
 
-        case 50:
-            this->changeSize(pixsize+10);
-            qDebug() << pixsize;
-        break;
+            // Таблица
+            case 96:   // `
+            case 1025: // ё
+                qDebug() << "score";
+            break;
 
-        case 51:
-            randomSpawn();
-        break;
+            // цифры (для тестов)
+            case 49:
+                this->changeSize(pixsize-10);
+                qDebug() << pixsize;
+            break;
 
-        case 52:
+            case 50:
+                this->changeSize(pixsize+10);
+                qDebug() << pixsize;
+            break;
 
-        break;
-    }
-    if (action == false)
-    {
-        //qDebug() << "start";
-        if (mf || mb) // если танк движется вперед или назад, то сделать ему замедление при начале движения
-            onKey(boost);
-        else
-            onKey(0);
-    }
-    //game->health->setPos(game->player->x()+40,game->player->y()+50);
+            case 51:
+                randomSpawn();
+            break;
+
+            case 52:
+
+            break;
+        }
+        if (action == false)
+        {
+            //qDebug() << "start";
+            if (mf || mb) // если танк движется вперед или назад, то сделать ему замедление при начале движения
+                onKey(boost);
+            else
+                onKey(0);
+        }
+        //game->health->setPos(game->player->x()+40,game->player->y()+50);
+    //}
 }
 
 void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, только отмена
@@ -170,10 +186,9 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
             fr = false;
         break;
     }
-
 }
 
-void Player::onKey(int acc) // player = действия при нажатии клавиши. acc - задержка танка при старте
+void Player::onKey(int acc) // player действия при нажатии клавиши. acc - задержка танка при старте
 {
     action = true;
     while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
@@ -185,29 +200,17 @@ void Player::onKey(int acc) // player = действия при нажатии �
         if (mf) moveForward();
         if (mb) moveBack();
 
-        // если вышел за границplayer = ы
+        // если player вышел за границы
         if (this->x() < game->dop - pixsize/2 ||
             this->x() > game->scene->width()-game->dop*2 + 20 ||
             this->y() < game->dop - pixsize/2 ||
             this->y() > game->scene->height()-game->dop*2 + 20)
         {
-            int x1, y1;
-
             // координата Х в центре экрана
-            if (this->x() + pixsize/2 < game->width()/2)
-                x1 = game->width()/2;
-            if (this->x() + pixsize/2 > game->scene->width() - game->width()/2)
-                x1 = game->scene->width() - game->width()/2;
-            if (this->x() + pixsize/2 > game->width()/2 && this->x() + pixsize/2 < game->scene->width() - game->width()/2)
-                x1 = this->x() + pixsize/2;
+            int x1 = centralX();
 
             // координата Y в центре экрана
-            if (this->y() + pixsize/2 < game->height()/2)
-                y1 = game->height()/2;
-            if (this->y() + pixsize/2 > game->scene->height() - game->height()/2)
-                y1 = game->scene->height() - game->height()/2;
-            if (this->y() + pixsize/2 > game->height()/2 && this->y() + pixsize/2 < game->scene->height() - game->height()/2)
-                y1 = this->y() + pixsize/2;
+            int y1 = centralY();
 
             if (out == false)
             {
@@ -318,11 +321,37 @@ void Player::onKey(int acc) // player = действия при нажатии �
 
         if (acc > 0)
             acc = acc - iboost; // создается замедление в начале движения
+
         emit KeyPressed();
         delay(keyDelay + acc);
     }
     action = false;
+}
 
+// координата X в центре экрана
+int Player::centralX()
+{
+    int x1;
+    if (this->x() + pixsize/2 < game->width()/2)
+        x1 = game->width()/2;
+    if (this->x() + pixsize/2 > game->scene->width() - game->width()/2)
+        x1 = game->scene->width() - game->width()/2;
+    if (this->x() + pixsize/2 > game->width()/2 && this->x() + pixsize/2 < game->scene->width() - game->width()/2)
+        x1 = this->x() + pixsize/2;
+    return x1;
+}
+
+// координата Y в центре экрана
+int Player::centralY()
+{
+    int y1;
+    if (this->y() + pixsize/2 < game->height()/2)
+        y1 = game->height()/2;
+    if (this->y() + pixsize/2 > game->scene->height() - game->height()/2)
+        y1 = game->scene->height() - game->height()/2;
+    if (this->y() + pixsize/2 > game->height()/2 && this->y() + pixsize/2 < game->scene->height() - game->height()/2)
+        y1 = this->y() + pixsize/2;
+    return y1;
 }
 
 void Player::playerRotate()
@@ -356,18 +385,22 @@ void Player::playerReset()
 {
     mf = mb = rr = rl = hr = hl = fr = false;
 }
+
 double Player::GetX() const
 {
     return qRound(this->x());
 }
+
 double Player::GetY() const
 {
     return qRound(this->y());
 }
+
 int Player::GetTAngle() const
 {
     return this->degree;
 }
+
 int Player::GetHAngle() const
 {
     return this->hdegree;

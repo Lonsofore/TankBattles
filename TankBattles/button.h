@@ -26,8 +26,8 @@ public:
     void click();
 signals:
     void changed(int n);
-    void entered(int n);
     void clicked();
+    void back();
 private:
     QGraphicsTextItem* text;
 };

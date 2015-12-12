@@ -4,6 +4,7 @@
 #include "tank.h"
 #include "textpanel.h"
 #include "caution.h"
+#include "button.h"
 #include <QPixmap>
 
 class Player: public Tank
@@ -21,23 +22,30 @@ public:
     int iboost; // по сколько отнимать от ускорения
     int fireTime;    // время между выстрелами
 
+    int centralX();
+    int centralY();
+
     void playerRotate();
     void playerFire();
+    void spawnPlayer();
+
+    void playerReset(); // сбросить значения движений
+
     double GetX() const;
     double GetY() const;
     int GetTAngle() const;
     int GetHAngle() const;
-    void spawnPlayer();
 
-    void playerReset(); // сбросить значения движений
-signals:
-    void KeyPressed();
 private:
     // соответственно с объявленными функциями для действий
     bool mf, mb, rr, rl, hr, hl, fr;
 
     Caution *caution;
     Caution *died;
+
+signals:
+    void tomenu();
+    void KeyPressed();
 };
 
 #endif // PLAYER

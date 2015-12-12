@@ -7,7 +7,7 @@
 class TextPanel:public QObject, public QGraphicsPixmapItem
 {
 public:
-    TextPanel(QString t, int x, int y);
+    TextPanel(QString t, QString img, int x, int y);
     int height;
     int width;
 private:

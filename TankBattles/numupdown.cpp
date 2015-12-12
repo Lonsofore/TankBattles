@@ -7,16 +7,15 @@
 #include <QGraphicsView>
 #include <QFontDatabase>
 
-const int anum = 11;
-
-numUpDown::numUpDown(int n, QString arr[], int def, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
+numUpDown::numUpDown(int n, QString arr[], int c, int def, int x, int y, QGraphicsItem *parent) : QGraphicsPixmapItem(parent)
 {
     num = n;
+    count = c;
     curr = def;
     width = x;
     height = y;
 
-    for (int i = 0; i < anum; i++)
+    for (int i = 0; i < count; i++)
     {
         array[i] = arr[i];
     }
@@ -55,6 +54,10 @@ void numUpDown::keyPressEvent(QKeyEvent *event)
         case 16777220: // Enter
             click();
         break;
+
+        case 16777216: // Esc
+            emit back();
+        break;
     }
 }
 
@@ -66,7 +69,7 @@ void numUpDown::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void numUpDown::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     select();
-    emit entered(curr);
+    emit changed(num);
 }
 
 void numUpDown::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -81,7 +84,6 @@ void numUpDown::setText()
     int xPos = this->width/2 - text->boundingRect().width()/2;
     int yPos = this->height/2 - text->boundingRect().height()/2 - 5;
     text->setPos(xPos,yPos);
-
 }
 
 void numUpDown::select()
@@ -102,7 +104,7 @@ void numUpDown::click()
     //QString image = ":/images/images/menu/Chose.png";
     //setPixmap(QPixmap(image).scaled(width,height));
 
-    if (curr < anum-1)
+    if (curr < count-1)
         curr++;
     else
         curr = 0;

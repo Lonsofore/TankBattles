@@ -12,8 +12,10 @@ Caution::Caution(QString image, QString text, int t)
     width = 400;
     height = 176;
 
-    //QString image = ":/images/images/out/Panel.png";
     setPixmap(QPixmap(image).scaled(width,height));
+
+    // шрифт
+    QFontDatabase::addApplicationFont(":/fonts/fonts/msyi.ttf");
 
     // Caution
     text1 = new QGraphicsTextItem(text,this);

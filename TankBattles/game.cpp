@@ -15,29 +15,34 @@
 #include <QMediaPlaylist>
 #include <QFontDatabase>
 #include <QtNetwork>
-#include <QSound>
-//    connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
 
 // где находится игрок
-bool inpve = false;  // пве
-bool inpvp = false;  // пвп
-bool inpvp1 = false; // присоединиться к игре
-bool inpvp2 = false; // создать игру
-bool insett = false; // общие настройки
-bool insett1 = false;// настройки игрока
-bool insett2 = false;// настройки игры
-bool inmenu = false; // меню
+bool inpve = false;   // пве
+bool inpvp = false;   // пвп
+bool inpvp1 = false;  // присоединиться к игре
+bool inpvp2 = false;  // создать игру
+bool insett = false;  // общие настройки
+bool insett1 = false; // настройки игрока
+bool insett2 = false; // настройки игры
+bool inmenu = false;  // меню
+bool ingmenu = false; // внутриигровое меню
+
+int from;
 
 const int nMenuBtns = 4;
 const int nSettBtns = 3;
 const int nSett1Btns = 2;
 const int nSett2Btns = 2;
-const int nSett1UpDn = 3;
+const int nSett2UpDn = 3;
 const int nPvpBtns = 3;
+const int nGMenuBtns = 4;
 
 int curButton;
+
 static inline QByteArray IntToArray(qint32 source);
-Game::Game(QWidget *parent){
+
+Game::Game(QWidget *parent)
+{
     // размеры окна по умолчанию
     int width = 800;
     int height = 600;
@@ -54,6 +59,7 @@ Game::Game(QWidget *parent){
 
     // кол-во спавнов на карте
     spawns = 0;
+    blockSize = 70;
 
     // открываем файл настроек
     QFile file("settings.cfg");
@@ -126,6 +132,7 @@ void Game::change(QString name)
     insett = false;
     insett1 = false;
     insett2 = false;
+    ingmenu = false;
 
     if (name == "menu")
     {
@@ -172,6 +179,12 @@ void Game::change(QString name)
     if (name == "sett2")
     {
         insett2 = true;
+        return;
+    }
+
+    if (name == "gmenu")
+    {
+        ingmenu = true;
         return;
     }
 }
@@ -246,16 +259,16 @@ void Game::switchButton(int n) // смена кнопки
     if (insett2) // основные настройки
     {
         if (n < 0)
-            n = n + nSett1Btns + nSett1UpDn;
-        if (n > nSett1Btns + nSett1UpDn - 1)
-            n = n - nSett1Btns - nSett1UpDn;
+            n = n + nSett2Btns + nSett2UpDn;
+        if (n > nSett2Btns + nSett2UpDn - 1)
+            n = n - nSett2Btns - nSett2UpDn;
 
         curButton = n;
 
-        for (int i=0; i<nSett1Btns; i++)
+        for (int i=0; i<nSett2Btns; i++)
             btns[i]->deselect();
 
-        for (int i=0; i<nSett1UpDn; i++)
+        for (int i=0; i<nSett2UpDn; i++)
             udBtns[i]->deselect();
 
         switch (curButton)
@@ -281,6 +294,73 @@ void Game::switchButton(int n) // смена кнопки
             break;
         }
     }
+
+    if (ingmenu) // внутриигровое меню
+    {
+        if (n < 0)
+            n = n + nGMenuBtns;
+        if (n > nGMenuBtns - 1)
+            n = n - nGMenuBtns;
+
+        curButton = n;
+
+        for (int i=0; i<nGMenuBtns; i++)
+            btns[i]->deselect();
+
+        btns[curButton]->select();
+    }
+}
+
+void Game::menu()
+{
+    change("menu");
+
+    scene->clear();
+    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+
+    // шрифт
+    QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
+
+    // надпись
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("TANKBATTLES"));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont titleFont("Century Gothic",70);
+    title->setFont(titleFont);
+    int txPos = this->width()/2 - title->boundingRect().width()/2;
+    int tyPos = this->height()/2 - 270;
+    title->setPos(txPos,tyPos);
+    scene->addItem(title);
+
+    // кнопки
+    int xPos;
+    int yPos = tyPos + 150; // y координата верхней кнопки
+
+    // названия для кнопок
+    QString *text;
+    text = new QString[4];
+    text[0] = "PvE";
+    text[1] = "PvP";
+    text[2] = "SETTINGS";
+    text[3] = "EXIT";
+
+    btns = new Button*[text->size()+1];
+
+    for (int i=0; i<text->size()+1; i++)
+    {
+        btns[i] = new Button(i, text[i], 275, 70);
+        xPos = this->width()/2 - btns[i]->boundingRect().width()/2;
+        btns[i]->setPos(xPos,yPos);
+        scene->addItem(btns[i]);
+        connect(btns[i],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+        yPos += 80; // для следующей кнопки
+    }
+    // действия кнопок
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(pve()));
+    connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
+    connect(btns[2],SIGNAL(clicked()),this,SLOT(settings()));
+    connect(btns[3],SIGNAL(clicked()),this,SLOT(close()));
+
+    switchButton(0); // по умолчанию выбрать первую кнопку
 }
 
 void Game::pve()
@@ -316,8 +396,8 @@ void Game::pve()
     spawnPoints=new QPoint*[spawns];
 
     QString img;
-    int width = 60; // размер блоков
-    int height = 60;
+    int width = blockSize; // размер блоков
+    int height = blockSize;
     int x,y;
 
     dop = 2*width; // дополнительное кол-во блоков за картой
@@ -391,11 +471,14 @@ void Game::pve()
     player = new Player();
     scene->addItem(player);
     scene->addItem(player->head);
+    connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
+
     connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
+
+
     // очки
     //score = new Score();
     //scene->addItem(score);
-
 
     // музыка
     QMediaPlayer * music = new QMediaPlayer();
@@ -449,6 +532,7 @@ void Game::pvp()
     scene->addItem(btns[0]);
     connect(btns[0],SIGNAL(clicked()),this,SLOT(pvp1()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[0],SIGNAL(back()),this,SLOT(menu()));
 
     // создать игру
     yPos += 80;
@@ -457,6 +541,7 @@ void Game::pvp()
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp2()));
     connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[1],SIGNAL(back()),this,SLOT(menu()));
 
     // вернуться назад
     yPos += 80;
@@ -465,6 +550,7 @@ void Game::pvp()
     scene->addItem(btns[2]);
     connect(btns[2],SIGNAL(clicked()),this,SLOT(menu()));
     connect(btns[2],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[2],SIGNAL(back()),this,SLOT(menu()));
 
     switchButton(0); // по умолчанию выбрать первую кнопку
 }
@@ -473,31 +559,36 @@ void Game::pvp1()
 {
     change("pvp1");
 
-    // заглушка
-    scene->clear();
-    //QMediaPlayer *voice = new QMediaPlayer();
-    //voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
-    //voice->play();
-    //delay(1000);
-    //menu();
     usrid = 1;
-
     pve();
+
+    // заглушка
+    /*
+    scene->clear();
+    QMediaPlayer *voice = new QMediaPlayer();
+    voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
+    voice->play();
+    delay(1000);
+    menu();
+    */
 }
 
 void Game::pvp2()
 {
     change("pvp2");
 
-    // заглушка
-    scene->clear();
-    //QMediaPlayer *voice = new QMediaPlayer();
-    //voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
-    //voice->play();
-    delay(1000);
-    //menu();
     usrid = 0;
     pve();
+
+    // заглушка
+    /*
+    scene->clear();
+    QMediaPlayer *voice = new QMediaPlayer();
+    voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
+    voice->play();
+    delay(1000);
+    menu();
+    */
 }
 
 void Game::settings()
@@ -531,6 +622,7 @@ void Game::settings()
     scene->addItem(btns[0]);
     connect(btns[0],SIGNAL(clicked()),this,SLOT(pSettings()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[0],SIGNAL(back()),this,SLOT(menu()));
 
     // настройки игры
     yPos += 80;
@@ -539,6 +631,7 @@ void Game::settings()
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(mSettings()));
     connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[1],SIGNAL(back()),this,SLOT(menu()));
 
     // вернуться назад
     yPos += 80;
@@ -547,6 +640,7 @@ void Game::settings()
     scene->addItem(btns[2]);
     connect(btns[2],SIGNAL(clicked()),this,SLOT(menu()));
     connect(btns[2],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[2],SIGNAL(back()),this,SLOT(menu()));
 
     switchButton(0); // по умолчанию выбрать первую кнопку
 }
@@ -576,25 +670,25 @@ void Game::mSettings()
     setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     change("sett2");
+    from = 0;
 
     // точки
     int xPos;
     int yPos = this->height()/2 - 195; //верхняя точка
 
-    QString resArray[11] = {"640x480",
-                            "800x480",
-                            "800x600",
-                            "960x540",
-                            "1024x768",
-                            "1280x720",
-                            "1366x768",
-                            "1440x900",
-                            "1600x900",
-                            "1680x1050",
-                            "1920x1080",};
+    const int resnum = 9;
+    QString resArray[resnum] = {"800x600",
+                                "960x540",
+                                "1024x768",
+                                "1280x720",
+                                "1366x768",
+                                "1440x900",
+                                "1600x900",
+                                "1680x1050",
+                                "1920x1080",};
 
     int n;
-    for (int i=0; i<11; i++) // вычисление текущего разрешения
+    for (int i=0; i<resnum; i++) // вычисление текущего разрешения
     {
         QStringList list;
         list = resArray[i].split("x");
@@ -605,8 +699,9 @@ void Game::mSettings()
     }
 
     int n1,n2;
-    QString arr[11] = {"0","10","20","30","40","50","60","70","80","90","100"};
-    for (int i=0; i<11; i++)
+    const int arrnum = 11;
+    QString arr[arrnum] = {"0","10","20","30","40","50","60","70","80","90","100"};
+    for (int i=0; i<arrnum; i++)
     {
         if (arr[i].toInt() == vmusic)
             n1 = i;
@@ -615,44 +710,47 @@ void Game::mSettings()
     }
 
     // обычные кнопки и кнопки-счетчики
-    btns = new Button*[nSett1Btns];
-    udBtns = new numUpDown*[nSett1UpDn];
-
-    // текстовые плашки
-    TextPanel *text1;
-    TextPanel *text2;
+    btns = new Button*[nSett2Btns];
+    udBtns = new numUpDown*[nSett2UpDn];
 
     // разрешение экрана
-    udBtns[0] = new numUpDown(0, resArray, n, 300, 70);
+    udBtns[0] = new numUpDown(0, resArray, resnum, n, 300, 70);
     xPos = this->width()/2 - udBtns[0]->boundingRect().width()/2;
     udBtns[0]->setPos(xPos,yPos);
     scene->addItem(udBtns[0]);
     connect(udBtns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
 
+    QString img = ":/images/images/menu/Panel.png";
+
     // плашка музыка
-    text1 = new TextPanel("Music", 180, 70);
+    text1 = new TextPanel("Music", img, 180, 70);
     yPos += 80;
     text1->setPos(xPos,yPos);
     scene->addItem(text1);
 
     // громкость музыки
     int xPos1 = xPos + text1->boundingRect().width();
-    udBtns[1] = new numUpDown(1, arr, n1, 120, 70);
+    udBtns[1] = new numUpDown(1, arr, arrnum, n1, 120, 70);
     udBtns[1]->setPos(xPos1,yPos);
     scene->addItem(udBtns[1]);
     connect(udBtns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
 
     // плашка звук
-    text2 = new TextPanel("Sound", 180, 70);
+    text2 = new TextPanel("Sound", img, 180, 70);
     yPos += 80;
     text2->setPos(xPos,yPos);
     scene->addItem(text2);
 
     // громкость звуков
-    udBtns[2] = new numUpDown(2, arr, n2, 120, 70);
+    udBtns[2] = new numUpDown(2, arr, arrnum, n2, 120, 70);
     udBtns[2]->setPos(xPos1,yPos);
     scene->addItem(udBtns[2]);
     connect(udBtns[2],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    for (int i=0; i < nSett2UpDn; i++)
+    {
+        connect(udBtns[i],SIGNAL(back()),this,SLOT(settings()));
+    }
 
     // применить
     yPos += 80;
@@ -669,6 +767,11 @@ void Game::mSettings()
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(settings()));
     connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    for (int i=0; i < nSett2Btns; i++)
+    {
+        connect(btns[i],SIGNAL(back()),this,SLOT(settings()));
+    }
 
     switchButton(0); // по умолчанию выбрать первую кнопку
 
@@ -695,8 +798,19 @@ void Game::applySettings()
     // если юзер изменил разрешение
     if (width != maxwidth || height != maxheight)
     {
+        if (from == 0)
+        {
+            scene->setSceneRect(0,0,width,height); // разрешение сцены
+        }
+        else
+        {
+            if (xBlocks*blockSize <= width) // по ширине
+                setFixedWidth(xBlocks*blockSize);
+            if (yBlocks*blockSize <= height) // по высоте
+                setFixedHeight(yBlocks*blockSize);
+        }
+
         setFixedSize(width,height);
-        scene->setSceneRect(0,0,width,height); // разрешение сцены
         moveToCenter(); // окно по центру
 
         maxwidth = this->width();
@@ -720,60 +834,268 @@ void Game::applySettings()
     in << veffects << endl;
 
     //возврат в настройки
-    mSettings();
+    if (from == 0)
+        mSettings();
+    else
+    {
+        delete backgr;
+        delete backgr1;
+        delete text1;
+        delete text2;
+        for (int i = 0; i<nSett2Btns; i++)
+        {
+            delete btns[i];
+        }
+        for (int i = 0; i<nSett2UpDn; i++)
+        {
+            delete udBtns[i];
+        }
+
+        gSettings();
+    }
 }
 
-
-void Game::menu()
+void Game::toGameMenu()
 {
-    change("menu");
+    delete backgr;
+    delete backgr1;
+    delete text1;
+    delete text2;
+    for (int i = 0; i<nSett2Btns; i++)
+    {
+        delete btns[i];
+    }
+    for (int i = 0; i<nSett2UpDn; i++)
+    {
+        delete udBtns[i];
+    }
+    gameMenu();
+}
 
-    scene->clear();
-    setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+void Game::gameMenu()
+{
+    change("gmenu");
 
     // шрифт
     QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
 
-    // надпись
-    QGraphicsTextItem *title = new QGraphicsTextItem(QString("TANKBATTLES"));
-    title->setDefaultTextColor(QColor(71, 71, 71, 255));
-    QFont titleFont("Century Gothic",70);
-    title->setFont(titleFont);
-    int txPos = this->width()/2 - title->boundingRect().width()/2;
-    int tyPos = this->height()/2 - 270;
-    title->setPos(txPos,tyPos);
-    scene->addItem(title);
+    // координата Х в центре экрана
+    int x1 = player->centralX();
+
+    // координата Y в центре экрана
+    int y1 = player->centralY();
 
     // кнопки
-    int xPos;
-    int yPos = tyPos + 150; // y координата верхней кнопки
+    int xPos = x1 - 275/2;
+    int yPos = y1 - 140; // y координата верхней кнопки
+
+    // фон
+    QString img = ":/images/images/menu/Panel.png";
+    backgr = new TextPanel("", img, width(), height());
+    backgr->setPos(x1-width()/2,y1-height()/2);
+    backgr->setZValue(95);
+    scene->addItem(backgr);
+
+    // плашка
+    img = ":/images/images/menu/Back.png";
+    backgr1 = new TextPanel("", img, 305, 340);
+    backgr1->setPos(xPos-15,yPos-15);
+    backgr1->setZValue(96);
+    scene->addItem(backgr1);
 
     // названия для кнопок
     QString *text;
-    text = new QString[4];
-    text[0] = "PvE";
-    text[1] = "PvP";
-    text[2] = "SETTINGS";
-    text[3] = "EXIT";
+    text = new QString[nGMenuBtns];
+    text[0] = "Back";
+    text[1] = "Settings";
+    text[2] = "Menu";
+    text[3] = "Exit";
 
-    btns = new Button*[text->size()+1];
+    btns = new Button*[nGMenuBtns];
 
-    for (int i=0; i<text->size()+1; i++)
+    for (int i=0; i<nGMenuBtns; i++)
     {
         btns[i] = new Button(i, text[i], 275, 70);
-        xPos = this->width()/2 - btns[i]->boundingRect().width()/2;
         btns[i]->setPos(xPos,yPos);
         scene->addItem(btns[i]);
+        btns[i]->setZValue(100);
         connect(btns[i],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+        connect(btns[i],SIGNAL(back()),this,SLOT(back()));
         yPos += 80; // для следующей кнопки
     }
     // действия кнопок
-    connect(btns[0],SIGNAL(clicked()),this,SLOT(pve()));
-    connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
-    connect(btns[2],SIGNAL(clicked()),this,SLOT(settings()));
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(back()));
+    connect(btns[1],SIGNAL(clicked()),this,SLOT(toSettings()));
+    connect(btns[2],SIGNAL(clicked()),this,SLOT(toMenu()));
     connect(btns[3],SIGNAL(clicked()),this,SLOT(close()));
 
     switchButton(0); // по умолчанию выбрать первую кнопку
+}
+
+void Game::toSettings()
+{
+    // переход в настройки из меню
+    delete backgr;
+    delete backgr1;
+    for (int i = 0; i<nGMenuBtns; i++)
+    {
+        delete btns[i];
+    }
+    gSettings();
+}
+
+void Game::gSettings()
+{
+    change("sett2");
+    from = 1;
+
+    // координата Х в центре экрана
+    int x1 = player->centralX();
+
+    // координата Y в центре экрана
+    int y1 = player->centralY();
+
+    // точки
+    int xPos = x1 - 150;
+    int yPos = y1 - 195; //верхняя точка
+
+    // фон
+    QString img = ":/images/images/menu/Panel.png";
+    backgr = new TextPanel("", img, width(), height());
+    backgr->setPos(x1-width()/2,y1-height()/2);
+    backgr->setZValue(95);
+    scene->addItem(backgr);
+
+    // плашка
+    img = ":/images/images/menu/Back.png";
+    backgr1 = new TextPanel("", img, 330, 420);
+    backgr1->setPos(xPos-15,yPos-15);
+    backgr1->setZValue(96);
+    scene->addItem(backgr1);
+
+    const int resnum = 9;
+    QString resArray[resnum] = {"800x600",
+                                "960x540",
+                                "1024x768",
+                                "1280x720",
+                                "1366x768",
+                                "1440x900",
+                                "1600x900",
+                                "1680x1050",
+                                "1920x1080",};
+
+    int n = 0;
+    // это почему-то не работает
+    /*
+    for (int i=0; i<resnum; i++) // вычисление текущего разрешения
+    {
+        QStringList list;
+        list = resArray[i].split("x");
+        int width = list[0].toInt();
+        int height = list[1].toInt();
+        if (width == this->width() && height == this->height())
+            n = i;
+    } */
+
+    int n1,n2;
+    const int arrnum = 11;
+    QString arr[arrnum] = {"0","10","20","30","40","50","60","70","80","90","100"};
+    for (int i=0; i<arrnum; i++)
+    {
+        if (arr[i].toInt() == vmusic)
+            n1 = i;
+        if (arr[i].toInt() == veffects)
+            n2 = i;
+    }
+
+    // обычные кнопки и кнопки-счетчики
+    btns = new Button*[nSett2Btns];
+    udBtns = new numUpDown*[nSett2UpDn];
+
+    // разрешение экрана
+    udBtns[0] = new numUpDown(0, resArray, resnum, n, 300, 70);
+    xPos = x1 - udBtns[0]->boundingRect().width()/2;
+    udBtns[0]->setPos(xPos,yPos);
+    scene->addItem(udBtns[0]);
+    connect(udBtns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    img = ":/images/images/menu/Panel.png";
+
+    // плашка музыка
+    text1 = new TextPanel("Music", img, 180, 70);
+    yPos += 80;
+    text1->setPos(xPos,yPos);
+    text1->setZValue(100);
+    scene->addItem(text1);
+
+    // громкость музыки
+    int xPos1 = xPos + text1->boundingRect().width();
+    udBtns[1] = new numUpDown(1, arr, arrnum, n1, 120, 70);
+    udBtns[1]->setPos(xPos1,yPos);
+    scene->addItem(udBtns[1]);
+    connect(udBtns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    // плашка звук
+    text2 = new TextPanel("Sound", img, 180, 70);
+    yPos += 80;
+    text2->setPos(xPos,yPos);
+    text2->setZValue(100);
+    scene->addItem(text2);
+
+    // громкость звуков
+    udBtns[2] = new numUpDown(2, arr, arrnum, n2, 120, 70);
+    udBtns[2]->setPos(xPos1,yPos);
+    scene->addItem(udBtns[2]);
+    connect(udBtns[2],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    for (int i=0; i < nSett2UpDn; i++)
+    {
+        connect(udBtns[i],SIGNAL(back()),this,SLOT(toGameMenu()));
+        udBtns[i]->setZValue(100);
+    }
+
+    // применить
+    yPos += 80;
+    btns[0] = new Button(3, "Apply", 300, 70);
+    btns[0]->setPos(xPos,yPos);
+    scene->addItem(btns[0]);
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(applySettings()));
+    connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    // вернуться назад
+    yPos += 80;
+    btns[1] = new Button(4, "Back", 300, 70);
+    btns[1]->setPos(xPos,yPos);
+    scene->addItem(btns[1]);
+    connect(btns[1],SIGNAL(clicked()),this,SLOT(toGameMenu()));
+    connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
+    for (int i=0; i < nSett2Btns; i++)
+    {
+        connect(btns[i],SIGNAL(back()),this,SLOT(toGameMenu()));
+        btns[i]->setZValue(100);
+    }
+
+    switchButton(0); // по умолчанию выбрать первую кнопку
+}
+
+void Game::toMenu()
+{
+    // тут сделать сигнал, что игрок отключился
+    scene->setSceneRect(0,0,maxwidth,maxheight);
+    setFixedSize(maxwidth, maxheight);
+    menu();
+}
+
+void Game::back()
+{
+    delete backgr;
+    delete backgr1;
+    for (int i = 0; i<nGMenuBtns; i++)
+    {
+        delete btns[i];
+    }
+    player->setFocus();
 }
 
 // перемещает окно в центр экрана
@@ -791,8 +1113,8 @@ void Game::mouseReleaseEvent(QMouseEvent *event)
 {
     if (inpve)
         player->setFocus();
-    if (inmenu)
-        btns[curButton]->setFocus();
+    if (inmenu || insett || insett1 || insett2 || inpvp);
+        switchButton(curButton);
 }
 
 void Game::focusOutEvent(QFocusEvent *event)
@@ -862,10 +1184,3 @@ QByteArray IntToArray(qint32 source)
     data << source;
     return temp;
 }
-
-
-
-
-
-
-

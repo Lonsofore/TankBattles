@@ -20,14 +20,11 @@ class QAction;
 class QTcpSocket;
 QT_END_NAMESPACE
 
-class Game: public QGraphicsView{
+class Game: public QGraphicsView
+{
     Q_OBJECT
 public:
     Game(QWidget * parent=0);
-
-    // кнопки для менюшек
-    Button **btns;
-    numUpDown **udBtns;
 
     // громкость музыки и эффектов
     int vmusic;
@@ -42,6 +39,7 @@ public:
     int dop;
     int xBlocks;
     int yBlocks;
+    int blockSize;
     int spawns;
     QPoint **spawnPoints;
 
@@ -62,29 +60,51 @@ public:
     void focusOutEvent(QFocusEvent * event);
     void wheelEvent(QWheelEvent * event);
     void changeEvent(QEvent * event);
+
 private slots:
     void SendData();
+
 public slots:
     void switchButton(int n); // сменить кнопку на выбранную
 
     void menu(); // запустить меню
-    void pve();
+    void pve();  // пве
 
-    void pvp();
-    void pvp1();
-    void pvp2();
+    void pvp();  // открывает меню выбора пвп
+    void pvp1(); // присоединиться
+    void pvp2(); // создать
 
-    void settings();
-    void pSettings();
-    void mSettings();
-    void applySettings();
+    void settings();  // список настроек
+    void pSettings(); // настройки игрока
+    void mSettings(); // настройки игры
+    void applySettings(); // применить настройки
+
+    void gameMenu(); // внутриигровое меню
+    void toGameMenu(); // в меню
+    void back(); // вернуться в игру
+    void gSettings(); // настройки игры из игры
+    void toSettings(); //  в настройки
+    void toMenu(); // вернуться в меню
 
     void processPendingDatagrams();
 private:
+    // кнопки для менюшек
+    Button **btns;
+    numUpDown **udBtns;
+
+    // плашки для менюшек
+    TextPanel *backgr;
+    TextPanel *backgr1;
+
+    // текстовые плашки
+    TextPanel *text1;
+    TextPanel *text2;
+
+    // мультиплеерная ерунда
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid;
-    bool isrecieving; 
+    bool isrecieving;
 };
 
 #endif // GAME

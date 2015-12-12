@@ -6,12 +6,12 @@
 #include <QGraphicsView>
 #include <QFontDatabase>
 
-TextPanel::TextPanel(QString t, int x, int y)
+TextPanel::TextPanel(QString t, QString img, int x, int y)
 {
     width = x;
     height = y;
 
-    QString image = ":/images/images/menu/Panel.png";
+    QString image = img;
     setPixmap(QPixmap(image).scaled(width,height));
 
     // шрифт

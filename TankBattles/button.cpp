@@ -50,6 +50,10 @@ void Button::keyPressEvent(QKeyEvent *event)
         case 16777220: // Enter
             click();
         break;
+
+        case 16777216: // Esc
+            emit back();
+        break;
     }
 }
 
@@ -105,7 +109,7 @@ void Button::click()
         QString image = ":/images/images/menu/Chose.png";
         setPixmap(QPixmap(image).scaled(width,height));
 
-        delay(1000);
+        delay(500);
         pressed = false;
         emit clicked();
     }

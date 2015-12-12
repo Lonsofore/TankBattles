@@ -19,8 +19,6 @@
 
 #include <QDebug>
 
-int round(double x);
-
 extern Game * game;
 
 Tank::Tank()
@@ -32,11 +30,13 @@ Tank::Tank()
 void Tank::defaultTank()
 {
     // размер танка
-    pixsize = 200;
+    pixsize = 220;
 
     // обнуление
     xfix = 0;
     yfix = 0;
+
+    health = 100;
 
     // платформа
     degree = 0;
@@ -209,6 +209,30 @@ void Tank::headLeft(bool check)
     }
 }
 
+void Tank::headRight(int deg, bool check)
+{
+    hdegree = checkDegree(hdegree + deg);
+    hrotate();
+
+    if (check == false)
+    {
+        while (isCollide() == true)
+            headLeft(check = true);
+    }
+}
+
+void Tank::headLeft(int deg, bool check)
+{
+    hdegree = checkDegree(hdegree - deg);
+    hrotate();
+
+    if (check == false)
+    {
+        while (isCollide() == true)
+            headRight(check = true);
+    }
+}
+
 void Tank::fire()
 {
     int x1,y1;
@@ -357,14 +381,6 @@ void Tank::changePos(int x, int y)
     head->setPos(x,y);
 }
 
-void Tank::changeAngle(int TAngle, int HAngle)
-{
-    this->degree = TAngle;
-    this->rotateLeft(0);
-    this->hdegree = HAngle;
-    this->rotateLeft(0);
-}
-
 void Tank::deleteTank()
 {
     setPixmap(QPixmap(":/images/images/tanks/empty.png").scaled(pixsize,pixsize));
@@ -378,17 +394,15 @@ void Tank::spawnTank()
     randomSpawn();
 }
 
-int round(double x)
+void Tank::changeAngle(int TAngle, int HAngle)
 {
-   if (x > 0)
-   {
-       x += 0.5;
-       return (int)x;
-   }
-   if (x < 0)
-   {
-       x -= 0.5;
-       return (int)x;
-   }
-   if (x == 0) return 0;
+    this->degree = TAngle;
+    this->rotateLeft(0);
+    this->hdegree = HAngle;
+    this->rotateLeft(0);
 }
+
+
+
+
+

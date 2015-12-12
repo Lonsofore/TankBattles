@@ -8,6 +8,7 @@
 
 #include <math.h>
 #define PI 3.14159265
+
 #include <QDebug>
 
 int Round(double x);
@@ -98,10 +99,10 @@ void Bullet::anim()
     {
         QPixmap pix(":/images/images/fire/" + QString::number(count) + ".png");
         QPixmap pix1;
-        pix1 = rotatePix(pix,degree+90).scaled(pixsize,pixsize);
+        pix1 = rotatePix(pix,degree+90).scaled(pixsize*1.2,pixsize*1.2);
 
-        int x1 = tank->x() + tank->pixsize/2 + Round(cos(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
-        int y1 = tank->y() + tank->pixsize/2 + Round(sin(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
+        int x1 = tank->x() + tank->pixsize/2 + Round(cos(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize*1.2/2;
+        int y1 = tank->y() + tank->pixsize/2 + Round(sin(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize*1.2/2;
 
         pm->setPos(x1,y1);
         pm->setPixmap(pix1);

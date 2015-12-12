@@ -23,6 +23,8 @@ public:
     void rotateLeft(int deg, bool check = 0);  //
     void headRight(bool check = 0); // поворот башни направо
     void headLeft(bool check = 0);  // и налево
+    void headRight(int deg, bool check = 0); // определенные
+    void headLeft(int deg, bool check = 0);  //
     void fire(); // выстрел (ограничений между выстрелами нет!)
     void randomSpawn(); // рандомный спавн танка
     void changePos(int x, int y); // смена позиции танка за заданную
@@ -32,6 +34,8 @@ public:
 
     int checkDegree(int deg); // проверка, находится на угол поворота в пределах 0,360
                               // возвращает угол в допустимых пределах
+
+    int health; // здровье
 
     // размер танка
     int pixsize;
