@@ -19,6 +19,8 @@
 
 #include <QDebug>
 
+int round(double x);
+
 extern Game * game;
 
 Tank::Tank()
@@ -376,23 +378,17 @@ void Tank::spawnTank()
     randomSpawn();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+int round(double x)
+{
+   if (x > 0)
+   {
+       x += 0.5;
+       return (int)x;
+   }
+   if (x < 0)
+   {
+       x -= 0.5;
+       return (int)x;
+   }
+   if (x == 0) return 0;
+}

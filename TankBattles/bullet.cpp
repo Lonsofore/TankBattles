@@ -10,6 +10,8 @@
 #define PI 3.14159265
 #include <QDebug>
 
+int Round(double x);
+
 extern Game * game;
 
 int count;
@@ -98,8 +100,8 @@ void Bullet::anim()
         QPixmap pix1;
         pix1 = rotatePix(pix,degree+90).scaled(pixsize,pixsize);
 
-        int x1 = tank->x() + tank->pixsize/2 + round(cos(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
-        int y1 = tank->y() + tank->pixsize/2 + round(sin(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
+        int x1 = tank->x() + tank->pixsize/2 + Round(cos(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
+        int y1 = tank->y() + tank->pixsize/2 + Round(sin(tank->hdegree * PI / 180) * (tank->pixsize/2 + tank->pixsize/20)) - pixsize/2;
 
         pm->setPos(x1,y1);
         pm->setPixmap(pix1);
@@ -196,4 +198,19 @@ void Bullet::move()
         scene()->removeItem(this);
         delete this;
     }
+}
+
+int Round(double x)
+{
+   if (x > 0)
+   {
+       x += 0.5;
+       return (int)x;
+   }
+   if (x < 0)
+   {
+       x -= 0.5;
+       return (int)x;
+   }
+   if (x == 0) return 0;
 }
