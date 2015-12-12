@@ -3,6 +3,7 @@
 #include "QMessageBox"
 #include "QGraphicsScene"
 #include "QGraphicsView"
+#include "QCloseEvent"
 #include "block.h"
 #include "qdebug.h"
 QGraphicsScene * scene;
@@ -64,7 +65,7 @@ void preview::on_preview_windowTitleChanged(const QString &title)
                 y = height * i;
                 if (itm == 1) img = ":/textures/breakable.png";
                 if (itm == 2) img = ":/textures/unbreakable.png";
-                if (itm == 3) img = "";
+                if (itm == 3) img = ":/textures/flag.png";
                 block->setPixmap(QPixmap(img).scaled(width,height));
                 block->setPos(x,y);
                 scene->addItem(block);
@@ -73,4 +74,11 @@ void preview::on_preview_windowTitleChanged(const QString &title)
 
         }
     }
+}
+
+void preview::closeEvent(QCloseEvent *ev)
+{
+    ui->graphicsView->deleteLater();
+    ui->centralwidget->deleteLater();
+    ev->accept();
 }

@@ -1,11 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "preview.h"
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QFile>
-#include <QTextStream>
 
+
+bool isChanged = 0;
 int spwncnt = 0;  //Кол-во точек спавна
 preview *Preview;
 MainWindow::MainWindow(QWidget *parent) :
@@ -29,6 +27,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_apply_button_clicked()
 {
+    isChanged = 1;
     ui->field->setColumnCount(ui->xspin->value());
     ui->field->setRowCount(ui->yspin->value());
     for (int i = 0; i<ui->field->rowCount(); i++)  //Заполнение пустых блоков нулями
@@ -59,7 +58,8 @@ void MainWindow::on_Save_triggered()
         }
         else
         {
-            QString fname = QFileDialog::getSaveFileName(this, tr("Сохранение"), "", tr("Map files (*.map)"));
+            QString fname = QFileDialog::getSaveFileName(this, tr("Сохранение"), "Map_Name.map", tr("Map files (*.map)"));
+            if (fname.split('.').at(1) != "map") fname += ".map";
             QFile file(fname);
             if(!file.open(QIODevice::WriteOnly))
             {
@@ -86,15 +86,18 @@ void MainWindow::on_Load_triggered()
 {
     if ((ui->field->rowCount() != 0) && (ui->field->columnCount() != 0)) //Если что-то открыто
     {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
-        if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
-        ui->field->clearContents();
-        ui->field->clearContents();
-        ui->field->setRowCount(0);
-        ui->field->setColumnCount(0);
+        if (isChanged) //Если произошли какие-нибудь изменения
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+        }
     }
-    QString fname = QFileDialog::getOpenFileName(this, tr("Загрузка"), "", tr("Map files (*.map)"));
+    ui->field->clearContents();
+    ui->field->clearContents();
+    ui->field->setRowCount(0);
+    ui->field->setColumnCount(0);
+    QString fname = QFileDialog::getOpenFileName(this, tr("Загрузка"), (QDir::currentPath() + "/maps"), tr("Map files (*.map)"));
     QFile file(fname);
     if(!file.open(QIODevice::ReadOnly))
     {
@@ -183,7 +186,7 @@ void MainWindow::on_Load_triggered()
                     }
                     r = r+1; //Строка прочитанна
                 }
-                for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
+                /*for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
                 {
                    if (((spcord[i][0] > 0) && (spcord[i][0] < ui->field->rowCount()-1)) && ((spcord[i][1] > 0) && (spcord[i][1] < ui->field->columnCount()-1)))
                    {
@@ -209,7 +212,7 @@ void MainWindow::on_Load_triggered()
                        file.close();
                        return;
                    }
-                }
+                }*/
             }
             else
             {
@@ -229,6 +232,7 @@ void MainWindow::on_Load_triggered()
             {
                 ui->xspin->setValue(colcnt);
                 ui->yspin->setValue(rowcnt);
+                isChanged = 0;
             }
         }
         else
@@ -242,9 +246,12 @@ void MainWindow::on_New_triggered()
 {
     if ((ui->field->rowCount() != 0) || (ui->field->columnCount() != 0)) //Если что-то открыто
     {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
-        if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+        if(isChanged) //Если что-либо изменено
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+        }
     } //Стираем всё
     ui->field->clearContents(); //Стираем всё
     ui->field->setRowCount(0);
@@ -269,7 +276,7 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.5\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.6\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
@@ -281,15 +288,16 @@ void MainWindow::on_preview_clicked()
     else
     {   if (spwncnt < 2)
         {
-            QMessageBox::critical(this, "Внимание!", "Справку не читай @ Кнопки нажимай");
+            QMessageBox::critical(this, "Внимание!", "Установленно менее двух точек спавна");
         }
         else
         {
             Preview = new preview(this);
-            QObject::connect(Preview, SIGNAL(GetData(int, int)),this, SLOT(GetItem(int,int)));      //Получение данных
-            QObject::connect(this, SIGNAL(ReturnValue(int)), Preview, SLOT(RecieveValue(int)));     //Из таблицы (предв. просмотр)
-            QObject::connect(Preview, SIGNAL(GetSize()), this, SLOT(GetSize()));                         //Получение
-            QObject::connect(this, SIGNAL(ReturnSize(int,int)), Preview, SLOT(RecieveSize(int,int)));    //Размер (предв. просмотр)
+            QObject::connect(Preview, SIGNAL(GetData(int, int)),this, SLOT(GetItem(int,int)));       //Получение данных
+            QObject::connect(this, SIGNAL(ReturnValue(int)), Preview, SLOT(RecieveValue(int)));      //Из таблицы (предв. просмотр)
+            QObject::connect(Preview, SIGNAL(GetSize()), this, SLOT(GetSize()));                     //Получение
+            QObject::connect(this, SIGNAL(ReturnSize(int,int)), Preview, SLOT(RecieveSize(int,int)));//Размер (предв. просмотр)
+            Preview->setAttribute(Qt::WA_DeleteOnClose);
             Preview->show();
             Preview->setWindowTitle("Предварительный просмотр");
         }
@@ -324,7 +332,8 @@ void MainWindow::on_selection_comboBox_currentIndexChanged(int index)
     }
 }
 
-//Очистка выделения таблицы (В противном случае при изенении типа блока и клике по таблице изменяется тип последних выделенных блоков)
+//Очистка выделения таблицы (В противном случае при изенении
+//типа блока и клике по таблице изменяется тип последних выделенных блоков)
 void MainWindow::on_br_btn_clicked()
 {
     ui->field->clearSelection();
@@ -347,6 +356,7 @@ void MainWindow::on_spwn_btn_clicked()
 //Установка блока
 void MainWindow::on_field_itemSelectionChanged()
 {
+    isChanged = 1;
     int row, column;
     {
         QList<QTableWidgetItem*> selection =  ui->field->selectedItems();
@@ -401,4 +411,18 @@ void MainWindow::GetSize()
     x = ui->field->rowCount();
     y = ui->field->columnCount();
     emit ReturnSize(x, y);
+}
+
+void MainWindow::closeEvent(QCloseEvent *ev)
+{
+    if ((ui->field->rowCount() != 0) && (ui->field->columnCount() != 0)) //Если что-то открыто
+    {
+        if (isChanged) //Если произошли какие-нибудь изменения
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+        }
+    }
+    ev->accept();
 }

@@ -34,6 +34,7 @@ private slots:
 
 private:
     Ui::preview *ui;
+    void closeEvent(QCloseEvent *);
     void draw();
     int citm;
     int xsize;

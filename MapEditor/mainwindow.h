@@ -3,6 +3,11 @@
 
 #include <QMainWindow>
 #include "preview.h"
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QCloseEvent>
 
 namespace Ui {
 class MainWindow;
@@ -63,6 +68,8 @@ signals:
 
 private:
     Ui::MainWindow *ui;
+
+    void closeEvent(QCloseEvent *);
 };
 
 #endif // MAINWINDOW_H

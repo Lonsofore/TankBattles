@@ -2,5 +2,6 @@
     <qresource prefix="/textures">
         <file>breakable.png</file>
         <file>unbreakable.png</file>
+        <file>flag.png</file>
     </qresource>
 </RCC>
