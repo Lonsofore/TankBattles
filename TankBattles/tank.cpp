@@ -397,9 +397,9 @@ void Tank::spawnTank()
 void Tank::changeAngle(int TAngle, int HAngle)
 {
     this->degree = TAngle;
-    this->rotateLeft(0);
+    this->rotateLeft(0,true);
     this->hdegree = HAngle;
-    this->rotateLeft(0);
+    this->rotateLeft(0,true);
 }
 
 

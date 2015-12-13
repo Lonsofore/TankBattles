@@ -494,7 +494,7 @@ void Game::pve()
 
     //Подготовка к приему данных
     tcpSocket = new QTcpSocket();
-    tcpSocket->connectToHost("192.168.1.3", 7);
+    tcpSocket->connectToHost("192.168.0.112", 7);
     tcpSocket->waitForConnected(3000000);
     udpSocket = new QUdpSocket(this);
     udpSocket->bind(45454, QUdpSocket::ShareAddress);
