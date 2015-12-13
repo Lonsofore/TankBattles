@@ -27,7 +27,7 @@ public:
 
     void playerRotate();
     void playerFire();
-    void spawnPlayer();
+    void killPlayer();
 
     void playerReset(); // сбросить значения движений
 
@@ -42,6 +42,9 @@ private:
 
     Caution *caution;
     Caution *died;
+
+public slots:
+    void spawnPlayer();
 
 signals:
     void tomenu();

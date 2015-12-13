@@ -5,6 +5,8 @@
 #include "game.h"
 #include "delay.h"
 #include <typeinfo>
+#include <QLabel>
+#include <QMovie>
 
 #include <math.h>
 #define PI 3.14159265
@@ -24,11 +26,14 @@ Bullet::Bullet(QGraphicsPixmapItem *parent)
     tank = new Tank;
     tank = dynamic_cast <Tank *> (parent);
 
+    dmg = 40;
+
     speed = 40;
     degree = tank->hdegree;
     pixsize = tank->pixsize*0.16;
 
     image = ":/images/images/bullet.png";
+    empty = ":/images/images/empty.png";
     setPixmap(QPixmap(image).scaled(pixsize,pixsize));
     rotate();
     setZValue(0);
@@ -37,13 +42,13 @@ Bullet::Bullet(QGraphicsPixmapItem *parent)
     pm = new QGraphicsPixmapItem;
     game->scene->addItem(pm);
 
-    QTimer *timer = new QTimer();
-    connect(timer,SIGNAL(timeout()),this,SLOT(move()));
-    timer->start(20);
-
-    QTimer *timerf = new QTimer();
+    timerf = new QTimer();
     connect(timerf,SIGNAL(timeout()),this,SLOT(anim()));
     timerf->start(50);
+
+    timer = new QTimer();
+    connect(timer,SIGNAL(timeout()),this,SLOT(move()));
+    timer->start(20);
 }
 
 void Bullet::rotate()
@@ -89,14 +94,15 @@ QPixmap Bullet::rotatePix(QPixmap pix, int deg)
 // анимация выстрела
 void Bullet::anim()
 {
-    if (count >= 3 && isfire == true)
+    if (count >= 3)
     {
-        isfire = false;
         delete pm;
     }
 
     if (count < 3)
     {
+        isfire = true;
+
         QPixmap pix(":/images/images/fire/" + QString::number(count) + ".png");
         QPixmap pix1;
         pix1 = rotatePix(pix,degree+90).scaled(pixsize*1.2,pixsize*1.2);
@@ -107,8 +113,17 @@ void Bullet::anim()
         pm->setPos(x1,y1);
         pm->setPixmap(pix1);
 
-        isfire = true;
         count++;
+    }
+    else
+    {
+        if (timer->isActive() == false)
+        {
+            scene()->removeItem(this);
+            delete(this);
+        }
+        else
+            timerf->stop();
     }
 }
 
@@ -117,24 +132,16 @@ void Bullet::move()
     // collide
     QList<QGraphicsItem *> colliding_items = collidingItems();
 
+    bool hit = false;
+
     for (int i = 0, n = colliding_items.size(); i < n; ++i)
     {
         if (typeid(*(colliding_items[i])) == typeid(Tank))
         {
-            Tank * tank = dynamic_cast <Tank *> (colliding_items[i]);
+            hit = true;
 
-            if (isfire == true)
-            {
-                isfire = false;
-                delete pm;
-            }
-
-            scene()->removeItem(this);
-            delete(this);
-
-            tank->deleteTank();
-            tank->spawnTank();
-            return;
+            Tank * tank1 = dynamic_cast <Tank *> (colliding_items[i]);
+            tank1->decHealth(dmg);
         }
 
         if (typeid(*(colliding_items[i])) == typeid(Block))
@@ -142,44 +149,41 @@ void Bullet::move()
             Block * block = dynamic_cast <Block *> (colliding_items[i]);
             if (block->num == 1) // разрушаемый
             {
+                hit = true;
+
                 int random = 1 + rand()%3;
                 QMediaPlayer *sound = new QMediaPlayer();
                 sound->setMedia(QUrl("qrc:/sounds/sounds/break" + QString::number(random) + ".mp3"));
                 sound->setVolume(game->veffects);
                 sound->play();
 
-                if (isfire == true)
-                {
-                    isfire = false;
-                    delete pm;
-                }
-
                 scene()->removeItem(colliding_items[i]);
-                scene()->removeItem(this);
-
                 delete(colliding_items[i]);
-                delete(this);
-
-                return;
             }
             if (block->num == 2) // неразрушаемый
             {
+                hit = true;
+
                 QMediaPlayer *sound = new QMediaPlayer();
                 sound->setMedia(QUrl("qrc:/sounds/sounds/nobreak.mp3"));
                 sound->setVolume(game->veffects);
                 sound->play();
+            }
+        }
 
-                if (isfire == true)
-                {
-                    isfire = false;
-                    delete pm;
-                }
-
+        if (hit)
+        {
+            if (timerf->isActive() == false && isfire == true)
+            {
                 scene()->removeItem(this);
                 delete(this);
-
-                return;
             }
+            else
+            {
+                setPixmap(QPixmap(empty));
+                timer->stop();
+            }
+            return;
         }
     }   
 
@@ -190,14 +194,16 @@ void Bullet::move()
 
     if (pos().y() < 0 || pos().y() > scene()->height() || pos().x() < 0 || pos().x() > scene()->width())
     {
-        if (isfire == true)
+        if (timerf->isActive() == false && isfire == true)
         {
-            isfire = false;
-            delete pm;
+            scene()->removeItem(this);
+            delete(this);
         }
-
-        scene()->removeItem(this);
-        delete this;
+        else
+        {
+            setPixmap(QPixmap(empty));
+            timer->stop();
+        }
     }
 }
 

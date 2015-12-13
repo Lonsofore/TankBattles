@@ -52,6 +52,8 @@ Game::Game(QWidget *parent)
     scene->setSceneRect(0,0,width,height); // разрешение сцены
     setScene(scene);
 
+    scene->setStickyFocus(true);
+
     // чтобы не появлялись скроллбары
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -851,6 +853,7 @@ void Game::applySettings()
             delete udBtns[i];
         }
 
+        centerOn(player);
         gSettings();
     }
 }
@@ -894,7 +897,7 @@ void Game::gameMenu()
     backgr = new TextPanel("", img, width(), height());
     backgr->setPos(x1-width()/2,y1-height()/2);
     backgr->setZValue(95);
-    scene->addItem(backgr);
+    //scene->addItem(backgr);
 
     // плашка
     img = ":/images/images/menu/Back.png";
@@ -964,7 +967,7 @@ void Game::gSettings()
     backgr = new TextPanel("", img, width(), height());
     backgr->setPos(x1-width()/2,y1-height()/2);
     backgr->setZValue(95);
-    scene->addItem(backgr);
+    //scene->addItem(backgr);
 
     // плашка
     img = ":/images/images/menu/Back.png";

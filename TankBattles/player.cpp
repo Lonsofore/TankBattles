@@ -2,6 +2,9 @@
 #include "game.h"
 #include "delay.h"
 #include <qglobal.h>
+#include <QTimer>
+#include <QLabel>
+#include <QMovie>
 
 #include <QDebug>
 
@@ -19,6 +22,8 @@ int spin = 0;
 int nMenuBtns = 4;
 int curBtn;
 
+bool alive;
+
 extern Game * game;
 
 Player::Player()
@@ -33,6 +38,8 @@ Player::Player()
     // стрельба
     fireTime = 2000;
 
+    alive = true;
+
     defaultTank();
     game->centerOn(this);
 
@@ -44,8 +51,8 @@ Player::Player()
 void Player::keyPressEvent(QKeyEvent *event)
 {
     //qDebug() << (uint) event->key(); // чтобы узнать код клавиши
-    //if (ingame)
-    //{
+    if (alive)
+    {
         switch ((uint) event->key())
         {
             // Двигаться вперед
@@ -125,6 +132,14 @@ void Player::keyPressEvent(QKeyEvent *event)
             break;
 
             case 52:
+                QLabel *gif_anim = new QLabel();
+                gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
+                QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
+                gif_anim->setMovie(movie);
+                gif_anim->move(x()-25,y()-25);
+                movie->setScaledSize(QSize(250,250));
+                movie->start();
+                QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
 
             break;
         }
@@ -137,7 +152,7 @@ void Player::keyPressEvent(QKeyEvent *event)
                 onKey(0);
         }
         //game->health->setPos(game->player->x()+40,game->player->y()+50);
-    //}
+    }
 }
 
 void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, только отмена
@@ -191,8 +206,8 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
 void Player::onKey(int acc) // player действия при нажатии клавиши. acc - задержка танка при старте
 {
     action = true;
-    while (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
-           fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState || out == true)
+    while (alive == true && (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
+           fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState || out == true))
     {
         game->centerOn(this);
 
@@ -250,9 +265,7 @@ void Player::onKey(int acc) // player действия при нажатии к�
                     game->scene->addItem(died);
 
                     // убить
-                    deleteTank();
-                    // и воскресить
-                    spawnPlayer();
+                    killPlayer();
                     // BUHAHA
                 }
             }
@@ -373,10 +386,17 @@ void Player::playerFire()
     fire();
 }
 
+void Player::killPlayer()
+{
+    deleteTank();
+    QTimer::singleShot(2000, this, SLOT(spawnPlayer()));
+}
+
 void Player::spawnPlayer()
 {
-    spawnTank();
+    //qDebug() << "spawn!";
     delete died;
+    spawnTank();
     game->centerOn(this);
     setFocus();
 }

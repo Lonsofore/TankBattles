@@ -9,6 +9,9 @@
 #include "delay.h"
 #include <typeinfo>
 #include <cstdlib>
+#include <QTimer>
+#include <QLabel>
+#include <QMovie>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +39,9 @@ void Tank::defaultTank()
     xfix = 0;
     yfix = 0;
 
-    health = 100;
+    alive = true;
+    maxhealth = 100;
+    health = maxhealth;
 
     // платформа
     degree = 0;
@@ -337,61 +342,106 @@ bool Tank::isCollide()
 // с возвратом qpixmap какой-то гемор, потому функций сделано две
 void Tank::rotate() // поворот платформы
 {
-    QPixmap shipPixels(baseImage);
-    QPixmap rotatePixmap(shipPixels.size());
-    rotatePixmap.fill(Qt::transparent);
+    if (alive == true)
+    {
+        QPixmap shipPixels(baseImage);
+        QPixmap rotatePixmap(shipPixels.size());
+        rotatePixmap.fill(Qt::transparent);
 
-    QPainter p(&rotatePixmap);
-    p.setRenderHint(QPainter::Antialiasing); // сглаживание
-    p.setRenderHint(QPainter::SmoothPixmapTransform);
-    p.setRenderHint(QPainter::HighQualityAntialiasing);
-    p.translate(rotatePixmap.size().width() / 2, rotatePixmap.size().height() / 2);
-    p.rotate(degree); // градус
-    p.translate(-rotatePixmap.size().width() / 2, -rotatePixmap.size().height() / 2);
-    p.drawPixmap(0, 0, shipPixels);
-    p.end();
-    shipPixels = rotatePixmap;
+        QPainter p(&rotatePixmap);
+        p.setRenderHint(QPainter::Antialiasing); // сглаживание
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        p.setRenderHint(QPainter::HighQualityAntialiasing);
+        p.translate(rotatePixmap.size().width() / 2, rotatePixmap.size().height() / 2);
+        p.rotate(degree); // градус
+        p.translate(-rotatePixmap.size().width() / 2, -rotatePixmap.size().height() / 2);
+        p.drawPixmap(0, 0, shipPixels);
+        p.end();
+        shipPixels = rotatePixmap;
 
-    setPixmap(shipPixels.scaled(pixsize,pixsize));
+        setPixmap(shipPixels.scaled(pixsize,pixsize));
+    }
 }
 
 void Tank::hrotate() // поворот башни
 {
-    QPixmap shipPixels(headImage);
-    QPixmap rotatePixmap(shipPixels.size());
-    rotatePixmap.fill(Qt::transparent);
+    if (alive == true)
+    {
+        QPixmap shipPixels(headImage);
+        QPixmap rotatePixmap(shipPixels.size());
+        rotatePixmap.fill(Qt::transparent);
 
-    QPainter p(&rotatePixmap);
-    p.setRenderHint(QPainter::Antialiasing); // сглаживание
-    p.setRenderHint(QPainter::SmoothPixmapTransform);
-    p.setRenderHint(QPainter::HighQualityAntialiasing);
-    p.translate(rotatePixmap.size().width() / 2, rotatePixmap.size().height() / 2);
-    p.rotate(hdegree); // градус
-    p.translate(-rotatePixmap.size().width() / 2, -rotatePixmap.size().height() / 2);
-    p.drawPixmap(0, 0, shipPixels);
-    p.end();
-    shipPixels = rotatePixmap;
+        QPainter p(&rotatePixmap);
+        p.setRenderHint(QPainter::Antialiasing); // сглаживание
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        p.setRenderHint(QPainter::HighQualityAntialiasing);
+        p.translate(rotatePixmap.size().width() / 2, rotatePixmap.size().height() / 2);
+        p.rotate(hdegree); // градус
+        p.translate(-rotatePixmap.size().width() / 2, -rotatePixmap.size().height() / 2);
+        p.drawPixmap(0, 0, shipPixels);
+        p.end();
+        shipPixels = rotatePixmap;
 
-    head->setPixmap(shipPixels.scaled(pixsize,pixsize));
+        head->setPixmap(shipPixels.scaled(pixsize,pixsize));
+    }
 }
+
+void Tank::decHealth(int v)
+{
+    health -= v;
+    if (health < 0)
+        killTank();
+}
+
+void Tank::deleteSlot()
+{
+    deleteTank();
+}
+
+void Tank::deleteTank()
+{
+    alive = false;
+    head->setPixmap(QPixmap(":/images/images/empty.png").scaled(pixsize,pixsize));
+    setPixmap(QPixmap(":/images/images/empty.png").scaled(pixsize,pixsize));
+
+    QLabel *gif_anim = new QLabel();
+    gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
+    QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
+    gif_anim->setMovie(movie);
+    gif_anim->move(x()-25,y()-25);
+    movie->setScaledSize(QSize(250,250));
+    movie->start();
+    QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
+}
+
+void Tank::spawnSlot()
+{
+    spawnTank();
+}
+
+void Tank::spawnTank()
+{
+    alive = true;
+    health = maxhealth;
+    setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
+    head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
+    randomSpawn();
+}
+
+// для ботов
+
+void Tank::killTank()
+{
+    deleteTank();
+    QTimer::singleShot(2000, this, SLOT(spawnSlot()));
+}
+
+// для мультиплеера
 
 void Tank::changePos(int x, int y)
 {
     setPos(x,y);
     head->setPos(x,y);
-}
-
-void Tank::deleteTank()
-{
-    setPixmap(QPixmap(":/images/images/tanks/empty.png").scaled(pixsize,pixsize));
-    head->setPixmap(QPixmap(":/images/images/tanks/empty.png").scaled(pixsize,pixsize));
-}
-
-void Tank::spawnTank()
-{
-    setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
-    head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
-    randomSpawn();
 }
 
 void Tank::changeAngle(int TAngle, int HAngle)

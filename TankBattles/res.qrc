@@ -25,13 +25,14 @@
         <file>images/tanks/greenHead.png</file>
         <file>images/menu/Panel.png</file>
         <file>images/blocks/3.png</file>
-        <file>images/tanks/empty.png</file>
         <file>images/died.png</file>
         <file>images/out.png</file>
         <file>images/fire/0.png</file>
         <file>images/fire/1.png</file>
         <file>images/fire/2.png</file>
         <file>images/menu/Back.png</file>
+        <file>images/empty.png</file>
+        <file>images/anim/Explo.gif</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>fonts/CITYNL.TTF</file>
