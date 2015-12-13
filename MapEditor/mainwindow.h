@@ -9,6 +9,7 @@
 #include <QTextStream>
 #include <QCloseEvent>
 
+
 namespace Ui {
 class MainWindow;
 }
@@ -19,6 +20,9 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
+
+    void LoadMap(QString fname);
+
     ~MainWindow();
     //const int getelem(int row, int column);
 

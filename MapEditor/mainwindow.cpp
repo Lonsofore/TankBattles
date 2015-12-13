@@ -5,6 +5,7 @@
 
 bool isChanged = 0;
 int spwncnt = 0;  //Кол-во точек спавна
+int max_size = 100;
 preview *Preview;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -17,6 +18,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->field->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->field->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->field->setIconSize(QSize(69, 65));
+    if (QSysInfo::buildCpuArchitecture() == "i386") max_size = 300;
+    if (QSysInfo::buildCpuArchitecture() == "x86_64") max_size = 600;
+    ui->xspin->setMaximum(max_size);
+    ui->yspin->setMaximum(max_size);
 
 }
 
@@ -59,7 +64,9 @@ void MainWindow::on_Save_triggered()
         else
         {
             QString fname = QFileDialog::getSaveFileName(this, tr("Сохранение"), "Map_Name.map", tr("Map files (*.map)"));
-            if (fname.split('.').at(1) != "map") fname += ".map";
+            if (fname.split('.').count() < 2) fname +=".map";
+            else
+                if (fname.split('.').at(1) != "map") fname += ".map";
             QFile file(fname);
             if(!file.open(QIODevice::WriteOnly))
             {
@@ -98,148 +105,7 @@ void MainWindow::on_Load_triggered()
     ui->field->setRowCount(0);
     ui->field->setColumnCount(0);
     QString fname = QFileDialog::getOpenFileName(this, tr("Загрузка"), (QDir::currentPath() + "/maps"), tr("Map files (*.map)"));
-    QFile file(fname);
-    if(!file.open(QIODevice::ReadOnly))
-    {
-        if (fname != "") {QMessageBox::information(this, "Ошибка", "Не удалось прочитать указанный файл");}
-    }
-    else
-    {
-        QTextStream in(&file);
-        QString line = in.readLine();
-        QStringList fields = line.split(" ");
-        if (fields.count() == 3)
-        {
-            QString cnt = fields.at(0);
-            int rowcnt = cnt.toInt();  //Кол-во строк
-            cnt = fields.at(1);
-            int colcnt = cnt.toInt();  //Кол-во столбцов
-            cnt = fields.at(2);
-            int spwn = cnt.toInt();    //Кол-во точек спавна
-            int i, r = 0;
-            if (spwn >= 2 || rowcnt<=0 || colcnt<=0)
-            {
-                char elm;                 //Текущий элемент
-                int **spcord = new int* [spwn]; //Массив для записи координат точек спавна для последующей проверки на правильность их расположения
-                for (i = 0; i < spwn; i++)
-                {
-                    spcord[i] = new int [2];
-                }
-                spwncnt = 0;
-                ui->field->setRowCount(rowcnt);
-                ui->field->setColumnCount(colcnt);
-                while(!in.atEnd())  //Пока не конец файла
-                {
-                    QString line = in.readLine(); //Читаем строку
-                    QStringList fields = line.split(" "); //Элементы в файле разделены пробелами
-                    if (fields.count() == colcnt+1)       //Если кол-во элементов в строке равно кол-ву элементов указанных в строке информации
-                    {
-                        for(i = 0; i < colcnt; i++)
-                        {
-                           cnt = fields.at(i);
-                           elm = cnt.at(0).toLatin1(); //Читаем элемент
-                           QTableWidgetItem *item = new QTableWidgetItem;
-                           if (elm == '2') //Неразрушаеммый
-                           {
-                               item->setText("2");
-                               item->setBackgroundColor(QColor(38, 14, 55));
-                               ui->field->setItem(r, i, item);
-                           }
-                           if (elm == '1') //Разрушаеммый
-                           {
-                               item->setText("1");
-                               item->setBackgroundColor(QColor(255, 202, 61));
-                               ui->field->setItem(r, i, item);
-                           }
-                           if (elm == '0') //Пустой
-                           {
-                               item->setText("0");
-                               ui->field->setItem(r, i, item);
-                           }
-                           if (elm == 'S') //Спавн
-                           {
-                               item->setText("S");
-                               ui->field->setItem(r, i, item);
-                               spcord[spwncnt][0] = r;
-                               spcord[spwncnt][1] = i;
-                               spwncnt++;
-                           }
-                           if ((elm != '2') && (elm != '1') && (elm != '0') && (elm != 'S')) //Что-то другое
-                           {
-                               QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
-                               ui->field->clearContents();
-                               ui->field->setRowCount(0);
-                               ui->field->setColumnCount(0);
-                               file.close();
-                               return;
-                           }
-                        }
-                    }
-                    else
-                    {
-                        QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден."); //Выдаем сообщение об ошибке и стираем всё
-                        ui->field->clearContents();
-                        ui->field->setRowCount(0);
-                        ui->field->setColumnCount(0);
-                        file.close();
-                        return;
-                    }
-                    r = r+1; //Строка прочитанна
-                }
-                /*for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
-                {
-                   if (((spcord[i][0] > 0) && (spcord[i][0] < ui->field->rowCount()-1)) && ((spcord[i][1] > 0) && (spcord[i][1] < ui->field->columnCount()-1)))
-                   {
-                       if((ui->field->item(spcord[i][0]-1,spcord[i][1])->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1])->text() != "0") ||          //Проверка соседних блоков на пустоту
-                               (ui->field->item(spcord[i][0],spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0],spcord[i][1]+1)->text() != "0") ||
-                               (ui->field->item(spcord[i][0]-1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]-1,spcord[i][1]+1)->text() != "0") ||
-                               (ui->field->item(spcord[i][0]+1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1]+1)->text() != "0"))
-                       {
-                           QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
-                           ui->field->clearContents();
-                           ui->field->setRowCount(0);
-                           ui->field->setColumnCount(0);
-                           file.close();
-                           return;
-                       }
-                   }
-                   else
-                   {
-                       QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
-                       ui->field->clearContents();
-                       ui->field->setRowCount(0);
-                       ui->field->setColumnCount(0);
-                       file.close();
-                       return;
-                   }
-                }*/
-            }
-            else
-            {
-                file.close();
-                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
-                return;
-            }
-            file.close();
-            if ((r != rowcnt) || (spwn != spwncnt)) //Если кол-во строк или точек спавна не равно указанному в начале файла кол-ву
-            {
-                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
-                ui->field->clearContents();
-                ui->field->setRowCount(0);
-                ui->field->setColumnCount(0);
-            }
-            else
-            {
-                ui->xspin->setValue(colcnt);
-                ui->yspin->setValue(rowcnt);
-                isChanged = 0;
-            }
-        }
-        else
-        {
-            QMessageBox::critical(this, "Ошибка загрузки", "Неверный формат входного файла!\nВозможно он поврежден.");
-        }
-    }
+    LoadMap(fname);
 }
 
 void MainWindow::on_New_triggered()
@@ -263,20 +129,20 @@ void MainWindow::on_New_triggered()
 
 void MainWindow::on_Help_triggered()
 {
-    QMessageBox::information(this, "Краткая справка", "В редактора имеется 4 вида болков:\n"
+    QMessageBox::information(this, "Краткая справка", (QString("В редактора имеется 4 вида болков:\n"
                                                       "-Неразрушаеммый блок(2)\n"
                                                       "-Разрушаеммый блок(1)\n"
                                                       "-Блок спавна(S)\n"
                                                       "-Пустой блок(0)\n"
                                                       "Требование к карте:\n"
                                                       "-Минимальный размер: 5*5\n"
-                                                      "-Максимальный размер: 600*600\n"
-                                                      "-Минимальное кол-во блоков спавна: 2\n");
+                                                      "-Минимальное кол-во блоков спавна: 2\n"
+                                                      "-Максимальный размер: ") + QString::number(max_size) + "*" +QString::number(max_size) + "\n"));
 }
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.6\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.7\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
@@ -425,4 +291,157 @@ void MainWindow::closeEvent(QCloseEvent *ev)
         }
     }
     ev->accept();
+}
+
+void MainWindow::LoadMap(QString fname)
+{
+    QFile file(fname);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        if (fname != "") {QMessageBox::information(this, "Ошибка", "Не удалось прочитать указанный файл");}
+    }
+    else
+    {
+        QTextStream in(&file);
+        QString line = in.readLine();
+        QStringList fields = line.split(" ");
+        if (fields.count() == 3)
+        {
+            QString cnt = fields.at(0);
+            int rowcnt = cnt.toInt();  //Кол-во строк
+            cnt = fields.at(1);
+            int colcnt = cnt.toInt();  //Кол-во столбцов
+            cnt = fields.at(2);
+            int spwn = cnt.toInt();    //Кол-во точек спавна
+            int i, r = 0;
+            if (rowcnt > max_size || colcnt > max_size)
+            {
+                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nСлишком большой размер карты.");
+            }
+            else
+            {
+                if (spwn >= 2 || rowcnt<=0 || colcnt<=0)
+                {
+                    char elm;                 //Текущий элемент
+                    int **spcord = new int* [spwn]; //Массив для записи координат точек спавна для последующей проверки на правильность их расположения
+                    for (i = 0; i < spwn; i++)
+                    {
+                        spcord[i] = new int [2];
+                    }
+                    spwncnt = 0;
+                    ui->field->setRowCount(rowcnt);
+                    ui->field->setColumnCount(colcnt);
+                    while(!in.atEnd())  //Пока не конец файла
+                    {
+                        QString line = in.readLine(); //Читаем строку
+                        QStringList fields = line.split(" "); //Элементы в файле разделены пробелами
+                        if (fields.count() == colcnt+1)       //Если кол-во элементов в строке равно кол-ву элементов указанных в строке информации
+                        {
+                            for(i = 0; i < colcnt; i++)
+                            {
+                               cnt = fields.at(i);
+                               elm = cnt.at(0).toLatin1(); //Читаем элемент
+                               QTableWidgetItem *item = new QTableWidgetItem;
+                               if (elm == '2') //Неразрушаеммый
+                               {
+                                   item->setText("2");
+                                   item->setBackgroundColor(QColor(38, 14, 55));
+                                   ui->field->setItem(r, i, item);
+                               }
+                               if (elm == '1') //Разрушаеммый
+                               {
+                                   item->setText("1");
+                                   item->setBackgroundColor(QColor(255, 202, 61));
+                                   ui->field->setItem(r, i, item);
+                               }
+                               if (elm == '0') //Пустой
+                               {
+                                   item->setText("0");
+                                   ui->field->setItem(r, i, item);
+                               }
+                               if (elm == 'S') //Спавн
+                               {
+                                   item->setText("S");
+                                   ui->field->setItem(r, i, item);
+                                   spcord[spwncnt][0] = r;
+                                   spcord[spwncnt][1] = i;
+                                   spwncnt++;
+                               }
+                               if ((elm != '2') && (elm != '1') && (elm != '0') && (elm != 'S')) //Что-то другое
+                               {
+                                   QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                                   ui->field->clearContents();
+                                   ui->field->setRowCount(0);
+                                   ui->field->setColumnCount(0);
+                                   file.close();
+                                   return;
+                               }
+                            }
+                        }
+                        else
+                        {
+                            QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден."); //Выдаем сообщение об ошибке и стираем всё
+                            ui->field->clearContents();
+                            ui->field->setRowCount(0);
+                            ui->field->setColumnCount(0);
+                            file.close();
+                            return;
+                        }
+                        r = r+1; //Строка прочитанна
+                    }
+                    /*for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
+                    {
+                       if (((spcord[i][0] > 0) && (spcord[i][0] < ui->field->rowCount()-1)) && ((spcord[i][1] > 0) && (spcord[i][1] < ui->field->columnCount()-1)))
+                       {
+                           if((ui->field->item(spcord[i][0]-1,spcord[i][1])->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1])->text() != "0") ||          //Проверка соседних блоков на пустоту
+                                   (ui->field->item(spcord[i][0],spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0],spcord[i][1]+1)->text() != "0") ||
+                                   (ui->field->item(spcord[i][0]-1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]-1,spcord[i][1]+1)->text() != "0") ||
+                                   (ui->field->item(spcord[i][0]+1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1]+1)->text() != "0"))
+                           {
+                               QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                               ui->field->clearContents();
+                               ui->field->setRowCount(0);
+                               ui->field->setColumnCount(0);
+                               file.close();
+                               return;
+                           }
+                       }
+                       else
+                       {
+                           QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                           ui->field->clearContents();
+                           ui->field->setRowCount(0);
+                           ui->field->setColumnCount(0);
+                           file.close();
+                           return;
+                       }
+                    }*/
+                }
+                else
+                {
+                    file.close();
+                    QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                    return;
+                }
+            }
+            file.close();
+            if ((r != rowcnt) || (spwn != spwncnt)) //Если кол-во строк или точек спавна не равно указанному в начале файла кол-ву
+            {
+                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                ui->field->clearContents();
+                ui->field->setRowCount(0);
+                ui->field->setColumnCount(0);
+            }
+            else
+            {
+                ui->xspin->setValue(colcnt);
+                ui->yspin->setValue(rowcnt);
+                isChanged = 0;
+            }
+        }
+        else
+        {
+            QMessageBox::critical(this, "Ошибка загрузки", "Неверный формат входного файла!\nВозможно он поврежден.");
+        }
+    }
 }

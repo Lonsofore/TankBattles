@@ -43,6 +43,7 @@ void preview::on_preview_windowTitleChanged(const QString &title)
     scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+    ui->graphicsView->viewport()->installEventFilter(this);
     yBlocks = ysize;
     xBlocks = xsize;
     QString img;
@@ -82,3 +83,15 @@ void preview::closeEvent(QCloseEvent *ev)
     ui->centralwidget->deleteLater();
     ev->accept();
 }
+
+bool preview::eventFilter(QObject *object, QEvent *event)
+ {
+     if (object == ui->graphicsView->viewport() && event->type() == QEvent::Wheel)
+     {
+         QWheelEvent *we = static_cast<QWheelEvent*>(event);
+         if (we->delta() > 0) ui->graphicsView->scale(1.1, 1.1);
+         if (we->delta() < 0) ui->graphicsView->scale(0.9, 0.9);
+         return true;
+     }
+     return false;
+ }

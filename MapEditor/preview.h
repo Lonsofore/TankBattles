@@ -28,6 +28,7 @@ signals:
     void GetSize();
 
     void GetItem(int row, int column);
+
 private slots:
 
     void on_preview_windowTitleChanged(const QString &title);
@@ -35,6 +36,7 @@ private slots:
 private:
     Ui::preview *ui;
     void closeEvent(QCloseEvent *);
+    bool eventFilter(QObject *, QEvent *);
     void draw();
     int citm;
     int xsize;
