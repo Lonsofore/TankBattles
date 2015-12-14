@@ -27,15 +27,20 @@ public:
     void headLeft(int deg, bool check = 0);  //
     void fire(); // выстрел (ограничений между выстрелами нет!)
     void randomSpawn(); // рандомный спавн танка
-    void changePos(int x, int y); // смена позиции танка за заданную
-    void changeAngle(int TAngle, int HAngle); //смена угла башни и платформы
-    void deleteTank(); // удалить танк (просто скрывает его картинку!)
-    void spawnTank(); // спавн танка (устанавливает обычную картинку и рандомно спавнит)
-
     int checkDegree(int deg); // проверка, находится на угол поворота в пределах 0,360
                               // возвращает угол в допустимых пределах
 
+    // действия для мультиплеера
+    void changePos(int x, int y); // смена позиции танка за заданную
+    void changeAngle(int TAngle, int HAngle); //смена угла башни и платформы
+
+    // действия для бота
+    void killTank(); // убийство (для бота)
+
+    bool alive;
     int health; // здровье
+    int maxhealth; // максимальное кол-во здоровья
+    void decHealth(int v); // уменьшить здоровье
 
     // размер танка
     int pixsize;
@@ -62,6 +67,13 @@ public:
     QMediaPlayer *bulletsound; // выстрел
     QMediaPlayer *bulletready; // перезарядка
     QMediaPlayer *tankhrotate; // поворот башни
+
+    void spawnTank(); // спавн танка (устанавливает обычную картинку и рандомно спавнит)
+    void deleteTank(); // удалить танк (просто скрывает его картинку!)
+
+public slots:
+    void deleteSlot(); // слоты для функций
+    void spawnSlot();  //
 };
 
 #endif // TANK

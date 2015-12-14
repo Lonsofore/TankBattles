@@ -15,13 +15,20 @@ private:
 public:
     Bullet(QGraphicsPixmapItem *parent = 0);
 
+    int dmg;
+
     void rotate();
     QPixmap rotatePix(QPixmap pix, int deg);
 
     int speed;
     int degree;
+
     QString image;
+    QString empty;
     int pixsize;
+
+    QTimer *timer;
+    QTimer *timerf;
 
     Tank *tank;
     QGraphicsPixmapItem *pm;
