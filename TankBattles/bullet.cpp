@@ -155,6 +155,14 @@ void Bullet::move()
             */
         }
 
+        if (typeid(*(colliding_items[i])) == typeid(Player))
+        {
+            hit = true;
+
+            Player * pl = dynamic_cast <Player *> (colliding_items[i]);
+            pl->decHealth(dmg);
+        }
+
         if (typeid(*(colliding_items[i])) == typeid(Block))
         {
             Block * block = dynamic_cast <Block *> (colliding_items[i]);
