@@ -142,6 +142,17 @@ void Bullet::move()
 
             Tank * tank1 = dynamic_cast <Tank *> (colliding_items[i]);
             tank1->decHealth(dmg);
+
+            /*
+            QLabel *gif_anim = new QLabel();
+            gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
+            QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
+            gif_anim->setMovie(movie);
+            gif_anim->move(x()-25,y()-25);
+            movie->setScaledSize(QSize(250,250));
+            movie->start();
+            QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
+            */
         }
 
         if (typeid(*(colliding_items[i])) == typeid(Block))
