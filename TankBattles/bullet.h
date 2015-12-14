@@ -29,13 +29,16 @@ public:
 
     QTimer *timer;
     QTimer *timerf;
+    QTimer *timerf1;
 
     Tank *tank;
     QGraphicsPixmapItem *pm;
+    QGraphicsPixmapItem *pm1;
 
 public slots:
     void move();
     void anim();
+    void anim1();
 };
 
 #endif // BULLET

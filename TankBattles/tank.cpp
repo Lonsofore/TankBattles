@@ -10,7 +10,6 @@
 #include <typeinfo>
 #include <cstdlib>
 #include <QTimer>
-#include <QLabel>
 #include <QMovie>
 
 #include <stdio.h>
@@ -50,7 +49,7 @@ void Tank::defaultTank()
     baseImage = ":/images/images/tanks/greenBase.png";
     setPixmap(QPixmap(baseImage).scaled(pixsize,pixsize));
     //setPos(x,y);
-    setZValue(2); // "высота" платформы
+    setZValue(80); // "высота" платформы
 
     // башня
     head = new QGraphicsPixmapItem();
@@ -59,7 +58,7 @@ void Tank::defaultTank()
     headImage = ":/images/images/tanks/greenHead.png";
     head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
     //head->setPos(x,y);
-    head->setZValue(3);
+    head->setZValue(90);
 
     //точка спавна
     randomSpawn();
@@ -265,7 +264,7 @@ void Tank::fire()
 void Tank::randomSpawn()
 {
     int x,y;
-    if (game->spawns > 0) // TODO: сделать проверку, нет ли там уже игрока
+    if (game->spawns > 0)
     {
         int stime;
         long ltime;
@@ -278,6 +277,16 @@ void Tank::randomSpawn()
         random = rand()%game->spawns;
         x = game->spawnPoints[random]->x() - pixsize/2;
         y = game->spawnPoints[random]->y() - pixsize/4;
+
+        while (isBusy(x,y))
+        {
+            random++;
+            if (random > game->spawns-1)
+                random = 0;
+
+            x = game->spawnPoints[random]->x() - pixsize/2;
+            y = game->spawnPoints[random]->y() - pixsize/4;
+        }
     }
     else
     {
@@ -291,6 +300,16 @@ void Tank::randomSpawn()
     degree = 0;
     hdegree = 0;
     rotateLeft(0);
+}
+
+// true если на координатах x,y уже находится танк
+bool Tank::isBusy(int x, int y)
+{
+    // все коэффициенты брались по платформе относительно общей картинки. башня во внимание не бралась (она не соприкасается)
+    QList<QGraphicsItem *> items = game->scene->items(x+0.28*pixsize,y+0.32*pixsize,pixsize*0.44,pixsize*0.36,Qt::IntersectsItemShape,Qt::AscendingOrder,QTransform());
+    if (items.count() > 1)
+        return true;
+    return false;
 }
 
 void Tank::changeSize(int n)
@@ -404,7 +423,8 @@ void Tank::deleteTank()
     head->setPixmap(QPixmap(":/images/images/empty.png").scaled(pixsize,pixsize));
     setPixmap(QPixmap(":/images/images/empty.png").scaled(pixsize,pixsize));
 
-    QLabel *gif_anim = new QLabel();
+    // анимация
+    gif_anim = new QLabel();
     gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
     QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
     gif_anim->setMovie(movie);
@@ -412,6 +432,12 @@ void Tank::deleteTank()
     movie->setScaledSize(QSize(250,250));
     movie->start();
     QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
+    QTimer::singleShot(2500, this, SLOT(deleteGif()));
+}
+
+void Tank::deleteGif()
+{
+    delete gif_anim;
 }
 
 void Tank::spawnSlot()

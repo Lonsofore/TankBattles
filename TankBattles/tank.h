@@ -6,6 +6,7 @@
 #include <QMediaPlayer>
 #include <QPixmap>
 #include <QMouseEvent>
+#include <QLabel>
 
 class Tank: public QObject, public QGraphicsPixmapItem
 {
@@ -68,12 +69,18 @@ public:
     QMediaPlayer *bulletready; // перезарядка
     QMediaPlayer *tankhrotate; // поворот башни
 
+    bool isBusy(int x, int y); // проверка, занято ли это место танком
+
     void spawnTank(); // спавн танка (устанавливает обычную картинку и рандомно спавнит)
     void deleteTank(); // удалить танк (просто скрывает его картинку!)
+
+private:
+    QLabel *gif_anim;
 
 public slots:
     void deleteSlot(); // слоты для функций
     void spawnSlot();  //
+    void deleteGif();
 };
 
 #endif // TANK

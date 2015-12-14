@@ -33,6 +33,17 @@
         <file>images/menu/Back.png</file>
         <file>images/empty.png</file>
         <file>images/anim/Explo.gif</file>
+        <file>images/anim/DirectExplos/0.png</file>
+        <file>images/anim/DirectExplos/1.png</file>
+        <file>images/anim/DirectExplos/2.png</file>
+        <file>images/anim/DirectExplos/3.png</file>
+        <file>images/anim/DirectExplos/4.png</file>
+        <file>images/anim/DirectExplos/5.png</file>
+        <file>images/anim/DirectExplos/6.png</file>
+        <file>images/anim/DirectExplos/7.png</file>
+        <file>images/anim/DirectExplos/8.png</file>
+        <file>images/anim/DirectExplos/9.png</file>
+        <file>images/anim/DirectExplos/10.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>fonts/CITYNL.TTF</file>

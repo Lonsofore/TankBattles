@@ -467,7 +467,8 @@ void Game::pve()
     enmy = new Tank();
     scene->addItem(enmy);
     scene->addItem(enmy->head);
-    enmy->changePos(200,100);
+    enmy->randomSpawn();
+    //enmy->changePos(200,100);
 
     // создание игрока
     player = new Player();

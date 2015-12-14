@@ -132,6 +132,7 @@ void Player::keyPressEvent(QKeyEvent *event)
             break;
 
             case 52:
+                /*
                 QLabel *gif_anim = new QLabel();
                 gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
                 QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
@@ -140,7 +141,19 @@ void Player::keyPressEvent(QKeyEvent *event)
                 movie->setScaledSize(QSize(250,250));
                 movie->start();
                 QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
+                */
+            break;
 
+            case 53:
+                QList<QGraphicsItem *> items = game->scene->items(250,160,90,75,Qt::IntersectsItemShape,Qt::AscendingOrder,QTransform());
+                if (items.count() > 0)
+                {
+                    qDebug() << "Items: " << items.count();
+                }
+                else
+                {
+                    qDebug() << "No items";
+                }
             break;
         }
         if (action == false)

@@ -20,15 +20,18 @@ extern Game * game;
 int count;
 bool isfire;
 
+int count1;
+bool isfire1;
+
 Bullet::Bullet(QGraphicsPixmapItem *parent)
 {
     // родительский танк
-    tank = new Tank;
+    //tank = new Tank;
     tank = dynamic_cast <Tank *> (parent);
 
     dmg = 40;
 
-    speed = 40;
+    speed = 20;
     degree = tank->hdegree;
     pixsize = tank->pixsize*0.16;
 
@@ -37,6 +40,9 @@ Bullet::Bullet(QGraphicsPixmapItem *parent)
     setPixmap(QPixmap(image).scaled(pixsize,pixsize));
     rotate();
     setZValue(0);
+
+    timerf1 = new QTimer();
+    connect(timerf1,SIGNAL(timeout()),this,SLOT(anim1()));
 
     count = 0;
     pm = new QGraphicsPixmapItem;
@@ -48,7 +54,7 @@ Bullet::Bullet(QGraphicsPixmapItem *parent)
 
     timer = new QTimer();
     connect(timer,SIGNAL(timeout()),this,SLOT(move()));
-    timer->start(20);
+    timer->start(15);
 }
 
 void Bullet::rotate()
@@ -117,13 +123,45 @@ void Bullet::anim()
     }
     else
     {
-        if (timer->isActive() == false)
+        if (timer->isActive() == false && timerf1->isActive() == false)
         {
             scene()->removeItem(this);
             delete(this);
         }
         else
             timerf->stop();
+    }
+}
+
+void Bullet::anim1()
+{
+    if (count1 >= 11)
+    {
+        delete pm1;
+    }
+
+    if (count1 < 11)
+    {
+        isfire1 = true;
+
+        QPixmap pix(":/images/images/anim/DirectExplos/" + QString::number(count1) + ".png");
+        QPixmap pix1;
+        pix1 = rotatePix(pix,degree-90);
+
+        pm1->setPos(x()-20,y()-20);
+        pm1->setPixmap(pix1);
+
+        count1++;
+    }
+    else
+    {
+        if (timer->isActive() == false && timerf->isActive() == false)
+        {
+            scene()->removeItem(this);
+            delete(this);
+        }
+        else
+            timerf1->stop();
     }
 }
 
@@ -143,16 +181,12 @@ void Bullet::move()
             Tank * tank1 = dynamic_cast <Tank *> (colliding_items[i]);
             tank1->decHealth(dmg);
 
-            /*
-            QLabel *gif_anim = new QLabel();
-            gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
-            QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
-            gif_anim->setMovie(movie);
-            gif_anim->move(x()-25,y()-25);
-            movie->setScaledSize(QSize(250,250));
-            movie->start();
-            QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
-            */
+            count1 = 0;
+            pm1 = new QGraphicsPixmapItem;
+            pm1->setZValue(85);
+            game->scene->addItem(pm1);
+
+            timerf1->start(50);
         }
 
         if (typeid(*(colliding_items[i])) == typeid(Player))
@@ -192,7 +226,7 @@ void Bullet::move()
 
         if (hit)
         {
-            if (timerf->isActive() == false && isfire == true)
+            if (timerf->isActive() == false && timerf1->isActive() == false && isfire == true)
             {
                 scene()->removeItem(this);
                 delete(this);
