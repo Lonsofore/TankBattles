@@ -429,7 +429,7 @@ void Game::pve()
     QPointF p2(xBlocks*width+dop+pp, dop-pp);
     QPointF p3(xBlocks*width+dop+pp, yBlocks*height+dop+pp);
     QPointF p4(dop-pp, yBlocks*height+dop+pp);
-    scene->addLine(QLineF(p1,p2),pen);
+    scene->addLine(QLineF(p1,p2),pen); // тут можно сделать setZValue
     scene->addLine(QLineF(p2,p3),pen);
     scene->addLine(QLineF(p3,p4),pen);
     scene->addLine(QLineF(p4,p1),pen);

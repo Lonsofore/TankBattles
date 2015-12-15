@@ -28,11 +28,12 @@ extern Game * game;
 
 Player::Player()
 {
+    timer = new QTimer();
+    connect(timer,SIGNAL(timeout()),this,SLOT(onKey()));
+
     keyDelay = 20; // задержка между действиями клавиш
 
-    // то, из-за чего программа жрет как майнкрафт
-    boost = 40; // ускорение танка в начале движения
-    iboost = 2; // по сколько отнимать от ускорения
+    // нажатые кнопки
     mf = mb = rr = rl = hr = hl = fr = false;
 
     // стрельба
@@ -159,10 +160,9 @@ void Player::keyPressEvent(QKeyEvent *event)
         if (action == false)
         {
             //qDebug() << "start";
-            if (mf || mb) // если танк движется вперед или назад, то сделать ему замедление при начале движения
-                onKey(boost);
-            else
-                onKey(0);
+            action = true;
+
+            timer->start(keyDelay);
         }
         //game->health->setPos(game->player->x()+40,game->player->y()+50);
     }
@@ -216,142 +216,156 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
     }
 }
 
-void Player::onKey(int acc) // player действия при нажатии клавиши. acc - задержка танка при старте
+void Player::onKey() // player действия при нажатии клавиши. acc - задержка танка при старте
 {
-    action = true;
-    while (alive == true && (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
-           fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState || out == true))
+    game->centerOn(this);
+
+    // движение вперед, назад
+    if (mf) moveForward();
+    if (mb) moveBack();
+
+    // если player вышел за границы
+    if (this->x() < game->dop - pixsize/2 ||
+        this->x() > game->scene->width()-game->dop*2 + 20 ||
+        this->y() < game->dop - pixsize/2 ||
+        this->y() > game->scene->height()-game->dop*2 + 20)
     {
-        game->centerOn(this);
+        // координата Х в центре экрана
+        int x1 = centralX();
 
-        // движение вперед, назад
-        if (mf) moveForward();
-        if (mb) moveBack();
+        // координата Y в центре экрана
+        int y1 = centralY();
 
-        // если player вышел за границы
-        if (this->x() < game->dop - pixsize/2 ||
-            this->x() > game->scene->width()-game->dop*2 + 20 ||
-            this->y() < game->dop - pixsize/2 ||
-            this->y() > game->scene->height()-game->dop*2 + 20)
+        if (out == false)
         {
-            // координата Х в центре экрана
-            int x1 = centralX();
+            out = true;
 
-            // координата Y в центре экрана
-            int y1 = centralY();
-
-            if (out == false)
-            {
-                out = true;
-
-                QString image = ":/images/images/out.png";
-                caution = new Caution(image, "CAUTION", 5);
-                caution->setPos(x1-200,y1-88);
-                caution->setZValue(10);
-                game->scene->addItem(caution);
-            }
-            caution->setPos(x1-200, y1-88);
-
-
-            outCount += keyDelay;
-            if (outCount > 1000)
-            {
-                outCount = 0;
-                if (outTimer > 0)
-                {
-                    //qDebug() << outTimer;
-                    outTimer--;
-                    caution->decTimer();
-                }
-                else
-                {
-                    // DIE MOTHERFUCKER!
-                    //qDebug() << "you died";
-                    out = false;
-                    outTimer = 5;
-                    delete caution;
-
-                    QString image1 = ":/images/images/died.png";
-                    died = new Caution(image1, "YOU DIED");
-                    died->setPos(x1-200,y1-88);
-                    died->setZValue(10);
-                    game->scene->addItem(died);
-
-                    // убить
-                    killPlayer();
-                    // BUHAHA
-                }
-            }
+            QString image = ":/images/images/out.png";
+            caution = new Caution(image, "CAUTION", 5);
+            caution->setPos(x1-200,y1-88);
+            caution->setZValue(10);
+            game->scene->addItem(caution);
         }
-        else
+        caution->setPos(x1-200, y1-88);
+
+
+        outCount += keyDelay;
+        if (outCount > 1000)
         {
-            if (out == true)
+            outCount = 0;
+            if (outTimer > 0)
             {
+                //qDebug() << outTimer;
+                outTimer--;
+                caution->decTimer();
+            }
+            else
+            {
+                // DIE MOTHERFUCKER!
+                //qDebug() << "you died";
                 out = false;
                 outTimer = 5;
                 delete caution;
-                //delete noise;
+
+                // плашка смерти
+                QString image1 = ":/images/images/died.png";
+                died = new Caution(image1, "YOU DIED");
+                died->setPos(x1-200,y1-88);
+                died->setZValue(10);
+                game->scene->addItem(died);
+
+                // убить
+                killPlayer();
+                // BUHAHA
             }
         }
-
-        // универсальный поворот
-        if (rl || rr)
-        {
-            playerRotate();
-            spin++;
-        }
-
-        // ты ничего не видел
-        if (rl == false && rr == false)
-            spin = 0;
-
-        // совершенно ничего
-        if (spin == 540)
-        {
-            QMediaPlayer *sound = new QMediaPlayer();
-            sound->setMedia(QUrl("qrc:/sounds/sounds/spin.mp3"));
-            sound->play();
-        }
-
-        // поворот башни
-        if (hl) headLeft();
-        if (hr) headRight();
-
-        // звук поворота башни
-        if ((hr || hl) &&  tankhrotate->state() == QMediaPlayer::StoppedState) // если звук поворота еще не проигрывался
-            tankhrotate->play();
-
-        if (hr == false && hl == false && tankhrotate->state() == QMediaPlayer::PlayingState)
-            tankhrotate->stop();
-
-        // стрельба + звуки стрельбы
-        if (fr && fireReady)
-        {
-            playerFire();
-            reload = false; // перезарядка еще на начата
-        }
-        if (fireReady == false) // счетчик для ожидания между выстрелами
-        {
-            fireCount += keyDelay;
-        }
-        if ((fireCount > fireTime - bulletready->duration()) && reload == false) // звук перезарядки
-        {
-            reload = true; // перезарядка уже начата (защита от нескольких)
-            bulletready->play();
-        }
-        if (fireCount > fireTime) // готовность выстрела
-        {
-            fireReady = true;
-            fireCount = 0;
-        }
-
-        if (acc > 0)
-            acc = acc - iboost; // создается замедление в начале движения
-
-        emit KeyPressed();
-        delay(keyDelay + acc);
     }
-    action = false;
+    else
+    {
+        if (out == true)
+        {
+            out = false;
+            outTimer = 5;
+            delete caution;
+            //delete noise;
+        }
+    }
+
+    // универсальный поворот
+    if (rl || rr)
+    {
+        playerRotate();
+        spin++;
+    }
+
+    // ты ничего не видел
+    if (rl == false && rr == false)
+        spin = 0;
+    // совершенно ничего
+    if (spin == 540)
+    {
+        QMediaPlayer *sound = new QMediaPlayer();
+        sound->setMedia(QUrl("qrc:/sounds/sounds/spin.mp3"));
+        sound->play();
+    }
+
+    // поворот башни
+    if (hl) headLeft();
+    if (hr) headRight();
+
+    // звук поворота башни
+    if ((hr || hl) &&  tankhrotate->state() == QMediaPlayer::StoppedState) // если звук поворота еще не проигрывался
+        tankhrotate->play();
+
+    if (hr == false && hl == false && tankhrotate->state() == QMediaPlayer::PlayingState)
+        tankhrotate->stop();
+
+    // стрельба + звуки стрельбы
+    if (fr && fireReady)
+    {
+        playerFire();
+        reload = false; // перезарядка еще на начата
+
+        /*
+        // анимация перезарядки
+        reloadAnim = new QLabel();
+        reloadAnim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
+        QMovie *movie = new QMovie(":/images/images/anim/Reload.gif");
+        reloadAnim->setMovie(movie);
+        reloadAnim->move(x()+20,y()+20);
+        movie->setScaledSize(QSize(180,180));
+        movie->setSpeed(120);
+        movie->start();
+        QGraphicsProxyWidget *proxy = game->scene->addWidget(reloadAnim);
+        */
+    }
+    if (fireReady == false) // счетчик для ожидания между выстрелами
+    {
+        fireCount += keyDelay;
+
+        //reloadAnim->move(x()+20,y()+20);
+    }
+    if ((fireCount > fireTime - bulletready->duration()) && reload == false) // звук перезарядки
+    {
+        reload = true; // перезарядка уже начата (защита от нескольких)
+        bulletready->play();
+    }
+    if (fireCount > fireTime) // готовность выстрела
+    {
+        fireReady = true;
+        fireCount = 0;
+
+        //delete reloadAnim;
+    }
+
+    emit KeyPressed();
+
+    if (alive == false || (mf == false && mb == false && rl == false && rr == false && hl == false && hr == false && fr == false &&
+                          fireReady == true && tankhrotate->state() == QMediaPlayer::StoppedState && out == false))
+    {
+        action = false;
+        timer->stop();
+    }
 }
 
 // координата X в центре экрана

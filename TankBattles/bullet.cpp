@@ -181,12 +181,14 @@ void Bullet::move()
             Tank * tank1 = dynamic_cast <Tank *> (colliding_items[i]);
             tank1->decHealth(dmg);
 
-            count1 = 0;
-            pm1 = new QGraphicsPixmapItem;
-            pm1->setZValue(85);
-            game->scene->addItem(pm1);
-
-            timerf1->start(50);
+            if (tank1->health > 0)
+            {
+                count1 = 0;
+                pm1 = new QGraphicsPixmapItem;
+                pm1->setZValue(85);
+                game->scene->addItem(pm1);
+                timerf1->start(50);
+            }
         }
 
         if (typeid(*(colliding_items[i])) == typeid(Player))
@@ -195,6 +197,15 @@ void Bullet::move()
 
             Player * pl = dynamic_cast <Player *> (colliding_items[i]);
             pl->decHealth(dmg);
+
+            if (pl->health > 0)
+            {
+                count1 = 0;
+                pm1 = new QGraphicsPixmapItem;
+                pm1->setZValue(85);
+                game->scene->addItem(pm1);
+                timerf1->start(50);
+            }
         }
 
         if (typeid(*(colliding_items[i])) == typeid(Block))

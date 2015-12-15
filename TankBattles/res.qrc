@@ -44,6 +44,7 @@
         <file>images/anim/DirectExplos/8.png</file>
         <file>images/anim/DirectExplos/9.png</file>
         <file>images/anim/DirectExplos/10.png</file>
+        <file>images/anim/Reload.gif</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>fonts/CITYNL.TTF</file>

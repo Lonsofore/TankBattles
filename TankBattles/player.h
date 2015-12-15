@@ -15,11 +15,8 @@ public:
     // вызов действий для кнопок
     int keyDelay; // задержка между проверками кнопок
     void keyPressEvent(QKeyEvent *event);   // считывание нажатий
-    void keyReleaseEvent(QKeyEvent *event); // и отжатий
-    void onKey(int acc); // если кнопка нажата - тикер
+    void keyReleaseEvent(QKeyEvent *event); // и отжатий (мобилок)
 
-    int boost;  // ускорение в начале движения
-    int iboost; // по сколько отнимать от ускорения
     int fireTime;    // время между выстрелами
 
     int centralX();
@@ -43,8 +40,13 @@ private:
     Caution *caution;
     Caution *died;
 
+    QLabel *reloadAnim;
+
+    QTimer *timer;
+
 public slots:
     void spawnPlayer();
+    void onKey(); // если кнопка нажата - тикер
 
 signals:
     void tomenu();
