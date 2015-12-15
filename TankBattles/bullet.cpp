@@ -3,7 +3,6 @@
 #include <QGraphicsScene>
 #include <QList>
 #include "game.h"
-#include "delay.h"
 #include <typeinfo>
 #include <QLabel>
 #include <QMovie>

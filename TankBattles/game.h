@@ -26,6 +26,8 @@ class Game: public QGraphicsView
 public:
     Game(QWidget * parent=0);
 
+    bool darkMode; // test
+
     // громкость музыки и эффектов
     int vmusic;
     int veffects;
@@ -54,6 +56,8 @@ public:
 
     void moveToCenter();
     void change(QString name);
+
+    QImage setImageLightness(QImage img, int lightness);
 
     // запреты на то, чтобы пользователь снял фокус с танка
     void mouseReleaseEvent(QMouseEvent * event);

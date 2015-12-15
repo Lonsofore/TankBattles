@@ -6,7 +6,6 @@
 #include "game.h"
 #include <QTime>
 #include <QCoreApplication>
-#include "delay.h"
 #include <typeinfo>
 #include <cstdlib>
 #include <QTimer>

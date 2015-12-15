@@ -42,13 +42,15 @@ int curButton;
 
 static inline QByteArray IntToArray(qint32 source);
 static inline qint32 ArrayToInt(QByteArray source);
-QString ServIP = "127.0.0.1";
+QString ServIP = "localhost";
 
 Game::Game(QWidget *parent)
 {
     // размеры окна по умолчанию
     int width = 800;
     int height = 600;
+
+    darkMode = false;
 
     // создание сцены
     scene = new QGraphicsScene();
@@ -385,7 +387,10 @@ void Game::pve()
     }
 
     // фон карты
-    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
+    if (darkMode)
+        setBackgroundBrush(QBrush(QColor(33,33,33,255)));
+    else
+        setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     QTextStream in(&file);
 
@@ -420,7 +425,12 @@ void Game::pve()
     int pwidth = 10; // ширина линии
     QPen pen;
     pen.setStyle(Qt::SolidLine);
-    pen.setColor(QColor(179, 179, 179, 255));
+
+    if (darkMode)
+        pen.setColor(QColor(55, 55, 55, 255));
+    else
+        pen.setColor(QColor(179, 179, 179, 255));
+
     pen.setJoinStyle(Qt::MiterJoin);
     pen.setWidth(pwidth);
 
@@ -451,7 +461,17 @@ void Game::pve()
                 x = width * j + dop;
                 y = height * i + dop;
                 img = ":/images/images/blocks/" + list1[j] + ".png";
-                block->setPixmap(QPixmap(img).scaled(width,height));
+
+                if (darkMode)
+                {
+                    QImage img1(img);
+                    img1 = setImageLightness(img1, 10);
+                    QPixmap pix(QPixmap::fromImage(img1));
+                    block->setPixmap(pix.scaled(width,height));
+                }
+                else
+                    block->setPixmap(QPixmap(img).scaled(width,height));
+
                 block->setPos(x,y);
                 scene->addItem(block);
             }
@@ -1125,10 +1145,26 @@ void Game::changeEvent(QEvent *event)
     }
 }
 
+QImage Game::setImageLightness(QImage img, int lightness)
+{
+    int w = img.width();
+    int h = img.height();
+    for (int y = 0; y < h; ++y)
+    {
+        for(int x = 0; x < w; ++x)
+        {
+            QColor pixel = img.pixel(x, y);
+            pixel.setHsl(pixel.hue(), pixel.saturation(), lightness, pixel.alpha());
+            img.setPixel(x, y, pixel.rgba());
+        }
+    }
+    return img;
+}
+
 void Game::processPendingDatagrams()
 {   int otherplayer; //Временный костыль
-    if (usrid == 1) otherplayer = 0;
-    if (usrid == 0) otherplayer = 1;
+    if (usrid == 2) otherplayer = 0;
+    if (usrid == 0) otherplayer = 2;
     isrecieving = 1;
     while (udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;

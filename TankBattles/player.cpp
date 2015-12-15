@@ -1,6 +1,5 @@
 #include "player.h"
 #include "game.h"
-#include "delay.h"
 #include <qglobal.h>
 #include <QTimer>
 #include <QLabel>
