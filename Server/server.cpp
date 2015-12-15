@@ -2,67 +2,45 @@
 #include <QtNetwork>
 #include <iostream>
 #include "server.h"
-
-server::server(int port1)
+static inline QByteArray IntToArray(qint32 source);
+server::server(int port1, bool isStartdByClient)
 {   tcpServer = new QTcpServer();
     udpSocket = new QUdpSocket();
     port = port1;
-    /*QNetworkConfigurationManager manager;
-        if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
-        {
-            // Get saved network configuration
-            QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-            settings.beginGroup(QLatin1String("QtNetwork"));
-            const QString id = settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
-            settings.endGroup();
-
-            // If the saved network configuration is not currently discovered use the system default
-            QNetworkConfiguration config = manager.configurationFromIdentifier(id);
-            if ((config.state() & QNetworkConfiguration::Discovered) !=
-                QNetworkConfiguration::Discovered) {
-                config = manager.defaultConfiguration();
-            }
-
-            networkSession = new QNetworkSession(config, this);
-            connect(networkSession, SIGNAL(opened()), this, SLOT(sessionOpened()));
-            networkSession->open();
-        } /*else {
-            server(port);*/
-        //}
-            connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
+    gameStarted = 0;
+    ConnectedCnt = 0;
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
             tcpServer->listen(QHostAddress::Any, port);
 }
 
 void server::broadcastDatagram()
 {
-    std::cout << "SENDING: X=" << x << ",Y=" << y << " FROM CLIENT # " << cid << "\n";
+    std::cout << "SENDING: X=" << x[cid] << ",Y=" << y[cid] << " FROM CLIENT # " << cid << "\n";
     QByteArray datagram = QByteArray::number(0) + ' ' + QByteArray::number(x[0]) + ' ' + QByteArray::number(y[0])+ ' ' +
-            QByteArray::number(TAngle[0]) + ' ' + QByteArray::number(HAngle[0]) +  '|';
+            QByteArray::number(TAngle[0]) + ' ' + QByteArray::number(HAngle[0]) + ' ' + QByteArray::number(isFiring[0]) + '|';
        datagram += QByteArray::number(1) + ' ' + QByteArray::number(x[1]) + ' ' + QByteArray::number(y[1])+ ' ' +
-               QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) +  '|';
+               QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) + ' ' + QByteArray::number(isFiring[1]) +  '|';
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
                              QHostAddress::Broadcast, 45454);
 }
 
 void server::dataRecieved(QByteArray data)
 {
-    /*QByteArray datagram;
-            QString xval, yval; //????????!!1111
-            datagram.resize(udpSocket->pendingDatagramSize());
-            udpSocket->readDatagram(datagram.data(), datagram.size());
-            QList<QByteArray> list;
-            list = datagram.split(' ');
-            //xval = datagram.at(1);
-            //yval = datagram.at(3);
-            enmy->changePos(list.at(0).toInt(),list.at(1).toInt());*/
-    QList<QByteArray> list;
-    list = data.split(' ');
-    cid = list.at(0).toInt();
-    x[cid] = list.at(1).toInt();
-    y[cid] = list.at(2).toInt();
-    TAngle[cid] = list.at(3).toInt();
-    HAngle[cid] = list.at(4).toInt();
-    broadcastDatagram();
+    if (ConnectedCnt >= 2) gameStarted = 1;
+    if (gameStarted)
+    {
+        QList<QByteArray> list;
+        list = data.split(' ');
+        cid = list.at(0).toInt();
+        x[cid] = list.at(1).toInt();
+        y[cid] = list.at(2).toInt();
+        TAngle[cid] = list.at(3).toInt();
+        HAngle[cid] = list.at(4).toInt();
+        isFiring[cid] = list.at(5).toInt();
+        broadcastDatagram();
+    }
+
+
 }
 
 void server::newConnection()
@@ -77,6 +55,21 @@ void server::newConnection()
         qint32 *s = new qint32(0);
         buffers.insert(socket, buffer);
         sizes.insert(socket, s);
+        if (!gameStarted)
+        {
+            QByteArray data;
+            if (ConnectedCnt >= 2)
+            {
+                data = "FULL";
+            }
+            else
+            {
+                data = QByteArray::number(ConnectedCnt++);
+            }
+            socket->write(IntToArray(data.size()));
+            socket->write(data);
+            socket->waitForBytesWritten();
+        }
     }
 }
 void server::disconnected()
@@ -98,15 +91,15 @@ void server::readyRead()
     while (socket->bytesAvailable() > 0)
     {
         buffer->append(socket->readAll());
-        while ((size == 0 && buffer->size() >= 4) || (size > 0 && buffer->size() >= size)) //While can process data, process it
+        while ((size == 0 && buffer->size() >= 4) || (size > 0 && buffer->size() >= size)) //Пока есть данные
         {
-            if (size == 0 && buffer->size() >= 4) //if size of data has received completely, then store it on our global variable
+            if (size == 0 && buffer->size() >= 4) //Если получен размер, сохраняем его
             {
                 size = ArrayToInt(buffer->mid(0, 4));
                 *s = size;
                 buffer->remove(0, 4);
             }
-            if (size > 0 && buffer->size() >= size) // If data has received completely, then emit our SIGNAL with the data
+            if (size > 0 && buffer->size() >= size) // Если все данные получены, от обрабатываем их
             {
                 QByteArray data = buffer->mid(0, size);
                 buffer->remove(0, size);
@@ -118,7 +111,7 @@ void server::readyRead()
     }
 }
 
-qint32 server::ArrayToInt(QByteArray source)
+qint32 server::ArrayToInt(QByteArray source) //Конвертирование из QByteArray в int
 {
     qint32 temp;
     QDataStream data(&source, QIODevice::ReadWrite);
@@ -126,4 +119,10 @@ qint32 server::ArrayToInt(QByteArray source)
     return temp;
 }
 
-
+QByteArray IntToArray(qint32 source) //Конвертирование из int в QByteArray
+{
+    QByteArray temp;
+    QDataStream data(&temp, QIODevice::ReadWrite);
+    data << source;
+    return temp;
+}

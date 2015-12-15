@@ -15,6 +15,7 @@
 #include <QMediaPlaylist>
 #include <QFontDatabase>
 #include <QtNetwork>
+#include <QMessageBox>
 
 // где находится игрок
 bool inpve = false;   // пве
@@ -40,6 +41,8 @@ const int nGMenuBtns = 4;
 int curButton;
 
 static inline QByteArray IntToArray(qint32 source);
+static inline qint32 ArrayToInt(QByteArray source);
+QString ServIP = "127.0.0.1";
 
 Game::Game(QWidget *parent)
 {
@@ -562,36 +565,17 @@ void Game::pvp1()
 {
     change("pvp1");
 
-    usrid = 1;
-    pve();
-
-    // заглушка
-    /*
-    scene->clear();
-    QMediaPlayer *voice = new QMediaPlayer();
-    voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
-    voice->play();
-    delay(1000);
-    menu();
-    */
+    //usrid = 1;
+    tcpSocket = new QTcpSocket();
+    tcpSocket->connectToHost(ServIP, 7); //Подключение
+    tcpSocket->waitForConnected();
+    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
 void Game::pvp2()
 {
-    change("pvp2");
-
-    usrid = 0;
-    pve();
-
-    // заглушка
-    /*
-    scene->clear();
-    QMediaPlayer *voice = new QMediaPlayer();
-    voice->setMedia(QUrl("qrc:/sounds/sounds/notsurprised.wav"));
-    voice->play();
-    delay(1000);
+    change("pvp2"); //Заглушка
     menu();
-    */
 }
 
 void Game::settings()
@@ -1157,19 +1141,20 @@ void Game::processPendingDatagrams()
         temp +=QString::fromLatin1(playersList.at(otherplayer).data());
         QList<QString> dataList;
         dataList =  temp.split(' ');
-        enmy->changePos(dataList.at(1).toInt(),dataList.at(2).toInt());
-        enmy->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt());
+        enmy->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
+        enmy->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
+        if (dataList.at(5).toInt() == 1) enmy->fire(); //Стреляем, если нужно
     }
     isrecieving = 0;
 }
 
-void Game::SendData()
+void Game::SendData() //Отправка данных
 {
     //while(isrecieving) {wait();} ищу замену для wait
     if(tcpSocket->state() == QAbstractSocket::ConnectedState)
-        {
+        {	//Формат данных: "id X Y угол_поворота_танка угол_поворота_башни стреляет_ли_игрок
             QByteArray data = QByteArray::number(usrid) + ' ' + QByteArray::number(player->GetX()) + ' ' + QByteArray::number(player->GetY()) + ' '
-                    + QByteArray::number(player->GetTAngle()) + ' ' + QByteArray::number(player->GetHAngle());
+                    + QByteArray::number(player->GetTAngle()) + ' ' + QByteArray::number(player->GetHAngle()) + ' ' + QByteArray::number(player->isFiring); 
             tcpSocket->write(IntToArray(data.size())); //write size of data
             tcpSocket->write(data); //write the data itself
             tcpSocket->waitForBytesWritten();
@@ -1179,12 +1164,55 @@ void Game::SendData()
             //QMessageBox::information(this, "ERROR", "Connection error");
             return;
 }
-
-QByteArray IntToArray(qint32 source)
+void Game::readResponse() //Читаем ответ от сервера после подключения
 {
-    //Avoid use of cast, this is the Qt way to serialize objects
+    qint32 *sz = new qint32(0);
+    QByteArray *buffr = new QByteArray();
+    buffers.insert(tcpSocket, buffr);
+    sizes.insert(tcpSocket, sz);
+    QTcpSocket *socket = static_cast<QTcpSocket*>(sender());
+    QByteArray *buffer = buffers.value(socket);
+
+
+    qint32 *s = sizes.value(socket);
+    qint32 size = *s;
+    while (socket->bytesAvailable() > 0)
+    {
+        buffer->append(socket->readAll());
+        while ((size == 0 && buffer->size() >= 4) || (size > 0 && buffer->size() >= size)) //Пока есть данные
+        {
+            if (size == 0 && buffer->size() >= 4) //Если прочитан размер данных, хранящийся в первых 4 байтах
+            {
+                size = ArrayToInt(buffer->mid(0, 4)); //Извлекаем размер из буфера
+                *s = size;
+                buffer->remove(0, 4); //Удаляем размер из буфера
+            }
+            if (size > 0 && buffer->size() >= size) //Если прочитанны данные, то обрабатываем
+            {
+                QByteArray data = buffer->mid(0, size); //Записываем данные в переменную
+                buffer->remove(0, size);                //Удаляем их из буфера
+                size = 0;
+                *s = size;
+                if (data == "FULL") {QMessageBox::critical(this, "Ошибка подключения", "Сервер, к которому вы попытались подключится заполнен!"); menu(); return;} //Сигнал сервера, о переполненности, выход
+                else usrid = data.toInt(); //Получен id от сервера
+            }
+        }
+    }
+	pve(); //Запускаем игру
+}
+
+QByteArray IntToArray(qint32 source) //Получаем из int QByteArray
+{
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
     data << source;
+    return temp;
+}
+
+qint32 ArrayToInt(QByteArray source) //Получаем из QByteArray int
+{
+    qint32 temp;
+    QDataStream data(&source, QIODevice::ReadWrite);
+    data >> temp;
     return temp;
 }

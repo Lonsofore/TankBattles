@@ -15,13 +15,15 @@ class server : public QObject
 
 public:
     server();
-    server(int port);
+    server(int port, bool isStartdByClient);
 private:
     QTcpServer *tcpServer;
+    QTcpSocket *tcpSocket;
     QNetworkSession *networkSession;
     QUdpSocket *udpSocket;
     void broadcastDatagram();
-    int x[2], y[2], TAngle[2], HAngle[2], port, cid;
+    int x[2], y[2], TAngle[2], HAngle[2], port, cid, ConnectedCnt;
+    bool isFiring[2], gameStarted;
     //QTcpServer *server;
     QHash<QTcpSocket*, QByteArray*> buffers; //We need a buffer to store data until block has completely received
     QHash<QTcpSocket*, qint32*> sizes;

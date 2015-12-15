@@ -325,6 +325,7 @@ void Player::onKey() // player действия при нажатии клави
     {
         playerFire();
         reload = false; // перезарядка еще на начата
+        isFiring = 1;
 
         /*
         // анимация перезарядки

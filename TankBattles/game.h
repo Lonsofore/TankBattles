@@ -63,6 +63,7 @@ public:
 
 private slots:
     void SendData();
+    void readResponse();
 
 public slots:
     void switchButton(int n); // сменить кнопку на выбранную
@@ -100,11 +101,13 @@ private:
     TextPanel *text1;
     TextPanel *text2;
 
-    // мультиплеерная ерунда
+    // мультиплеер
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
-    int usrid;
+    int usrid; //ID игрока
     bool isrecieving;
+    QHash<QTcpSocket*, QByteArray*> buffers; //Буфер для хранения принимаемых по tcp данных
+    QHash<QTcpSocket*, qint32*> sizes;
 };
 
 #endif // GAME

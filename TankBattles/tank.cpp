@@ -20,7 +20,7 @@
 #define PI 3.14159265
 
 #include <QDebug>
-
+int toInt(double x);
 extern Game * game;
 
 Tank::Tank()
@@ -243,8 +243,8 @@ void Tank::fire()
     int bulsize = pixsize*0.16;
 
     // левая верхняя позиция танка + половина размера танка (чтобы из середины)
-    x1 = x() + pixsize/2 + round(cos(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
-    y1 = y() + pixsize/2 + round(sin(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
+    x1 = x() + pixsize/2 + toInt(cos(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
+    y1 = y() + pixsize/2 + toInt(sin(hdegree * PI / 180) * (pixsize/2 + pixsize/20)) - bulsize/2;
 
     Bullet *bullet = new Bullet(this);
     bullet->setPos(x1,y1);
@@ -478,7 +478,17 @@ void Tank::changeAngle(int TAngle, int HAngle)
     this->rotateLeft(0,true);
 }
 
-
-
-
-
+int toInt(double x)
+{
+   if (x > 0)
+   {
+       x += 0.5;
+       return (int)x;
+   }
+   if (x < 0)
+   {
+       x -= 0.5;
+       return (int)x;
+   }
+   if (x == 0) return 0;
+}
