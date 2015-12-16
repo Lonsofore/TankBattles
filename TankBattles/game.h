@@ -78,6 +78,7 @@ public slots:
     void pvp();  // открывает меню выбора пвп
     void pvp1(); // присоединиться
     void pvp2(); // создать
+    void pvpLoad(); //Загрузка карты для MP
 
     void settings();  // список настроек
     void pSettings(); // настройки игрока
@@ -109,9 +110,10 @@ private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока
-    bool isrecieving;
+    bool isrecieving, inMP;
     QHash<QTcpSocket*, QByteArray*> buffers; //Буфер для хранения принимаемых по tcp данных
     QHash<QTcpSocket*, qint32*> sizes;
+
 };
 
 #endif // GAME

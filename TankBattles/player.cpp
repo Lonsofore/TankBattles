@@ -39,7 +39,7 @@ Player::Player()
     fireTime = 2000;
 
     alive = true;
-
+    isFiring = 0;
     defaultTank();
     game->centerOn(this);
 
@@ -424,8 +424,10 @@ void Player::spawnPlayer()
     //qDebug() << "spawn!";
     delete died;
     spawnTank();
+    emit reSpawn();
     game->centerOn(this);
     setFocus();
+
 }
 
 void Player::playerReset()

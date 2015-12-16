@@ -51,6 +51,7 @@ public slots:
 signals:
     void tomenu();
     void KeyPressed();
+    void reSpawn();
 };
 
 #endif // PLAYER

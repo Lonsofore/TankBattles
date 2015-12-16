@@ -49,7 +49,7 @@ Game::Game(QWidget *parent)
     // размеры окна по умолчанию
     int width = 800;
     int height = 600;
-
+    inMP = 0;
     darkMode = false;
 
     // создание сцены
@@ -499,7 +499,7 @@ void Game::pve()
     scene->addItem(player->head);
     connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
 
-    connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
+
 
 
     // очки
@@ -519,12 +519,8 @@ void Game::pve()
     change("pve");
 
     //Подготовка к приему данных
-    tcpSocket = new QTcpSocket();
-    tcpSocket->connectToHost("192.168.0.112", 7);
-    tcpSocket->waitForConnected(3000000);
-    udpSocket = new QUdpSocket(this);
-    udpSocket->bind(45454, QUdpSocket::ShareAddress);
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+
+    //connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
 }
 
 void Game::pvp()
@@ -589,6 +585,9 @@ void Game::pvp1()
     tcpSocket = new QTcpSocket();
     tcpSocket->connectToHost(ServIP, 7); //Подключение
     tcpSocket->waitForConnected();
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(45454, QUdpSocket::ShareAddress);
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
@@ -596,6 +595,160 @@ void Game::pvp2()
 {
     change("pvp2"); //Заглушка
     menu();
+}
+
+void Game::pvpLoad()
+{
+    scene->clear();
+
+    // файл открываем
+    QString path = QDir::currentPath() + "/maps";
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
+
+    // проверка
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        menu();
+        return;
+    }
+
+    // фон карты
+    if (darkMode)
+        setBackgroundBrush(QBrush(QColor(33,33,33,255)));
+    else
+        setBackgroundBrush(QBrush(QColor(229,229,229,255)));
+
+    QTextStream in(&file);
+
+    //берем первую строку
+    QString line = in.readLine();
+    QStringList list1;
+    list1 = line.split(" ");
+    // размеры карты
+    yBlocks = list1[0].toInt();
+    xBlocks = list1[1].toInt();
+    // кол-во точек спавна
+    spawns = list1[2].toInt();
+    spawnPoints=new QPoint*[spawns];
+
+    QString img;
+    int width = blockSize; // размер блоков
+    int height = blockSize;
+    int x,y;
+
+    dop = 2*width; // дополнительное кол-во блоков за картой
+    scene->setSceneRect(0,0,xBlocks*width+dop*2,yBlocks*height+dop*2); // разрешение сцены
+
+    // если разрешение, выставленное игроком, больше того, что на карте
+    if (xBlocks*width <= maxwidth) // по ширине
+        setFixedWidth(xBlocks*width);
+    if (yBlocks*height <= maxheight) // по высоте
+        setFixedHeight(yBlocks*height);
+
+    moveToCenter();
+
+    // создание линий ограничения
+    int pwidth = 10; // ширина линии
+    QPen pen;
+    pen.setStyle(Qt::SolidLine);
+
+    if (darkMode)
+        pen.setColor(QColor(55, 55, 55, 255));
+    else
+        pen.setColor(QColor(179, 179, 179, 255));
+
+    pen.setJoinStyle(Qt::MiterJoin);
+    pen.setWidth(pwidth);
+
+    int pp = pwidth + 4; // чтобы линии были не вплотную к блокам
+    // чтобы понятнее было:
+    // p1 p2
+    // p4 p3
+    QPointF p1(dop-pp, dop-pp);
+    QPointF p2(xBlocks*width+dop+pp, dop-pp);
+    QPointF p3(xBlocks*width+dop+pp, yBlocks*height+dop+pp);
+    QPointF p4(dop-pp, yBlocks*height+dop+pp);
+    scene->addLine(QLineF(p1,p2),pen); // тут можно сделать setZValue
+    scene->addLine(QLineF(p2,p3),pen);
+    scene->addLine(QLineF(p3,p4),pen);
+    scene->addLine(QLineF(p4,p1),pen);
+
+    // считывание карты из файла
+    int num = 0;
+    for (int i = 0; i < yBlocks; i++)
+    {
+        line = in.readLine();
+        list1 = line.split(" ");
+        for (int j = 0; j < xBlocks; j++)
+        {
+            if (list1[j] != "S" && list1[j] != "0" && list1[j] != "")
+            {
+                Block *block = new Block(list1[j].toInt());
+                x = width * j + dop;
+                y = height * i + dop;
+                img = ":/images/images/blocks/" + list1[j] + ".png";
+
+                if (darkMode)
+                {
+                    QImage img1(img);
+                    img1 = setImageLightness(img1, 10);
+                    QPixmap pix(QPixmap::fromImage(img1));
+                    block->setPixmap(pix.scaled(width,height));
+                }
+                else
+                    block->setPixmap(QPixmap(img).scaled(width,height));
+
+                block->setPos(x,y);
+                scene->addItem(block);
+            }
+
+            if (list1[j] == "S")
+            {
+                // создание массива точек для спавна
+                spawnPoints[num] = new QPoint(width*j+dop,height*i+dop);
+                num++;
+            }
+        }
+    }
+    file.close();
+
+    // тестовый танк
+    enmy = new Tank();
+    scene->addItem(enmy);
+    scene->addItem(enmy->head);
+    enmy->randomSpawn();
+    //enmy->changePos(200,100);
+
+    // создание игрока
+    player = new Player();
+    scene->addItem(player);
+    scene->addItem(player->head);
+    connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
+    connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
+    connect(player, SIGNAL(reSpawn()), this, SLOT(SendData()));
+
+
+    // очки
+    //score = new Score();
+    //scene->addItem(score);
+
+    // музыка
+    QMediaPlayer * music = new QMediaPlayer();
+    QMediaPlaylist * playlist = new QMediaPlaylist();
+    playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    music->setPlaylist(playlist);
+    //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+    music->setVolume(vmusic); // уровень громкости (из 100)
+    music->play();
+
+    change("pve");
+
+    //Подготовка к приему данных
+
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+    SendData();
 }
 
 void Game::settings()
@@ -1163,8 +1316,8 @@ QImage Game::setImageLightness(QImage img, int lightness)
 
 void Game::processPendingDatagrams()
 {   int otherplayer; //Временный костыль
-    if (usrid == 2) otherplayer = 0;
-    if (usrid == 0) otherplayer = 2;
+    if (usrid == 1) otherplayer = 0;
+    if (usrid == 0) otherplayer = 1;
     isrecieving = 1;
     while (udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;
@@ -1187,6 +1340,8 @@ void Game::processPendingDatagrams()
 void Game::SendData() //Отправка данных
 {
     //while(isrecieving) {wait();} ищу замену для wait
+    //if(inMP)
+
     if(tcpSocket->state() == QAbstractSocket::ConnectedState)
         {	//Формат данных: "id X Y угол_поворота_танка угол_поворота_башни стреляет_ли_игрок
             QByteArray data = QByteArray::number(usrid) + ' ' + QByteArray::number(player->GetX()) + ' ' + QByteArray::number(player->GetY()) + ' '
@@ -1194,7 +1349,9 @@ void Game::SendData() //Отправка данных
             tcpSocket->write(IntToArray(data.size())); //write size of data
             tcpSocket->write(data); //write the data itself
             tcpSocket->waitForBytesWritten();
+            player->isFiring = 0;
             return;
+
         }
         else
             //QMessageBox::information(this, "ERROR", "Connection error");
@@ -1229,12 +1386,14 @@ void Game::readResponse() //Читаем ответ от сервера посл
                 buffer->remove(0, size);                //Удаляем их из буфера
                 size = 0;
                 *s = size;
-                if (data == "FULL") {QMessageBox::critical(this, "Ошибка подключения", "Сервер, к которому вы попытались подключится заполнен!"); menu(); return;} //Сигнал сервера, о переполненности, выход
-                else usrid = data.toInt(); //Получен id от сервера
+                if (data == "FULL") {QMessageBox::critical(this, "Ошибка подключения", "Сервер, к которому вы попытались подключится, заполнен!"); menu(); return;} //Сигнал сервера, о переполненности, выход
+                if (data == "STARTED") {QMessageBox::critical(this, "Ошибка подключения", "Игра на этом сервере уже началась!"); menu(); return;} //Сигнал о том, что игра уже началась
+                else {usrid = data.toInt(); /*Получен id от сервера*/ inMP = 1;}
+
             }
         }
     }
-	pve(); //Запускаем игру
+    pvpLoad(); //Запускаем игру
 }
 
 QByteArray IntToArray(qint32 source) //Получаем из int QByteArray

@@ -11,6 +11,14 @@ server::server(int port1, bool isStartdByClient)
     ConnectedCnt = 0;
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
             tcpServer->listen(QHostAddress::Any, port);
+    for (int i = 0; i < 2; i++)
+    {
+        x[i] = 0;
+        y[i] = 0;
+        TAngle[i] = 0;
+        HAngle[i] = 0;
+        isFiring[i] = 0;
+    }
 }
 
 void server::broadcastDatagram()
@@ -55,9 +63,10 @@ void server::newConnection()
         qint32 *s = new qint32(0);
         buffers.insert(socket, buffer);
         sizes.insert(socket, s);
+        QByteArray data;
         if (!gameStarted)
         {
-            QByteArray data;
+
             if (ConnectedCnt >= 2)
             {
                 data = "FULL";
@@ -66,10 +75,14 @@ void server::newConnection()
             {
                 data = QByteArray::number(ConnectedCnt++);
             }
-            socket->write(IntToArray(data.size()));
-            socket->write(data);
-            socket->waitForBytesWritten();
         }
+        else
+        {
+            data = "STARTED";
+        }
+        socket->write(IntToArray(data.size()));
+        socket->write(data);
+        socket->waitForBytesWritten();
     }
 }
 void server::disconnected()
