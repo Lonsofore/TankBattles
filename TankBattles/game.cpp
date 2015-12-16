@@ -372,6 +372,7 @@ void Game::menu()
 
 void Game::pve()
 {
+		inMP = 0;
     scene->clear();
 
     // файл открываем
