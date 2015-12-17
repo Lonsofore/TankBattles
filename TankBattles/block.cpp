@@ -12,6 +12,6 @@ Block::Block(int n)
     if (num == 3)
         setZValue(5);
     else
-        setZValue(1);
+        setZValue(0);
 }
 

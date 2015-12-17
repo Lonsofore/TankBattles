@@ -33,9 +33,7 @@ void Tank::defaultTank()
     // размер танка
     pixsize = 220;
 
-    // обнуление
-    xfix = 0;
-    yfix = 0;
+    reload = 0;
 
     alive = true;
     maxhealth = 100;
@@ -62,19 +60,14 @@ void Tank::defaultTank()
     //точка спавна
     randomSpawn();
 
-    // звук выстрела
-    bulletsound = new QMediaPlayer();
-    bulletsound->setMedia(QUrl("qrc:/sounds/sounds/tank_fire.mp3"));
-    bulletsound->setVolume(game->veffects);
-
     //звук перезарядки
     bulletready = new QMediaPlayer();
-    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank_reload.mp3"));
+    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank/reload.mp3"));
     bulletready->setVolume(game->veffects);
 
     //звук поворота башни
     tankhrotate = new QMediaPlayer();
-    tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank_hrotate.wav"));
+    tankhrotate->setMedia(QUrl("qrc:/sounds/sounds/tank/hrotate.wav"));
     tankhrotate->setVolume(game->veffects);
 }
 
@@ -248,16 +241,6 @@ void Tank::fire()
     Bullet *bullet = new Bullet(this);
     bullet->setPos(x1,y1);
     scene()->addItem(bullet);
-
-    switch (bulletsound->state())
-    {
-        case QMediaPlayer::PlayingState:
-            bulletsound->setPosition(0);
-            break;
-        case QMediaPlayer::StoppedState:
-            bulletsound->play();
-            break;
-    }
 }
 
 void Tank::randomSpawn()
@@ -323,9 +306,11 @@ void Tank::changeSize(int n)
 // возвращает false, если танк не соприкасается ни с чем и все ок
 bool Tank::isCollide()
 {
-    QList<QGraphicsItem *> colliding_items = collidingItems();    
+    QList<QGraphicsItem *> colliding_items = collidingItems();
+    if (colliding_items.count() > 1 + reload)
     for (int i = 0, n = colliding_items.size(); i < n; ++i)
     {
+        //qDebug() << "tank";
         if (typeid(*(colliding_items[i])) == typeid(Tank))
         {
                 return true;
@@ -342,8 +327,10 @@ bool Tank::isCollide()
     }
 
     QList<QGraphicsItem *> colliding_items1 = head->collidingItems();
+    if (colliding_items1.count() > 1 + reload)
     for (int j = 0, n = colliding_items1.size(); j < n; ++j)
     {
+        //qDebug() << "head";
         if (typeid(*(colliding_items1[j])) == typeid(Block))
         {
             Block * block1 = dynamic_cast <Block *> (colliding_items1[j]);
@@ -422,9 +409,21 @@ void Tank::deleteTank()
     head->setPixmap(QPixmap(":/images/images/empty.png").scaled(pixsize,pixsize));
     setPixmap(QPixmap(":/images/images/empty.png").scaled(pixsize,pixsize));
 
+    int stime;
+    long ltime;
+    int random;
+    ltime = time(NULL);
+    stime = (unsigned) ltime/2;
+    srand(stime);
+    random = rand()%3 +1;
+
+    QMediaPlayer *explode = new QMediaPlayer();
+    explode->setMedia(QUrl("qrc:/sounds/sounds/tank/explode" + QString::number(random) + ".mp3"));
+    explode->play();
+
     // анимация
     gif_anim = new QLabel();
-    gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
+    gif_anim->setStyleSheet("background-color: transparent;");
     QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
     gif_anim->setMovie(movie);
     gif_anim->move(x()-25,y()-25);

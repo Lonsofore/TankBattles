@@ -8,7 +8,7 @@
 #include <QDebug>
 
 bool action = false;
-bool reload = false;
+bool reloading = false;
 bool fireReady = true;
 int fireCount = 0;
 
@@ -23,6 +23,10 @@ int curBtn;
 
 bool alive;
 
+bool wou;
+
+bool el = false;
+
 extern Game * game;
 
 Player::Player()
@@ -31,6 +35,8 @@ Player::Player()
     connect(timer,SIGNAL(timeout()),this,SLOT(onKey()));
 
     keyDelay = 20; // задержка между действиями клавиш
+
+    wou = false;
 
     // нажатые кнопки
     mf = mb = rr = rl = hr = hl = fr = false;
@@ -145,15 +151,32 @@ void Player::keyPressEvent(QKeyEvent *event)
             break;
 
             case 53:
-                QList<QGraphicsItem *> items = game->scene->items(250,160,90,75,Qt::IntersectsItemShape,Qt::AscendingOrder,QTransform());
-                if (items.count() > 0)
-                {
-                    qDebug() << "Items: " << items.count();
-                }
-                else
-                {
-                    qDebug() << "No items";
-                }
+                //getDmg(10);
+            break;
+
+            case 54:
+                /*
+                QColor col(0,149,0,255);
+                QPen pen(col);
+
+                QPainterPath myPath;
+                myPath.addEllipse(QPointF(0,0),90,90);
+                myPath.addEllipse(QPointF(0,0),80,80);
+
+                path = new QGraphicsPathItem();
+                path->setPath(myPath);
+                path->setPen(pen);
+                path->setBrush(QBrush(col));
+
+                game->scene->addItem(path);
+                path->setPos(x()+110,y()+110);
+
+                el = true;
+                */
+            break;
+
+            case 55:
+
             break;
         }
         if (action == false)
@@ -219,6 +242,19 @@ void Player::onKey() // player действия при нажатии клави
 {
     game->centerOn(this);
 
+    //if (el)
+    //    path->setPos(x()+110,y()+110);
+
+    // эффект получения урона (должен стоять перед движением)
+    if (wou)
+    {
+        /*
+        int x1 = centralX();
+        int y1 = centralY();
+        wound->setPos(x1-game->width()/2,y1-game->height()/2);
+        */
+    }
+
     // движение вперед, назад
     if (mf) moveForward();
     if (mb) moveBack();
@@ -246,7 +282,6 @@ void Player::onKey() // player действия при нажатии клави
             game->scene->addItem(caution);
         }
         caution->setPos(x1-200, y1-88);
-
 
         outCount += keyDelay;
         if (outCount > 1000)
@@ -323,31 +358,31 @@ void Player::onKey() // player действия при нажатии клави
     if (fr && fireReady)
     {
         playerFire();
-        reload = false; // перезарядка еще на начата
+        reloading = false; // перезарядка еще на начата
         isFiring = 1;
 
-        /*
+        reload = 1;
         // анимация перезарядки
         reloadAnim = new QLabel();
-        reloadAnim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
+        reloadAnim->setStyleSheet("background-color: transparent;");
         QMovie *movie = new QMovie(":/images/images/anim/Reload.gif");
         reloadAnim->setMovie(movie);
         reloadAnim->move(x()+20,y()+20);
         movie->setScaledSize(QSize(180,180));
-        movie->setSpeed(120);
+        movie->setSpeed(110);
         movie->start();
         QGraphicsProxyWidget *proxy = game->scene->addWidget(reloadAnim);
-        */
+
     }
     if (fireReady == false) // счетчик для ожидания между выстрелами
     {
         fireCount += keyDelay;
 
-        //reloadAnim->move(x()+20,y()+20);
+        reloadAnim->move(x()+20,y()+20);
     }
     if ((fireCount > fireTime - bulletready->duration()) && reload == false) // звук перезарядки
     {
-        reload = true; // перезарядка уже начата (защита от нескольких)
+        reloading = true; // перезарядка уже начата (защита от нескольких)
         bulletready->play();
     }
     if (fireCount > fireTime) // готовность выстрела
@@ -355,7 +390,8 @@ void Player::onKey() // player действия при нажатии клави
         fireReady = true;
         fireCount = 0;
 
-        //delete reloadAnim;
+        reload = 0;
+        delete reloadAnim;
     }
 
     emit KeyPressed();
@@ -417,6 +453,35 @@ void Player::killPlayer()
 {
     deleteTank();
     QTimer::singleShot(2000, this, SLOT(spawnPlayer()));
+}
+
+void Player::getDmg(int v)
+{
+    decHealth(v);
+    wou = true;
+
+    int x1 = centralX();
+    int y1 = centralY();
+
+    wound = new QGraphicsPixmapItem();
+    wound->setPixmap(QPixmap(":/images/images/wound.png").scaled(game->width(),game->height()));
+    wound->setPos(x1-game->width()/2,y1-game->height()/2);
+    game->scene->addItem(wound);
+
+    /*
+    QTimer *timerw = new QTimer();
+    connect(timerw,SIGNAL(timeout()),this,SLOT(playerWound()));
+    */
+    QTimer::singleShot(2000, this, SLOT(playerWound()));
+}
+
+void Player::playerWound()
+{
+    if (wou)
+    {
+        delete wound;
+        wou = false;
+    }
 }
 
 void Player::spawnPlayer()

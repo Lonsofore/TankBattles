@@ -38,6 +38,9 @@ public:
     // действия для бота
     void killTank(); // убийство (для бота)
 
+    // только для player
+    int reload;
+
     bool alive;
     int health; // здровье
     int maxhealth; // максимальное кол-во здоровья
@@ -53,8 +56,6 @@ public:
     int degree;     // угол платформы
     int speed;      // скорость
     int rspeed;     // скорость поворота
-    double xfix;    // суммирует дробные значения координат
-    double yfix;    // x и y
     QString baseImage;  // изображение платформы
 
     // башня
@@ -65,7 +66,6 @@ public:
     QString headImage;  // изображение башни
 
     // звуки
-    QMediaPlayer *bulletsound; // выстрел
     QMediaPlayer *bulletready; // перезарядка
     QMediaPlayer *tankhrotate; // поворот башни
 

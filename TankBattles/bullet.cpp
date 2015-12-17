@@ -25,7 +25,6 @@ bool isfire1;
 Bullet::Bullet(QGraphicsPixmapItem *parent)
 {
     // родительский танк
-    //tank = new Tank;
     tank = dynamic_cast <Tank *> (parent);
 
     dmg = 40;
@@ -39,6 +38,11 @@ Bullet::Bullet(QGraphicsPixmapItem *parent)
     setPixmap(QPixmap(image).scaled(pixsize,pixsize));
     rotate();
     setZValue(0);
+
+    QMediaPlayer *fire = new QMediaPlayer();
+    fire->setVolume(game->veffects);
+    fire->setMedia(QUrl("qrc:/sounds/sounds/tank/fire.mp3"));
+    fire->play();
 
     timerf1 = new QTimer();
     connect(timerf1,SIGNAL(timeout()),this,SLOT(anim1()));
@@ -187,6 +191,10 @@ void Bullet::move()
                 pm1->setZValue(85);
                 game->scene->addItem(pm1);
                 timerf1->start(50);
+
+                QMediaPlayer *hit = new QMediaPlayer();
+                hit->setMedia(QUrl("qrc:/sounds/sounds/tank/hit.mp3"));
+                hit->play();
             }
         }
 
@@ -204,6 +212,10 @@ void Bullet::move()
                 pm1->setZValue(85);
                 game->scene->addItem(pm1);
                 timerf1->start(50);
+
+                QMediaPlayer *hit = new QMediaPlayer();
+                hit->setMedia(QUrl("qrc:/sounds/sounds/tank/hit.mp3"));
+                hit->play();
             }
         }
 
@@ -216,7 +228,7 @@ void Bullet::move()
 
                 int random = 1 + rand()%3;
                 QMediaPlayer *sound = new QMediaPlayer();
-                sound->setMedia(QUrl("qrc:/sounds/sounds/break" + QString::number(random) + ".mp3"));
+                sound->setMedia(QUrl("qrc:/sounds/sounds/blocks/break" + QString::number(random) + ".mp3"));
                 sound->setVolume(game->veffects);
                 sound->play();
 
@@ -228,9 +240,18 @@ void Bullet::move()
                 hit = true;
 
                 QMediaPlayer *sound = new QMediaPlayer();
-                sound->setMedia(QUrl("qrc:/sounds/sounds/nobreak.mp3"));
+                sound->setMedia(QUrl("qrc:/sounds/sounds/blocks/nobreak.mp3"));
                 sound->setVolume(game->veffects);
                 sound->play();
+
+                /*
+                count1 = 0;
+                pm1 = new QGraphicsPixmapItem;
+                pm1->setZValue(85);
+                //pm1->setScale(0.5);
+                game->scene->addItem(pm1);
+                timerf1->start(50);
+                */
             }
         }
 

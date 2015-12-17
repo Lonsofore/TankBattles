@@ -49,6 +49,7 @@ Game::Game(QWidget *parent)
     // размеры окна по умолчанию
     int width = 800;
     int height = 600;
+
     inMP = 0;
     darkMode = false;
 
@@ -818,7 +819,7 @@ void Game::pSettings()
     scene->clear();
     int random = 1 + rand()%2;
     QMediaPlayer *voice = new QMediaPlayer();
-    voice->setMedia(QUrl("qrc:/sounds/sounds/no" + QString::number(random) + ".wav"));
+    voice->setMedia(QUrl("qrc:/sounds/sounds/dude/no" + QString::number(random) + ".wav"));
     voice->play();
     delay(1000);
     settings();
@@ -941,7 +942,7 @@ void Game::mSettings()
     scene->clear();
     int random = 1 + rand()%2;
     QMediaPlayer *voice = new QMediaPlayer();
-    voice->setMedia(QUrl("qrc:/sounds/sounds/no" + QString::number(random) + ".wav"));
+    voice->setMedia(QUrl("qrc:/sounds/sounds/dude/no" + QString::number(random) + ".wav"));
     voice->play();
     delay(1000);
     menu();

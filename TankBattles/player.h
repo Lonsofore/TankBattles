@@ -26,6 +26,8 @@ public:
     void playerFire();
     void killPlayer();
 
+    void getDmg(int v);
+
     void playerReset(); // сбросить значения движений
 
     double GetX() const;
@@ -44,8 +46,13 @@ private:
 
     QTimer *timer;
 
+    QGraphicsPixmapItem *wound;
+
+    QGraphicsPathItem *path;
+
 public slots:
     void spawnPlayer();
+    void playerWound();
     void onKey(); // если кнопка нажата - тикер
 
 signals:

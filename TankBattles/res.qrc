@@ -1,18 +1,22 @@
 <RCC>
     <qresource prefix="/sounds">
-        <file>sounds/tank_reload.mp3</file>
-        <file>sounds/tank_fire.mp3</file>
-        <file>sounds/tank_hrotate.wav</file>
-        <file>sounds/no1.wav</file>
-        <file>sounds/no2.wav</file>
-        <file>sounds/nothingtoseehere.wav</file>
-        <file>sounds/notsurprised.wav</file>
-        <file>sounds/break1.mp3</file>
-        <file>sounds/break2.mp3</file>
-        <file>sounds/break3.mp3</file>
-        <file>sounds/nobreak.mp3</file>
         <file>sounds/ambient.mp3</file>
         <file>sounds/spin.mp3</file>
+        <file>sounds/blocks/break1.mp3</file>
+        <file>sounds/blocks/break2.mp3</file>
+        <file>sounds/blocks/break3.mp3</file>
+        <file>sounds/blocks/nobreak.mp3</file>
+        <file>sounds/dude/no1.wav</file>
+        <file>sounds/dude/no2.wav</file>
+        <file>sounds/dude/nothingtoseehere.wav</file>
+        <file>sounds/dude/notsurprised.wav</file>
+        <file>sounds/tank/explode1.mp3</file>
+        <file>sounds/tank/explode2.mp3</file>
+        <file>sounds/tank/explode3.mp3</file>
+        <file>sounds/tank/fire.mp3</file>
+        <file>sounds/tank/hit.mp3</file>
+        <file>sounds/tank/hrotate.wav</file>
+        <file>sounds/tank/reload.mp3</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/bullet.png</file>
@@ -45,6 +49,8 @@
         <file>images/anim/DirectExplos/9.png</file>
         <file>images/anim/DirectExplos/10.png</file>
         <file>images/anim/Reload.gif</file>
+        <file>images/wound.png</file>
+        <file>images/icon.ico</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>fonts/CITYNL.TTF</file>
