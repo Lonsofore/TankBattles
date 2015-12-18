@@ -2,6 +2,7 @@
 #include <QtNetwork>
 #include <iostream>
 #include "server.h"
+QString GroupIP = "255.255.255.255";
 static inline QByteArray IntToArray(qint32 source);
 server::server(int port1, bool isStartdByClient)
 {   tcpServer = new QTcpServer();
@@ -29,7 +30,7 @@ void server::broadcastDatagram()
        datagram += QByteArray::number(1) + ' ' + QByteArray::number(x[1]) + ' ' + QByteArray::number(y[1])+ ' ' +
                QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) + ' ' + QByteArray::number(isFiring[1]) +  '|';
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
-                             QHostAddress::Broadcast, 45454);
+                             QHostAddress(GroupIP), 45454);
 }
 
 void server::dataRecieved(QByteArray data)

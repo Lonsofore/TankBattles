@@ -42,8 +42,8 @@ int curButton;
 
 static inline QByteArray IntToArray(qint32 source);
 static inline qint32 ArrayToInt(QByteArray source);
-QString ServIP = "localhost";
-
+QString ServIP = "127.0.0.1";
+QString GroupIP = "255.255.255.255";
 Game::Game(QWidget *parent)
 {
     // размеры окна по умолчанию
@@ -588,9 +588,12 @@ void Game::pvp1()
     tcpSocket->connectToHost(ServIP, 7); //Подключение
     tcpSocket->waitForConnected();
     udpSocket = new QUdpSocket(this);
-    udpSocket->bind(45454, QUdpSocket::ShareAddress);
+    udpSocket->bind(QHostAddress::Any, 45454, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
+    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
+    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
+	
 }
 
 void Game::pvp2()
