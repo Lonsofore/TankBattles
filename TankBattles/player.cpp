@@ -4,17 +4,20 @@
 #include <QTimer>
 #include <QLabel>
 #include <QMovie>
+#include <QTime>
 
 #include <QDebug>
 
 bool action = false;
+
 bool reloading = false;
 bool fireReady = true;
 int fireCount = 0;
 
 bool out = false;
-int outCount = 0;
-int outTimer = 5;
+QTime outTime;
+int outMaxTime = 5; // секунд
+int outTimer;
 
 int spin = 0;
 
@@ -23,9 +26,11 @@ int curBtn;
 
 bool alive;
 
+int lastX, lastY, lastDeg, lastHDeg, lastHealth;
+
 bool wou;
 
-bool el = false;
+QTime last;
 
 extern Game * game;
 
@@ -60,6 +65,7 @@ Player::Player()
 void Player::keyPressEvent(QKeyEvent *event)
 {
     //qDebug() << (uint) event->key(); // чтобы узнать код клавиши
+    //qDebug() << event->text();
     if (alive)
     {
         switch ((uint) event->key())
@@ -155,24 +161,21 @@ void Player::keyPressEvent(QKeyEvent *event)
 
             case 53:
                 //getDmg(10);
+                last = QTime::currentTime();
             break;
 
             case 54:
-
-            break;
-
-            case 55:
-
+                //qDebug() << cur.minute() << " " << cur.second() << " " << cur.msec();
+                qDebug() << last.msecsTo(QTime::currentTime());
             break;
         }
         if (action == false)
         {
-            //qDebug() << "start";
-            action = true;
-
-            onKey();
-
-            //timer->start(keyDelay);
+            if (alive)
+            {
+                action = true;
+                onKey();
+            }
         }
         //game->health->setPos(game->player->x()+40,game->player->y()+50);
     }
@@ -242,6 +245,12 @@ void Player::keyActions() // player действия при нажатии кл�
 {
     game->centerOn(this);
 
+    lastX = x();
+    lastY = y();
+    lastDeg = degree;
+    lastHDeg = hdegree;
+    lastHealth = health;
+
     // эффект получения урона (должен стоять перед движением)
     if (wou)
     {
@@ -271,6 +280,8 @@ void Player::keyActions() // player действия при нажатии кл�
         if (out == false)
         {
             out = true;
+            outTime = QTime::currentTime();
+            outTimer = outMaxTime;
 
             QString image = ":/images/images/out.png";
             caution = new Caution(image, "CAUTION", 5);
@@ -280,13 +291,10 @@ void Player::keyActions() // player действия при нажатии кл�
         }
         caution->setPos(x1-200, y1-88);
 
-        outCount += keyDelay;
-        if (outCount > 1000)
+        if (QTime::currentTime().msecsTo(outTime) > 1000)
         {
-            outCount = 0;
             if (outTimer > 0)
             {
-                //qDebug() << outTimer;
                 outTimer--;
                 caution->decTimer();
             }
@@ -295,7 +303,7 @@ void Player::keyActions() // player действия при нажатии кл�
                 // DIE MOTHERFUCKER!
                 //qDebug() << "you died";
                 out = false;
-                outTimer = 5;
+                outTimer = outMaxTime;
                 delete caution;
 
                 // плашка смерти
@@ -316,9 +324,8 @@ void Player::keyActions() // player действия при нажатии кл�
         if (out == true)
         {
             out = false;
-            outTimer = 5;
+            outTimer = outMaxTime;
             delete caution;
-            //delete noise;
         }
     }
 
@@ -355,7 +362,7 @@ void Player::keyActions() // player действия при нажатии кл�
     if (fr && fireReady)
     {
         playerFire();
-        reloading = false; // перезарядка еще на начата
+        reloading = false; // звук перезарядки еще на начат
         isFiring = 1;
 
         reload = 1;
@@ -391,7 +398,8 @@ void Player::keyActions() // player действия при нажатии кл�
         delete reloadAnim;
     }
 
-    emit KeyPressed();
+    if (lastX != x() || lastY != y() || lastDeg != degree || lastHDeg != hdegree || lastHealth != health)
+        emit KeyPressed();
 
     if (alive == false || (mf == false && mb == false && rl == false && rr == false && hl == false && hr == false && fr == false &&
                           fireReady == true && tankhrotate->state() == QMediaPlayer::StoppedState && out == false))

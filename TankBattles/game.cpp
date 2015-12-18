@@ -36,6 +36,10 @@ const int nSett1Btns = 2;
 const int nSett2Btns = 2;
 const int nSett2UpDn = 3;
 const int nPvpBtns = 3;
+const int nPvP1Btns = 2;
+const int nPvP1TBs = 2;
+const int nPvP2Btns = 2;
+const int nPvP2TBs = 1;
 const int nGMenuBtns = 4;
 
 int curButton;
@@ -43,7 +47,9 @@ int curButton;
 static inline QByteArray IntToArray(qint32 source);
 static inline qint32 ArrayToInt(QByteArray source);
 QString ServIP = "127.0.0.1";
+int ServPort = 45454;
 QString GroupIP = "255.255.255.255";
+
 Game::Game(QWidget *parent)
 {
     // размеры окна по умолчанию
@@ -236,12 +242,68 @@ void Game::switchButton(int n) // смена кнопки
 
     if (inpvp1) // присоединиться к игре
     {
+        if (n < 0)
+            n = n + nPvP1Btns + nPvP1TBs;
+        if (n > nPvP2Btns + nPvP1TBs - 1)
+            n = n - nPvP1Btns + nPvP1TBs;
 
+        curButton = n;
+
+        for (int i=0; i<nPvP1TBs; i++)
+            tBoxes[i]->deselect();
+
+        for (int i=0; i<nPvP1Btns; i++)
+            btns[i]->deselect();
+
+        switch (curButton)
+        {
+            case 0:
+                tBoxes[0]->select();
+            break;
+
+            case 1:
+                tBoxes[1]->select();
+            break;
+
+            case 2:
+                btns[0]->select();
+            break;
+
+            case 3:
+                btns[1]->select();
+            break;
+        }
     }
 
     if (inpvp2) // создать игру
     {
+        if (n < 0)
+            n = n + nPvP2Btns + nPvP2TBs;
+        if (n > nPvP2Btns + nPvP2TBs - 1)
+            n = n - nPvP2Btns + nPvP2TBs;
 
+        curButton = n;
+
+        for (int i=0; i<nPvP2TBs; i++)
+            tBoxes[i]->deselect();
+
+        for (int i=0; i<nPvP2Btns; i++)
+            btns[i]->deselect();
+
+        switch (curButton)
+        {
+            case 0:
+                tBoxes[0]->select();
+            break;
+
+            case 1:
+                btns[0]->select();
+            break;
+
+            case 2:
+                btns[1]->select();
+            break;
+        }
     }
 
     if (insett) // список настроек
@@ -581,25 +643,136 @@ void Game::pvp()
 
 void Game::pvp1()
 {
+    scene->clear();
+    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
+
     change("pvp1");
 
-    //usrid = 1;
+    // точки
+    int xPos;
+    int yPos = this->height()/2 - 270; //верхняя точка
+
+    // надпись
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("Connect"));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont titleFont("Century Gothic",70);
+    title->setFont(titleFont);
+    xPos = this->width()/2 - title->boundingRect().width()/2;
+    title->setPos(xPos,yPos);
+    scene->addItem(title);
+
+    btns = new Button*[nPvP2Btns];
+    tBoxes = new TextBox*[nPvP2TBs];
+
+    yPos += 150;
+    xPos = this->width()/2 - 360/2;
+
+    // айпи
+    tBoxes[0] = new TextBox(0, 15, 360, 70, "IP");
+    tBoxes[0]->setPos(xPos,yPos);
+    scene->addItem(tBoxes[0]);
+    connect(tBoxes[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(tBoxes[0],SIGNAL(back()),this,SLOT(pvp()));
+
+    // порт
+    yPos += 80;
+    tBoxes[1] = new TextBox(1, 7, 360, 70, "Port");
+    tBoxes[1]->setPos(xPos,yPos);
+    scene->addItem(tBoxes[1]);
+    connect(tBoxes[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(tBoxes[1],SIGNAL(back()),this,SLOT(pvp()));
+
+    // присоединиться
+    yPos += 80;
+    btns[0] = new Button(2, "Connect", 360, 70);
+    btns[0]->setPos(xPos,yPos);
+    scene->addItem(btns[0]);
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpConnect()));
+    connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
+
+    // вернуться назад
+    yPos += 80;
+    btns[1] = new Button(3, "Back", 360, 70);
+    btns[1]->setPos(xPos,yPos);
+    scene->addItem(btns[1]);
+    connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
+    connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[1],SIGNAL(back()),this,SLOT(pvp()));
+
+    switchButton(0); // по умолчанию выбрать первую кнопку
+}
+
+void Game::pvpConnect()
+{
+    if (tBoxes[0]->str != "")
+        ServIP = tBoxes[0]->str;
+
+    if (tBoxes[1]->str != "")
+        ServPort = tBoxes[1]->str.toInt();
+
     tcpSocket = new QTcpSocket();
     tcpSocket->connectToHost(ServIP, 7); //Подключение
     tcpSocket->waitForConnected();
     udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::Any, 45454, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
+    udpSocket->bind(QHostAddress::Any, ServPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
     udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
     udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
-	
 }
 
 void Game::pvp2()
 {
-    change("pvp2"); //Заглушка
-    menu();
+    scene->clear();
+    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
+
+    change("pvp2");
+
+    // точки
+    int xPos;
+    int yPos = this->height()/2 - 270; //верхняя точка
+
+    // надпись
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("Create"));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont titleFont("Century Gothic",70);
+    title->setFont(titleFont);
+    xPos = this->width()/2 - title->boundingRect().width()/2;
+    title->setPos(xPos,yPos);
+    scene->addItem(title);
+
+    btns = new Button*[nPvP2Btns];
+    tBoxes = new TextBox*[nPvP2TBs];
+
+    yPos += 150;
+    xPos = this->width()/2 - 300/2;
+    // порт
+    tBoxes[0] = new TextBox(0, 7, 300, 70, "Port");
+    tBoxes[0]->setPos(xPos,yPos);
+    scene->addItem(tBoxes[0]);
+    connect(tBoxes[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(tBoxes[0],SIGNAL(back()),this,SLOT(pvp()));
+
+    // создать игру
+    yPos += 80;
+    btns[0] = new Button(1, "Create", 300, 70);
+    btns[0]->setPos(xPos,yPos);
+    scene->addItem(btns[0]);
+    //connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp2()));
+    connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
+
+    // вернуться назад
+    yPos += 80;
+    btns[1] = new Button(2, "Back", 300, 70);
+    btns[1]->setPos(xPos,yPos);
+    scene->addItem(btns[1]);
+    connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
+    connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[1],SIGNAL(back()),this,SLOT(pvp()));
+
+    switchButton(0); // по умолчанию выбрать первую кнопку
 }
 
 void Game::pvpLoad()

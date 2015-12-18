@@ -13,6 +13,7 @@
 #include "block.h"
 #include "numupdown.h"
 #include "textpanel.h"
+#include "textbox.h"
 
 QT_BEGIN_NAMESPACE
 class QUdpSocket;
@@ -73,11 +74,13 @@ public slots:
     void switchButton(int n); // сменить кнопку на выбранную
 
     void menu(); // запустить меню
+
     void pve();  // пве
 
     void pvp();  // открывает меню выбора пвп
     void pvp1(); // присоединиться
     void pvp2(); // создать
+    void pvpConnect(); // подключение
     void pvpLoad(); //Загрузка карты для MP
 
     void settings();  // список настроек
@@ -93,10 +96,11 @@ public slots:
     void toMenu(); // вернуться в меню
 
     void processPendingDatagrams();
-private:
-    // кнопки для менюшек
+private:    
+    // массивы элементов менюшек
     Button **btns;
     numUpDown **udBtns;
+    TextBox **tBoxes;
 
     // плашки для менюшек
     TextPanel *backgr;

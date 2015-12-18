@@ -27,7 +27,8 @@ SOURCES += main.cpp \
     textpanel.cpp \
     numupdown.cpp \
     delay.cpp \
-    caution.cpp
+    caution.cpp \
+    textbox.cpp
 
 HEADERS  += \
     tank.h \
@@ -41,7 +42,8 @@ HEADERS  += \
     textpanel.h \
     numupdown.h \
     delay.h \
-    caution.h
+    caution.h \
+    textbox.h
 
 RESOURCES += \
     res.qrc
