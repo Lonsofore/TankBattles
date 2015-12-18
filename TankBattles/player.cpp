@@ -32,7 +32,7 @@ extern Game * game;
 Player::Player()
 {
     timer = new QTimer();
-    connect(timer,SIGNAL(timeout()),this,SLOT(onKey()));
+    connect(timer,SIGNAL(timeout()),this,SLOT(keyActions()));
 
     keyDelay = 20; // задержка между действиями клавиш
 
@@ -46,7 +46,10 @@ Player::Player()
 
     alive = true;
     isFiring = 0;
+
     defaultTank();
+    emit reSpawn();
+
     game->centerOn(this);
 
     // выделить танк на сцене - для действий с ним
@@ -155,24 +158,7 @@ void Player::keyPressEvent(QKeyEvent *event)
             break;
 
             case 54:
-                /*
-                QColor col(0,149,0,255);
-                QPen pen(col);
 
-                QPainterPath myPath;
-                myPath.addEllipse(QPointF(0,0),90,90);
-                myPath.addEllipse(QPointF(0,0),80,80);
-
-                path = new QGraphicsPathItem();
-                path->setPath(myPath);
-                path->setPen(pen);
-                path->setBrush(QBrush(col));
-
-                game->scene->addItem(path);
-                path->setPos(x()+110,y()+110);
-
-                el = true;
-                */
             break;
 
             case 55:
@@ -184,7 +170,9 @@ void Player::keyPressEvent(QKeyEvent *event)
             //qDebug() << "start";
             action = true;
 
-            timer->start(keyDelay);
+            onKey();
+
+            //timer->start(keyDelay);
         }
         //game->health->setPos(game->player->x()+40,game->player->y()+50);
     }
@@ -238,12 +226,21 @@ void Player::keyReleaseEvent(QKeyEvent *event) // то же самое, толь
     }
 }
 
-void Player::onKey() // player действия при нажатии клавиши. acc - задержка танка при старте
+void Player::onKey()
+{
+    keyActions();
+    emit KeyPressed();
+
+    if (alive == true && (mf == true || mb == true || rl == true || rr == true || hl == true || hr == true || fr == true ||
+                          fireReady == false || tankhrotate->state() == QMediaPlayer::PlayingState || out == true))
+    {
+        timer->start(keyDelay);
+    }
+}
+
+void Player::keyActions() // player действия при нажатии клавиши
 {
     game->centerOn(this);
-
-    //if (el)
-    //    path->setPos(x()+110,y()+110);
 
     // эффект получения урона (должен стоять перед движением)
     if (wou)
@@ -455,6 +452,17 @@ void Player::killPlayer()
     QTimer::singleShot(2000, this, SLOT(spawnPlayer()));
 }
 
+void Player::spawnPlayer()
+{
+    //qDebug() << "spawn!";
+    delete died;
+    spawnTank();
+    emit reSpawn();
+    game->centerOn(this);
+    setFocus();
+
+}
+
 void Player::getDmg(int v)
 {
     decHealth(v);
@@ -482,17 +490,6 @@ void Player::playerWound()
         delete wound;
         wou = false;
     }
-}
-
-void Player::spawnPlayer()
-{
-    //qDebug() << "spawn!";
-    delete died;
-    spawnTank();
-    emit reSpawn();
-    game->centerOn(this);
-    setFocus();
-
 }
 
 void Player::playerReset()

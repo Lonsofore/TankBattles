@@ -12,6 +12,9 @@ class Player: public Tank
     Q_OBJECT
 public:
     Player();
+
+    void onKey(); // при нажатии на кнопку
+
     // вызов действий для кнопок
     int keyDelay; // задержка между проверками кнопок
     void keyPressEvent(QKeyEvent *event);   // считывание нажатий
@@ -53,7 +56,7 @@ private:
 public slots:
     void spawnPlayer();
     void playerWound();
-    void onKey(); // если кнопка нажата - тикер
+    void keyActions();
 
 signals:
     void tomenu();
