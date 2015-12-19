@@ -47,7 +47,7 @@ int curButton;
 static inline QByteArray IntToArray(qint32 source);
 static inline qint32 ArrayToInt(QByteArray source);
 QString ServIP = "127.0.0.1";
-int ServPort = 45454;
+int tcpPort = 2057;
 QString GroupIP = "255.255.255.255";
 
 Game::Game(QWidget *parent)
@@ -574,7 +574,7 @@ void Game::pve()
     QMediaPlayer * music = new QMediaPlayer();
     QMediaPlaylist * playlist = new QMediaPlaylist();
     playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
     music->setPlaylist(playlist);
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
@@ -709,16 +709,11 @@ void Game::pvpConnect()
         ServIP = tBoxes[0]->str;
 
     if (tBoxes[1]->str != "")
-        ServPort = tBoxes[1]->str.toInt();
+        tcpPort = tBoxes[1]->str.toInt();
 
     tcpSocket = new QTcpSocket();
-    tcpSocket->connectToHost(ServIP, 7); //Подключение
+    tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
     tcpSocket->waitForConnected();
-    udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::Any, ServPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
-    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
-    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
@@ -775,16 +770,16 @@ void Game::pvp2()
     switchButton(0); // по умолчанию выбрать первую кнопку
 }
 
-void Game::pvpLoad()
+void Game::pvpLoad(QString filename)
 {
     scene->clear();
 
     // файл открываем
-    QString path = QDir::currentPath() + "/maps";
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
+    QString path = QDir::currentPath() + "/maps/" + filename;
+    //QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
 
     // проверка
-    QFile file(fileName);
+    QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         menu();
@@ -915,7 +910,7 @@ void Game::pvpLoad()
     QMediaPlayer * music = new QMediaPlayer();
     QMediaPlaylist * playlist = new QMediaPlaylist();
     playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    //playlist->setPlaybackMode(QMediaPlaylist::PlaybackMode::Loop);
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
     music->setPlaylist(playlist);
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
@@ -1544,7 +1539,6 @@ void Game::readResponse() //Читаем ответ от сервера посл
     QTcpSocket *socket = static_cast<QTcpSocket*>(sender());
     QByteArray *buffer = buffers.value(socket);
 
-
     qint32 *s = sizes.value(socket);
     qint32 size = *s;
     while (socket->bytesAvailable() > 0)
@@ -1566,12 +1560,24 @@ void Game::readResponse() //Читаем ответ от сервера посл
                 *s = size;
                 if (data == "FULL") {QMessageBox::critical(this, "Ошибка подключения", "Сервер, к которому вы попытались подключится, заполнен!"); menu(); return;} //Сигнал сервера, о переполненности, выход
                 if (data == "STARTED") {QMessageBox::critical(this, "Ошибка подключения", "Игра на этом сервере уже началась!"); menu(); return;} //Сигнал о том, что игра уже началась
-                else {usrid = data.toInt(); /*Получен id от сервера*/ inMP = 1;}
+                else
+                {
+                    QList<QByteArray> response;
+                    response = data.split(' ');
+                    usrid = response.at(0).toInt(); /*Получен id от сервера*/
+                    inMP = 1;
+                    udpSocket = new QUdpSocket(this);
+                    udpSocket->bind(QHostAddress::Any, response.at(1).toInt(), QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
+                    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
+                    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
+                    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+                    pvpLoad(response.at(2));
+                }
 
             }
         }
     }
-    pvpLoad(); //Запускаем игру
+    //pvpLoad(); //Запускаем игру
 }
 
 QByteArray IntToArray(qint32 source) //Получаем из int QByteArray

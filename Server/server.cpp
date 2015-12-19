@@ -4,14 +4,15 @@
 #include "server.h"
 QString GroupIP = "255.255.255.255";
 static inline QByteArray IntToArray(qint32 source);
-server::server(int port1, bool isStartdByClient)
+server::server(int tport, int uport, bool isStartdByClient, QString rmap)
 {   tcpServer = new QTcpServer();
     udpSocket = new QUdpSocket();
-    port = port1;
+    tcpPort = tport;
+    udpPort = uport;
     gameStarted = 0;
     ConnectedCnt = 0;
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
-            tcpServer->listen(QHostAddress::Any, port);
+    tcpServer->listen(QHostAddress::Any, tcpPort);
     for (int i = 0; i < 2; i++)
     {
         x[i] = 0;
@@ -20,6 +21,7 @@ server::server(int port1, bool isStartdByClient)
         HAngle[i] = 0;
         isFiring[i] = 0;
     }
+    map = rmap;
 }
 
 void server::broadcastDatagram()
@@ -30,7 +32,7 @@ void server::broadcastDatagram()
        datagram += QByteArray::number(1) + ' ' + QByteArray::number(x[1]) + ' ' + QByteArray::number(y[1])+ ' ' +
                QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) + ' ' + QByteArray::number(isFiring[1]) +  '|';
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
-                             QHostAddress(GroupIP), 45454);
+                             QHostAddress(GroupIP), udpPort);
 }
 
 void server::dataRecieved(QByteArray data)
@@ -74,7 +76,7 @@ void server::newConnection()
             }
             else
             {
-                data = QByteArray::number(ConnectedCnt++);
+                data = QByteArray::number(ConnectedCnt++) + ' ' + QByteArray::number(udpPort) + ' ' + map.toLatin1().constData();
             }
         }
         else

@@ -81,7 +81,7 @@ public slots:
     void pvp1(); // присоединиться
     void pvp2(); // создать
     void pvpConnect(); // подключение
-    void pvpLoad(); //Загрузка карты для MP
+    void pvpLoad(QString filename); //Загрузка карты для MP
 
     void settings();  // список настроек
     void pSettings(); // настройки игрока
