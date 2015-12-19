@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = TankBattles_MapEditor
 TEMPLATE = app
-
+RC_FILE = TankBattles.rc
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -26,3 +26,4 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     map_textures.qrc
+

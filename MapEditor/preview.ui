@@ -16,18 +16,24 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QGraphicsView" name="graphicsView">
+     <widget class="QGraphicsView" name="preView">
       <property name="toolTip">
-       <string/>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Используйте колесико мыши для приближения/отдаления&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="toolTipDuration">
-       <number>-1</number>
+       <number>2000</number>
       </property>
       <property name="statusTip">
        <string/>
       </property>
       <property name="whatsThis">
        <string/>
+      </property>
+      <property name="locale">
+       <locale language="Russian" country="Russia"/>
+      </property>
+      <property name="dragMode">
+       <enum>QGraphicsView::ScrollHandDrag</enum>
       </property>
      </widget>
     </item>

@@ -38,20 +38,20 @@ preview::~preview()
 void preview::on_preview_windowTitleChanged(const QString &title)
 {
     emit GetSize();
-    //int w = 800;
-    //int h = 600;
     scene = new QGraphicsScene();
-    ui->graphicsView->setScene(scene);
-    ui->graphicsView->setBackgroundBrush(QBrush(QColor(230,230,230,255)));
-    ui->graphicsView->viewport()->installEventFilter(this);
+    ui->preView->setScene(scene);
+    ui->preView->setBackgroundBrush(QBrush(QColor(230,230,230,255)));
+    ui->preView->viewport()->installEventFilter(this);
+    ui->preView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    ui->preView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     yBlocks = ysize;
     xBlocks = xsize;
     QString img;
-    int width = 60; // размер блоков
-    int height = 60;
+    int width = 300; // размер блоков
+    int height = 300;
     int x,y;
     int itm;
-    scene->setSceneRect(0,0,xBlocks*width,yBlocks*height); // разрешение сцены
+    scene->setSceneRect(0,0,yBlocks*width,xBlocks*height); // разрешение сцены
     int num = 0;
     for (int i = 0; i < xBlocks; i++)
     {
@@ -75,22 +75,23 @@ void preview::on_preview_windowTitleChanged(const QString &title)
 
         }
     }
+    ui->preView->scale(0.4, 0.4);
 }
 
 void preview::closeEvent(QCloseEvent *ev)
 {
-    ui->graphicsView->deleteLater();
+    ui->preView->deleteLater();
     ui->centralwidget->deleteLater();
     ev->accept();
 }
 
 bool preview::eventFilter(QObject *object, QEvent *event)
  {
-     if (object == ui->graphicsView->viewport() && event->type() == QEvent::Wheel)
+     if (object == ui->preView->viewport() && event->type() == QEvent::Wheel)
      {
          QWheelEvent *we = static_cast<QWheelEvent*>(event);
-         if (we->delta() > 0) ui->graphicsView->scale(1.1, 1.1);
-         if (we->delta() < 0) ui->graphicsView->scale(0.9, 0.9);
+         if (we->delta() > 0) ui->preView->scale(1.1, 1.1);
+         if (we->delta() < 0) ui->preView->scale(0.9, 0.9);
          return true;
      }
      return false;

@@ -3,5 +3,6 @@
         <file>breakable.png</file>
         <file>unbreakable.png</file>
         <file>flag.png</file>
+        <file>editor.ico</file>
     </qresource>
 </RCC>

@@ -8,6 +8,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QCloseEvent>
+#include <QShortcut>
 
 
 namespace Ui {
@@ -64,6 +65,10 @@ private slots:
 
     void on_field_itemSelectionChanged();
 
+    void on_Exit_triggered();
+
+    void Selection_shortcut();
+
 signals:
 //void redirectData(QString data);
     void ReturnValue(int itm);
@@ -74,6 +79,17 @@ private:
     Ui::MainWindow *ui;
 
     void closeEvent(QCloseEvent *);
+
+    bool isChanged;
+
+    int spwncnt;  //Кол-во точек спавна
+
+    int max_size;
+
+    preview *Preview;
+
+    QShortcut *selShort;
+
 };
 
 #endif // MAINWINDOW_H

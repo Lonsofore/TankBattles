@@ -34,6 +34,9 @@
   <property name="windowTitle">
    <string>TankBattles. Редактор карт</string>
   </property>
+  <property name="whatsThis">
+   <string/>
+  </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
   </property>
@@ -46,6 +49,18 @@
         <width>1</width>
         <height>1</height>
        </size>
+      </property>
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Это игровое поле&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="toolTipDuration">
+       <number>1500</number>
+      </property>
+      <property name="locale">
+       <locale language="Russian" country="Russia"/>
       </property>
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustIgnored</enum>
@@ -170,11 +185,20 @@
               <property name="acceptDrops">
                <bool>false</bool>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Блок, который разрушается при попадании&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>2000</number>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>
               <property name="autoFillBackground">
                <bool>false</bool>
+              </property>
+              <property name="locale">
+               <locale language="Russian" country="Russia"/>
               </property>
               <property name="inputMethodHints">
                <set>Qt::ImhNone</set>
@@ -183,27 +207,66 @@
                <string>Разрушаеммый
 блок</string>
               </property>
+              <property name="shortcut">
+               <string>1</string>
+              </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="ubr_btn">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Блок, который невозможно разрушить&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>2000</number>
+              </property>
+              <property name="locale">
+               <locale language="Russian" country="Russia"/>
+              </property>
               <property name="text">
                <string>Неразрушаеммый
 блок</string>
+              </property>
+              <property name="shortcut">
+               <string>2</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="emp_btn">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Блок, на котором ничего нет&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>2000</number>
+              </property>
+              <property name="locale">
+               <locale language="Russian" country="Russia"/>
+              </property>
               <property name="text">
                <string>Пустой блок</string>
+              </property>
+              <property name="shortcut">
+               <string>3</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="spwn_btn">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Блок, на котором появляются танки&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>2000</number>
+              </property>
+              <property name="locale">
+               <locale language="Russian" country="Russia"/>
+              </property>
               <property name="text">
                <string>Блок спавна</string>
+              </property>
+              <property name="shortcut">
+               <string>4</string>
               </property>
              </widget>
             </item>
@@ -274,6 +337,15 @@
               <height>24</height>
              </rect>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Размер по горизонтали&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>1500</number>
+            </property>
+            <property name="locale">
+             <locale language="Russian" country="Russia"/>
+            </property>
             <property name="minimum">
              <number>5</number>
             </property>
@@ -303,6 +375,15 @@
               <height>24</height>
              </rect>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Размер по диагонали&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>1500</number>
+            </property>
+            <property name="locale">
+             <locale language="Russian" country="Russia"/>
+            </property>
             <property name="minimum">
              <number>5</number>
             </property>
@@ -331,6 +412,15 @@
               <width>141</width>
               <height>27</height>
              </rect>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Установить выбранный размер карты&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>1500</number>
+            </property>
+            <property name="locale">
+             <locale language="Russian" country="Russia"/>
             </property>
             <property name="text">
              <string>Применить</string>
@@ -401,6 +491,15 @@
               <width>136</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Изменить масштаб&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>1500</number>
+            </property>
+            <property name="locale">
+             <locale language="Russian" country="Russia"/>
             </property>
             <property name="minimum">
              <number>10</number>
@@ -483,6 +582,15 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Тип выделения блоков&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="toolTipDuration">
+             <number>1500</number>
+            </property>
+            <property name="locale">
+             <locale language="Russian" country="Russia"/>
+            </property>
             <item>
              <property name="text">
               <string>Единичное</string>
@@ -512,9 +620,21 @@
           <height>0</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Показать карту такой, какой она будет в игре&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="toolTipDuration">
+         <number>2000</number>
+        </property>
+        <property name="locale">
+         <locale language="Russian" country="Russia"/>
+        </property>
         <property name="text">
          <string>Предварительный
  просмотр</string>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+P</string>
         </property>
        </widget>
       </item>
@@ -528,7 +648,7 @@
      <x>0</x>
      <y>0</y>
      <width>686</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="file">
@@ -538,6 +658,8 @@
     <addaction name="New"/>
     <addaction name="Load"/>
     <addaction name="Save"/>
+    <addaction name="separator"/>
+    <addaction name="Exit"/>
    </widget>
    <widget class="QMenu" name="help">
     <property name="title">
@@ -598,6 +720,11 @@
   <action name="About">
    <property name="text">
     <string>О программе</string>
+   </property>
+  </action>
+  <action name="Exit">
+   <property name="text">
+    <string>Выход</string>
    </property>
   </action>
  </widget>

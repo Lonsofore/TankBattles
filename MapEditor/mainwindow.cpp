@@ -2,16 +2,15 @@
 #include "ui_mainwindow.h"
 #include "preview.h"
 
-
-bool isChanged = 0;
-int spwncnt = 0;  //Кол-во точек спавна
-int max_size = 100;
-preview *Preview;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setWindowIcon(QIcon(":/textures/editor.ico"));
+    max_size = 100;
+    spwncnt = 0;
+    isChanged = 0;
     QPalette p = ui->field->palette();
     p.setColor(QPalette::Base, QColor(229, 229, 229, 255));
     ui->field->setPalette(p);
@@ -22,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
     if (QSysInfo::buildCpuArchitecture() == "x86_64") max_size = 600;
     ui->xspin->setMaximum(max_size);
     ui->yspin->setMaximum(max_size);
+    selShort = new QShortcut(QKeySequence("Ctrl+E"), this);
+    connect(selShort, SIGNAL(activated()), this, SLOT(Selection_shortcut()));
 
 }
 
@@ -54,15 +55,35 @@ void MainWindow::on_Save_triggered()
 {
     if ((ui->field->rowCount() == 0) || (ui->field->columnCount() == 0))
     {
-        QMessageBox::information(this, "Внимание!", "Нечего сохранять!");
+        QMessageBox::warning(this, "Внимание!", "Нечего сохранять!");
     }
     else
     {   if (spwncnt < 2)
         {
-            QMessageBox::information(this, "Внимание!", "Недостаточно точек спавна!\nТребуется по крайней мере 2 точки.");
+            QMessageBox::warning(this, "Ошибка построения карты", "Недостаточно точек спавна!\nТребуется по крайней мере 2 точки.");
         }
         else
         {
+            for(int column = 0; column < ui->xspin->value(); column++)
+            {
+                for(int row = 0; row < ui->yspin->value(); row++)
+                {
+                    if (ui->field->item(row, column)->text() == "S")
+                    {
+                        if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
+                        {
+                            if((ui->field->item(row-1,column)->text() != "0") || (ui->field->item(row+1,column)->text() != "0") ||                 //Проверка соседних элементов на отсутствие в них
+                               (ui->field->item(row,column-1)->text() != "0") || (ui->field->item(row,column+1)->text() != "0") ||
+                               (ui->field->item(row-1,column-1)->text() != "0") || (ui->field->item(row-1,column+1)->text() != "0") ||
+                               (ui->field->item(row+1,column-1)->text() != "0") || (ui->field->item(row+1,column+1)->text() != "0"))
+                            {
+                                QMessageBox::warning(this, "Ошибка построения карты", "Блоки вокруг спавна должны быть свободны!"); return;
+                            }
+                        }
+                        else {QMessageBox::warning(this, "Ошибка построения карты", "Блок спавна не может располагаться на краю карты!"); return;}
+                   }
+               }
+            }
             QString fname = QFileDialog::getSaveFileName(this, tr("Сохранение"), "Map_Name.map", tr("Map files (*.map)"));
             if (fname.split('.').count() < 2) fname +=".map";
             else
@@ -70,7 +91,7 @@ void MainWindow::on_Save_triggered()
             QFile file(fname);
             if(!file.open(QIODevice::WriteOnly))
             {
-                if (fname != "") {QMessageBox::information(0, "Ошибка", "Не удалось записать в указанный файл");}
+                if (fname != "") {QMessageBox::information(this, "Ошибка", "Не удалось записать в указанный файл");}
             }
             QTextStream out(&file);
             out << ui->field->rowCount() << " " << ui->field->columnCount() << " " << spwncnt  << endl; //Строка с информацией о карте(размер, кол-во точек спавна)
@@ -85,6 +106,7 @@ void MainWindow::on_Save_triggered()
                 QTextStream out(&file);
                 out << elm << endl;  //Запись строки в файл
             }
+            isChanged = 0;
         }
     }
 }
@@ -95,9 +117,10 @@ void MainWindow::on_Load_triggered()
     {
         if (isChanged) //Если произошли какие-нибудь изменения
         {
-            QMessageBox::StandardButton reply;
-            reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+            QMessageBox reply (QMessageBox::Question, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+            reply.setButtonText(QMessageBox::Yes, "Да");
+            reply.setButtonText(QMessageBox::No, "Нет");
+            if (reply.exec() == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
         }
     }
     ui->field->clearContents();
@@ -114,9 +137,10 @@ void MainWindow::on_New_triggered()
     {
         if(isChanged) //Если что-либо изменено
         {
-            QMessageBox::StandardButton reply;
-            reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+            QMessageBox reply (QMessageBox::Question, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+            reply.setButtonText(QMessageBox::Yes, "Да");
+            reply.setButtonText(QMessageBox::No, "Нет");
+            if (reply.exec() == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
         }
     } //Стираем всё
     ui->field->clearContents(); //Стираем всё
@@ -137,16 +161,21 @@ void MainWindow::on_Help_triggered()
                                                       "Требование к карте:\n"
                                                       "-Минимальный размер: 5*5\n"
                                                       "-Минимальное кол-во блоков спавна: 2\n"
-                                                      "-Максимальный размер: ") + QString::number(max_size) + "*" +QString::number(max_size) + "\n"));
+                                                      "-Максимальный размер: ") + QString::number(max_size) + "*" +QString::number(max_size) + "\n"
+                                                      "Некоторые горячие клавиши:\n"
+                                                      "-Ctrl+P - Предварительный просмотр\n"
+                                                      "-Ctrl+E - Изменить режим выделения\n"
+                                                      "-1..4 - Выбрать инструмент"));
 }
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 0.7\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.0\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
 {
+    bool isSpwnCorrect = 0;
     if ((ui->field->rowCount() == 0) || (ui->field->columnCount() == 0))
     {
         QMessageBox::critical(this, "Внимание!", "Нечего показывать!");
@@ -154,10 +183,30 @@ void MainWindow::on_preview_clicked()
     else
     {   if (spwncnt < 2)
         {
-            QMessageBox::critical(this, "Внимание!", "Установленно менее двух точек спавна");
+            QMessageBox::warning(this, "Ошибка построения карты!", "Установленно менее двух точек спавна");
         }
         else
         {
+            for(int column = 0; column < ui->xspin->value(); column++)
+            {
+                for(int row = 0; row < ui->yspin->value(); row++)
+                {
+                    if (ui->field->item(row, column)->text() == "S")
+                    {
+                        if(((row > 0) && (row < ui->field->rowCount()-1)) && ((column > 0) && (column < ui->field->columnCount()-1))) //Если ячейка расположена не на краю
+                        {
+                            if((ui->field->item(row-1,column)->text() != "0") || (ui->field->item(row+1,column)->text() != "0") ||                 //Проверка соседних элементов на отсутствие в них блоков
+                               (ui->field->item(row,column-1)->text() != "0") || (ui->field->item(row,column+1)->text() != "0") ||
+                               (ui->field->item(row-1,column-1)->text() != "0") || (ui->field->item(row-1,column+1)->text() != "0") ||
+                               (ui->field->item(row+1,column-1)->text() != "0") || (ui->field->item(row+1,column+1)->text() != "0"))
+                            {
+                                QMessageBox::warning(this, "Ошибка построения карты", "Блоки вокруг спавна должны быть свободны!"); return;
+                            }
+                        }
+                        else {QMessageBox::warning(this, "Ошибка построения карты", "Блок спавна не может располагаться на краю карты!"); return;}
+                    }
+                }
+            }
             Preview = new preview(this);
             QObject::connect(Preview, SIGNAL(GetData(int, int)),this, SLOT(GetItem(int,int)));       //Получение данных
             QObject::connect(this, SIGNAL(ReturnValue(int)), Preview, SLOT(RecieveValue(int)));      //Из таблицы (предв. просмотр)
@@ -285,9 +334,10 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     {
         if (isChanged) //Если произошли какие-нибудь изменения
         {
-            QMessageBox::StandardButton reply;
-            reply = QMessageBox::question(this, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+            QMessageBox reply (QMessageBox::Question, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+            reply.setButtonText(QMessageBox::Yes, "Да");
+            reply.setButtonText(QMessageBox::No, "Нет");
+            if (reply.exec() == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
         }
     }
     ev->accept();
@@ -317,6 +367,7 @@ void MainWindow::LoadMap(QString fname)
             if (rowcnt > max_size || colcnt > max_size)
             {
                 QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nСлишком большой размер карты.");
+                return;
             }
             else
             {
@@ -369,7 +420,7 @@ void MainWindow::LoadMap(QString fname)
                                }
                                if ((elm != '2') && (elm != '1') && (elm != '0') && (elm != 'S')) //Что-то другое
                                {
-                                   QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                                   QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nНе удалось распознать символ.");
                                    ui->field->clearContents();
                                    ui->field->setRowCount(0);
                                    ui->field->setColumnCount(0);
@@ -380,7 +431,7 @@ void MainWindow::LoadMap(QString fname)
                         }
                         else
                         {
-                            QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден."); //Выдаем сообщение об ошибке и стираем всё
+                            QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nИнформация в первой строке файла не соответствует действительности."); //Выдаем сообщение об ошибке и стираем всё
                             ui->field->clearContents();
                             ui->field->setRowCount(0);
                             ui->field->setColumnCount(0);
@@ -389,7 +440,7 @@ void MainWindow::LoadMap(QString fname)
                         }
                         r = r+1; //Строка прочитанна
                     }
-                    /*for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
+                    for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
                     {
                        if (((spcord[i][0] > 0) && (spcord[i][0] < ui->field->rowCount()-1)) && ((spcord[i][1] > 0) && (spcord[i][1] < ui->field->columnCount()-1)))
                        {
@@ -398,7 +449,7 @@ void MainWindow::LoadMap(QString fname)
                                    (ui->field->item(spcord[i][0]-1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]-1,spcord[i][1]+1)->text() != "0") ||
                                    (ui->field->item(spcord[i][0]+1,spcord[i][1]-1)->text() != "0") || (ui->field->item(spcord[i][0]+1,spcord[i][1]+1)->text() != "0"))
                            {
-                               QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                               QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nБлоки спавна расположенны неправильно.");
                                ui->field->clearContents();
                                ui->field->setRowCount(0);
                                ui->field->setColumnCount(0);
@@ -408,26 +459,26 @@ void MainWindow::LoadMap(QString fname)
                        }
                        else
                        {
-                           QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                           QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nБлоки спавна расположенны неправильно.");
                            ui->field->clearContents();
                            ui->field->setRowCount(0);
                            ui->field->setColumnCount(0);
                            file.close();
                            return;
                        }
-                    }*/
+                    }
                 }
                 else
                 {
                     file.close();
-                    QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                    QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nПервая строка файла содержит ошибочные значения.");
                     return;
                 }
             }
             file.close();
             if ((r != rowcnt) || (spwn != spwncnt)) //Если кол-во строк или точек спавна не равно указанному в начале файла кол-ву
             {
-                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nВозможно он поврежден.");
+                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nИнформация в первой строке файла не соответствует действительности.");
                 ui->field->clearContents();
                 ui->field->setRowCount(0);
                 ui->field->setColumnCount(0);
@@ -441,7 +492,25 @@ void MainWindow::LoadMap(QString fname)
         }
         else
         {
-            QMessageBox::critical(this, "Ошибка загрузки", "Неверный формат входного файла!\nВозможно он поврежден.");
+            QMessageBox::critical(this, "Ошибка загрузки", "Неправильный формат входного файла!\nНеправильный формат первой строки файла.");
         }
     }
+}
+
+void MainWindow::Selection_shortcut()
+{
+    int indx = ui->selection_comboBox->currentIndex();
+    if (indx < 3) {ui->selection_comboBox->setCurrentIndex(++indx);}
+    if (indx == 3) {ui->selection_comboBox->setCurrentIndex(0);}
+}
+
+void MainWindow::on_Exit_triggered()
+{if (isChanged) //Если произошли какие-нибудь изменения
+    {
+        QMessageBox reply (QMessageBox::Question, "Внимание!", "Сохранить текущий файл?", QMessageBox::Yes|QMessageBox::No);
+        reply.setButtonText(QMessageBox::Yes, "Да");
+        reply.setButtonText(QMessageBox::No, "Нет");
+        if (reply.exec() == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
+    }
+    exit(0);
 }
