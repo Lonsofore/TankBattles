@@ -23,6 +23,9 @@ public:
     int speed;
     int degree;
 
+    int dist;
+    int maxDist;
+
     QString image;
     QString empty;
     int pixsize;

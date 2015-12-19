@@ -33,6 +33,9 @@ Bullet::Bullet(QGraphicsPixmapItem *parent)
     degree = tank->hdegree;
     pixsize = tank->pixsize*0.16;
 
+    dist = 0;
+    maxDist = 1000;
+
     image = ":/images/images/bullet.png";
     empty = ":/images/images/empty.png";
     setPixmap(QPixmap(image).scaled(pixsize,pixsize));
@@ -269,14 +272,16 @@ void Bullet::move()
             }
             return;
         }
-    }   
+    }
 
     float x1 = x() + cos(degree * (PI / 180))*speed;
     float y1 = y() + sin(degree * (PI / 180))*speed;
     setPos(x1,y1);
     rotate();
 
-    if (pos().y() < 0 || pos().y() > scene()->height() || pos().x() < 0 || pos().x() > scene()->width())
+    dist += speed;
+
+    if (pos().y() < 0 || pos().y() > scene()->height() || pos().x() < 0 || pos().x() > scene()->width() || dist > maxDist)
     {
         if (timerf->isActive() == false && isfire == true)
         {

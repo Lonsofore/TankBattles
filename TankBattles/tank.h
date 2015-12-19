@@ -15,6 +15,8 @@ public:
     Tank();
     void defaultTank(); // функция установления стандартных значений (для вызова из класса player)
 
+    bool isPlayer;
+
     // действия
     void moveForward(bool check = 0); // движение вперед
     void moveBack(bool check = 0);    // движение назад
@@ -35,11 +37,9 @@ public:
     void changePos(int x, int y); // смена позиции танка за заданную
     void changeAngle(int TAngle, int HAngle); //смена угла башни и платформы
 
-    // действия для бота
+    // для бота
     void killTank(); // убийство (для бота)
-
-    // только для player
-    int reload;
+    bool isCol;
 
     bool alive;
     int health; // здровье
@@ -66,7 +66,6 @@ public:
     QString headImage;  // изображение башни
 
     // звуки
-    QMediaPlayer *bulletready; // перезарядка
     QMediaPlayer *tankhrotate; // поворот башни
 
     bool isBusy(int x, int y); // проверка, занято ли это место танком
@@ -81,6 +80,9 @@ public slots:
     void deleteSlot(); // слоты для функций
     void spawnSlot();  //
     void deleteGif();
+
+signals:
+    void reSpawn();
 };
 
 #endif // TANK

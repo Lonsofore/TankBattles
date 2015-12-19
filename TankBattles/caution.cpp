@@ -15,12 +15,12 @@ Caution::Caution(QString image, QString text, int t)
     setPixmap(QPixmap(image).scaled(width,height));
 
     // шрифт
-    QFontDatabase::addApplicationFont(":/fonts/fonts/msyi.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/fonts/MSYI.TTF");
 
     // Caution
     text1 = new QGraphicsTextItem(text,this);
     text1->setDefaultTextColor(QColor(243, 234, 234, 255));
-    QFont font1("Microsoft Yi baiti",70);
+    QFont font1("Microsoft Yi Baiti",70);
     font1.setBold(true);
     text1->setFont(font1);
     int xPos = this->width/2 - text1->boundingRect().width()/2;

@@ -36,6 +36,8 @@ extern Game * game;
 
 Player::Player()
 {
+    isPlayer = true;
+
     timer = new QTimer();
     connect(timer,SIGNAL(timeout()),this,SLOT(keyActions()));
 
@@ -53,9 +55,13 @@ Player::Player()
     isFiring = 0;
 
     defaultTank();
-    emit reSpawn();
 
     game->centerOn(this);
+
+    //звук перезарядки
+    bulletready = new QMediaPlayer();
+    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank/reload.mp3"));
+    bulletready->setVolume(game->veffects);
 
     // выделить танк на сцене - для действий с ним
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -147,16 +153,7 @@ void Player::keyPressEvent(QKeyEvent *event)
             break;
 
             case 52:
-                /*
-                QLabel *gif_anim = new QLabel();
-                gif_anim->setStyleSheet("background-color: rgba(229, 229, 229, 10);");
-                QMovie *movie = new QMovie(":/images/images/anim/Explo.gif");
-                gif_anim->setMovie(movie);
-                gif_anim->move(x()-25,y()-25);
-                movie->setScaledSize(QSize(250,250));
-                movie->start();
-                QGraphicsProxyWidget *proxy = game->scene->addWidget(gif_anim);
-                */
+                //emit reSpawn();
             break;
 
             case 53:
@@ -291,11 +288,12 @@ void Player::keyActions() // player действия при нажатии кл�
         }
         caution->setPos(x1-200, y1-88);
 
-        if (QTime::currentTime().msecsTo(outTime) > 1000)
+        if (outTime.msecsTo(QTime::currentTime()) > 1000)
         {
             if (outTimer > 0)
             {
                 outTimer--;
+                outTime = outTime.addSecs(1);
                 caution->decTimer();
             }
             else
@@ -308,7 +306,7 @@ void Player::keyActions() // player действия при нажатии кл�
 
                 // плашка смерти
                 QString image1 = ":/images/images/died.png";
-                died = new Caution(image1, "YOU DIED");
+                died = new Caution(image1, "DEAD");
                 died->setPos(x1-200,y1-88);
                 died->setZValue(10);
                 game->scene->addItem(died);
@@ -365,7 +363,6 @@ void Player::keyActions() // player действия при нажатии кл�
         reloading = false; // звук перезарядки еще на начат
         isFiring = 1;
 
-        reload = 1;
         // анимация перезарядки
         reloadAnim = new QLabel();
         reloadAnim->setStyleSheet("background-color: transparent;");
@@ -373,7 +370,7 @@ void Player::keyActions() // player действия при нажатии кл�
         reloadAnim->setMovie(movie);
         reloadAnim->move(x()+20,y()+20);
         movie->setScaledSize(QSize(180,180));
-        movie->setSpeed(110);
+        //movie->setSpeed(100);
         movie->start();
         QGraphicsProxyWidget *proxy = game->scene->addWidget(reloadAnim);
 
@@ -384,7 +381,7 @@ void Player::keyActions() // player действия при нажатии кл�
 
         reloadAnim->move(x()+20,y()+20);
     }
-    if ((fireCount > fireTime - bulletready->duration()) && reload == false) // звук перезарядки
+    if ((fireCount > fireTime - bulletready->duration()) && reloading == false) // звук перезарядки
     {
         reloading = true; // перезарядка уже начата (защита от нескольких)
         bulletready->play();
@@ -394,7 +391,6 @@ void Player::keyActions() // player действия при нажатии кл�
         fireReady = true;
         fireCount = 0;
 
-        reload = 0;
         delete reloadAnim;
     }
 
@@ -456,6 +452,11 @@ void Player::playerFire()
 
 void Player::killPlayer()
 {
+    if (fireReady == false)
+    {
+        delete reloadAnim;
+        fireReady = true;
+    }
     deleteTank();
     QTimer::singleShot(2000, this, SLOT(spawnPlayer()));
 }
@@ -465,7 +466,6 @@ void Player::spawnPlayer()
     //qDebug() << "spawn!";
     delete died;
     spawnTank();
-    emit reSpawn();
     game->centerOn(this);
     setFocus();
 

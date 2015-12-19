@@ -39,7 +39,7 @@ const int nPvpBtns = 3;
 const int nPvP1Btns = 2;
 const int nPvP1TBs = 2;
 const int nPvP2Btns = 2;
-const int nPvP2TBs = 1;
+const int nPvP2TBs = 2;
 const int nGMenuBtns = 4;
 
 int curButton;
@@ -280,7 +280,7 @@ void Game::switchButton(int n) // смена кнопки
         if (n < 0)
             n = n + nPvP2Btns + nPvP2TBs;
         if (n > nPvP2Btns + nPvP2TBs - 1)
-            n = n - nPvP2Btns + nPvP2TBs;
+            n = n - nPvP2Btns - nPvP2TBs;
 
         curButton = n;
 
@@ -297,10 +297,14 @@ void Game::switchButton(int n) // смена кнопки
             break;
 
             case 1:
-                btns[0]->select();
+                tBoxes[1]->select();
             break;
 
             case 2:
+                btns[0]->select();
+            break;
+
+            case 3:
                 btns[1]->select();
             break;
         }
@@ -564,8 +568,6 @@ void Game::pve()
     connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
 
 
-
-
     // очки
     //score = new Score();
     //scene->addItem(score);
@@ -664,11 +666,13 @@ void Game::pvp1()
     btns = new Button*[nPvP2Btns];
     tBoxes = new TextBox*[nPvP2TBs];
 
+    int width = 400;
+
     yPos += 150;
-    xPos = this->width()/2 - 360/2;
+    xPos = this->width()/2 - width/2;
 
     // айпи
-    tBoxes[0] = new TextBox(0, 15, 360, 70, "IP");
+    tBoxes[0] = new TextBox(0, 15, width, 70, "IP");
     tBoxes[0]->setPos(xPos,yPos);
     scene->addItem(tBoxes[0]);
     connect(tBoxes[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
@@ -676,7 +680,7 @@ void Game::pvp1()
 
     // порт
     yPos += 80;
-    tBoxes[1] = new TextBox(1, 7, 360, 70, "Port");
+    tBoxes[1] = new TextBox(1, 7, width, 70, "TCP Port");
     tBoxes[1]->setPos(xPos,yPos);
     scene->addItem(tBoxes[1]);
     connect(tBoxes[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
@@ -684,7 +688,7 @@ void Game::pvp1()
 
     // присоединиться
     yPos += 80;
-    btns[0] = new Button(2, "Connect", 360, 70);
+    btns[0] = new Button(2, "Connect", width, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
     connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpConnect()));
@@ -693,7 +697,7 @@ void Game::pvp1()
 
     // вернуться назад
     yPos += 80;
-    btns[1] = new Button(3, "Back", 360, 70);
+    btns[1] = new Button(3, "Back", width, 70);
     btns[1]->setPos(xPos,yPos);
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
@@ -714,6 +718,11 @@ void Game::pvpConnect()
     tcpSocket = new QTcpSocket();
     tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
     tcpSocket->waitForConnected();
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
+    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
+    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
@@ -742,16 +751,24 @@ void Game::pvp2()
 
     yPos += 150;
     xPos = this->width()/2 - 300/2;
-    // порт
-    tBoxes[0] = new TextBox(0, 7, 300, 70, "Port");
+    // TCP порт
+    tBoxes[0] = new TextBox(0, 7, 300, 70, "TCP Port");
     tBoxes[0]->setPos(xPos,yPos);
     scene->addItem(tBoxes[0]);
     connect(tBoxes[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(tBoxes[0],SIGNAL(back()),this,SLOT(pvp()));
 
+    // UDP порт
+    yPos += 80;
+    tBoxes[1] = new TextBox(1, 7, 300, 70, "UDP Port");
+    tBoxes[1]->setPos(xPos,yPos);
+    scene->addItem(tBoxes[1]);
+    connect(tBoxes[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(tBoxes[1],SIGNAL(back()),this,SLOT(pvp()));
+
     // создать игру
     yPos += 80;
-    btns[0] = new Button(1, "Create", 300, 70);
+    btns[0] = new Button(2, "Create", 300, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
     //connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp2()));
@@ -760,7 +777,7 @@ void Game::pvp2()
 
     // вернуться назад
     yPos += 80;
-    btns[1] = new Button(2, "Back", 300, 70);
+    btns[1] = new Button(3, "Back", 300, 70);
     btns[1]->setPos(xPos,yPos);
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
@@ -900,7 +917,7 @@ void Game::pvpLoad(QString filename)
     connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
     connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
     connect(player, SIGNAL(reSpawn()), this, SLOT(SendData()));
-
+    emit player->reSpawn();
 
     // очки
     //score = new Score();
@@ -1209,6 +1226,7 @@ void Game::toGameMenu()
 void Game::gameMenu()
 {
     change("gmenu");
+    player->playerReset();
 
     // шрифт
     QFontDatabase::addApplicationFont(":/fonts/fonts/GOTHIC.TTF");
@@ -1539,6 +1557,7 @@ void Game::readResponse() //Читаем ответ от сервера посл
     QTcpSocket *socket = static_cast<QTcpSocket*>(sender());
     QByteArray *buffer = buffers.value(socket);
 
+
     qint32 *s = sizes.value(socket);
     qint32 size = *s;
     while (socket->bytesAvailable() > 0)
@@ -1573,7 +1592,6 @@ void Game::readResponse() //Читаем ответ от сервера посл
                     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
                     pvpLoad(response.at(2));
                 }
-
             }
         }
     }

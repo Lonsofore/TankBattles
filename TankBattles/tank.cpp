@@ -19,11 +19,13 @@
 #define PI 3.14159265
 
 #include <QDebug>
+
 int toInt(double x);
 extern Game * game;
 
 Tank::Tank()
 {
+    isPlayer = false;
     // отдельная функция для того, чтобы ее вызывать классом player
     defaultTank();
 }
@@ -33,11 +35,11 @@ void Tank::defaultTank()
     // размер танка
     pixsize = 220;
 
-    reload = 0;
-
     alive = true;
     maxhealth = 100;
     health = maxhealth;
+
+    isCol = false;
 
     // платформа
     degree = 0;
@@ -59,11 +61,6 @@ void Tank::defaultTank()
 
     //точка спавна
     randomSpawn();
-
-    //звук перезарядки
-    bulletready = new QMediaPlayer();
-    bulletready->setMedia(QUrl("qrc:/sounds/sounds/tank/reload.mp3"));
-    bulletready->setVolume(game->veffects);
 
     //звук поворота башни
     tankhrotate = new QMediaPlayer();
@@ -147,7 +144,11 @@ void Tank::rotateLeft(bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             rotateRight(check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -162,7 +163,11 @@ void Tank::rotateRight(int deg, bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             rotateLeft(deg, check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -177,7 +182,11 @@ void Tank::rotateLeft(int deg, bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             rotateRight(deg, check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -189,7 +198,11 @@ void Tank::headRight(bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             headLeft(check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -201,7 +214,11 @@ void Tank::headLeft(bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             headRight(check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -213,7 +230,11 @@ void Tank::headRight(int deg, bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             headLeft(check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -225,7 +246,11 @@ void Tank::headLeft(int deg, bool check)
     if (check == false)
     {
         while (isCollide() == true)
+        {
+            isCol = true;
             headRight(check = true);
+        }
+        isCol = false;
     }
 }
 
@@ -282,6 +307,9 @@ void Tank::randomSpawn()
     degree = 0;
     hdegree = 0;
     rotateLeft(0);
+
+    if (isPlayer)
+        emit reSpawn();
 }
 
 // true если на координатах x,y уже находится танк
@@ -307,39 +335,39 @@ void Tank::changeSize(int n)
 bool Tank::isCollide()
 {
     QList<QGraphicsItem *> colliding_items = collidingItems();
-    if (colliding_items.count() > 1 + reload)
-    for (int i = 0, n = colliding_items.size(); i < n; ++i)
-    {
-        //qDebug() << "tank";
-        if (typeid(*(colliding_items[i])) == typeid(Tank))
+    if (colliding_items.count() > 1)
+        for (int i = 0, n = colliding_items.size(); i < n; ++i)
         {
-                return true;
-        }
+            //qDebug() << "tank";
+            if (typeid(*(colliding_items[i])) == typeid(Tank))
+            {
+                    return true;
+            }
 
-        if (typeid(*(colliding_items[i])) == typeid(Block))
-        {
-            Block * block = dynamic_cast <Block *> (colliding_items[i]);
-            if (block->num == 3) // трава
-                return false;
-            else
-                return true;
+            if (typeid(*(colliding_items[i])) == typeid(Block))
+            {
+                Block * block = dynamic_cast <Block *> (colliding_items[i]);
+                if (block->num == 3) // трава
+                    return false;
+                else
+                    return true;
+            }
         }
-    }
 
     QList<QGraphicsItem *> colliding_items1 = head->collidingItems();
-    if (colliding_items1.count() > 1 + reload)
-    for (int j = 0, n = colliding_items1.size(); j < n; ++j)
-    {
-        //qDebug() << "head";
-        if (typeid(*(colliding_items1[j])) == typeid(Block))
+    if (colliding_items1.count() > 1)
+        for (int j = 0, n = colliding_items1.size(); j < n; ++j)
         {
-            Block * block1 = dynamic_cast <Block *> (colliding_items1[j]);
-            if (block1->num == 3) // трава
-                return false;
-            else
-                return true;
+            //qDebug() << "head";
+            if (typeid(*(colliding_items1[j])) == typeid(Block))
+            {
+                Block * block1 = dynamic_cast <Block *> (colliding_items1[j]);
+                if (block1->num == 3) // трава
+                    return false;
+                else
+                    return true;
+            }
         }
-    }
 
     return false;
 }

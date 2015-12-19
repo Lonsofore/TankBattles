@@ -42,16 +42,15 @@ private:
     // соответственно с объявленными функциями для действий
     bool mf, mb, rr, rl, hr, hl, fr;
 
+    QTimer *timer;
+
     Caution *caution;
     Caution *died;
 
     QLabel *reloadAnim;
-
-    QTimer *timer;
-
     QGraphicsPixmapItem *wound;
 
-    QGraphicsPathItem *path;
+    QMediaPlayer *bulletready; // перезарядка
 
 public slots:
     void spawnPlayer();
@@ -61,7 +60,7 @@ public slots:
 signals:
     void tomenu();
     void KeyPressed();
-    void reSpawn();
+    //void reSpawn();
 };
 
 #endif // PLAYER
