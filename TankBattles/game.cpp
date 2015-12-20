@@ -42,6 +42,8 @@ const int nPvP2Btns = 2;
 const int nPvP2TBs = 2;
 const int nGMenuBtns = 4;
 
+const int nBots = 3;
+
 int curButton;
 
 static inline QByteArray IntToArray(qint32 source);
@@ -57,7 +59,9 @@ Game::Game(QWidget *parent)
     int height = 600;
 
     inMP = 0;
+
     darkMode = false;
+    createBots = true;
 
     // создание сцены
     scene = new QGraphicsScene();
@@ -439,7 +443,7 @@ void Game::menu()
 
 void Game::pve()
 {
-		inMP = 0;
+    inMP = 0;
     scene->clear();
 
     // файл открываем
@@ -453,6 +457,10 @@ void Game::pve()
         menu();
         return;
     }
+
+    QFileInfo fi(file);
+    mapname = fi.baseName();
+    qDebug() << mapname;
 
     // фон карты
     if (darkMode)
@@ -555,11 +563,22 @@ void Game::pve()
     file.close();
 
     // тестовый танк
+    /*
     enmy = new Tank();
     scene->addItem(enmy);
     scene->addItem(enmy->head);
     enmy->randomSpawn();
+    */
     //enmy->changePos(200,100);
+
+    bots = new Bot*[nBots+1];
+
+    for (int i = 0; i < nBots; i++)
+    {
+        bots[i] = new Bot();
+        scene->addItem(bots[i]);
+        scene->addItem(bots[i]->head);
+    }
 
     // создание игрока
     player = new Player();
@@ -709,11 +728,14 @@ void Game::pvp1()
 
 void Game::pvpConnect()
 {
-    QThread::sleep(3); //Ждем запуск сервера
+    QThread::sleep(3);
+
     if (tBoxes[0]->str != "")
         ServIP = tBoxes[0]->str;
+
     if (tBoxes[1]->str != "")
         tcpPort = tBoxes[1]->str.toInt();
+
     tcpSocket = new QTcpSocket();
     tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
     tcpSocket->waitForConnected();

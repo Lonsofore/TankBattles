@@ -12,6 +12,8 @@ Caution::Caution(QString image, QString text, int t)
     width = 400;
     height = 176;
 
+    setZValue(100);
+
     setPixmap(QPixmap(image).scaled(width,height));
 
     // шрифт

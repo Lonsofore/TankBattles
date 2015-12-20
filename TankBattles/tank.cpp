@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <QTimer>
 #include <QMovie>
+#include <QDir>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +27,7 @@ extern Game * game;
 Tank::Tank()
 {
     isPlayer = false;
+    isBot = false;
     // отдельная функция для того, чтобы ее вызывать классом player
     defaultTank();
 }
@@ -270,7 +272,11 @@ void Tank::fire()
 
 void Tank::randomSpawn()
 {
+    if (fileName != "")
+        file.close();
+
     int x,y;
+    int num;
     if (game->spawns > 0)
     {
         int stime;
@@ -294,6 +300,8 @@ void Tank::randomSpawn()
             x = game->spawnPoints[random]->x() - pixsize/2;
             y = game->spawnPoints[random]->y() - pixsize/4;
         }
+
+        num = random;
     }
     else
     {
@@ -309,7 +317,59 @@ void Tank::randomSpawn()
     rotateLeft(0);
 
     if (isPlayer)
+    {
         emit reSpawn();
+
+        if (game->createBots)
+        {
+            int i = 0;
+            while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(i) + ".bot"))
+            {
+                i++;
+            }
+
+            QDir().mkdir("bots");
+            QDir().mkdir("bots/" + game->mapname);
+            fileName = "bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(i) + ".bot";
+
+            file.setFileName(fileName);
+            //QFile file(fileName);
+            file.open(QIODevice::ReadWrite);
+            bot = new QTextStream(&file);
+            //QTextStream in(&file);
+
+            //qDebug() << "created " << game->mapname << " " << num << " " << i;
+        }
+    }
+
+    if (isBot)
+    {
+        int i = 0;
+        while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(i) + ".bot"))
+        {
+            i++;
+        }
+
+        int stime;
+        long ltime;
+        int random;
+
+        if (i > 0)
+        {
+            ltime = time(NULL);
+            stime = (unsigned) ltime/2;
+            srand(stime);
+            random = rand()%i;
+
+            if (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(random) + ".bot"))
+            {
+                fileName = "bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(random) + ".bot";
+                file.setFileName(fileName);
+                file.open(QIODevice::ReadWrite);
+                bot = new QTextStream(&file);
+            }
+        }
+    }
 }
 
 // true если на координатах x,y уже находится танк
@@ -339,7 +399,7 @@ bool Tank::isCollide()
         for (int i = 0, n = colliding_items.size(); i < n; ++i)
         {
             //qDebug() << "tank";
-            if (typeid(*(colliding_items[i])) == typeid(Tank))
+            if (typeid(*(colliding_items[i])) == typeid(Tank) || typeid(*(colliding_items[i])) == typeid(Player)  || typeid(*(colliding_items[i])) == typeid(Bot))
             {
                     return true;
             }

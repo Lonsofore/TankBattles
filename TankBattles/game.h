@@ -6,6 +6,7 @@
 #include <QGraphicsScene>
 #include <QTcpSocket>
 #include <QProcess>
+
 #include "tank.h"
 #include "score.h"
 #include "health.h"
@@ -15,6 +16,7 @@
 #include "numupdown.h"
 #include "textpanel.h"
 #include "textbox.h"
+#include "bot.h"
 
 QT_BEGIN_NAMESPACE
 class QUdpSocket;
@@ -29,6 +31,9 @@ public:
     Game(QWidget * parent=0);
 
     bool darkMode; // test
+    bool createBots;
+
+    QString mapname;
 
     // громкость музыки и эффектов
     int vmusic;
@@ -70,8 +75,10 @@ public:
 private slots:
     void SendData();
     void readResponse();
+
     void close();
     void closeEvent(QCloseEvent *);
+
 public slots:
     void switchButton(int n); // сменить кнопку на выбранную
 
@@ -113,13 +120,15 @@ private:
     TextPanel *text1;
     TextPanel *text2;
 
+    // боты
+    Bot **bots;
+
     // мультиплеер
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока
     bool isrecieving, issending, inMP;
     QProcess *serv;
-
 
 };
 

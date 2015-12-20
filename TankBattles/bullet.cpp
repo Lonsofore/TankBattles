@@ -6,6 +6,7 @@
 #include <typeinfo>
 #include <QLabel>
 #include <QMovie>
+#include "bot.h"
 
 #include <math.h>
 #define PI 3.14159265
@@ -206,9 +207,30 @@ void Bullet::move()
             hit = true;
 
             Player * pl = dynamic_cast <Player *> (colliding_items[i]);
-            pl->decHealth(dmg);
+            pl->getDmg(dmg);
 
             if (pl->health > 0)
+            {
+                count1 = 0;
+                pm1 = new QGraphicsPixmapItem;
+                pm1->setZValue(85);
+                game->scene->addItem(pm1);
+                timerf1->start(50);
+
+                QMediaPlayer *hit = new QMediaPlayer();
+                hit->setMedia(QUrl("qrc:/sounds/sounds/tank/hit.mp3"));
+                hit->play();
+            }
+        }
+
+        if (typeid(*(colliding_items[i])) == typeid(Bot))
+        {
+            hit = true;
+
+            Bot * bot = dynamic_cast <Bot *> (colliding_items[i]);
+            bot->decHealth(dmg);
+
+            if (bot->health > 0)
             {
                 count1 = 0;
                 pm1 = new QGraphicsPixmapItem;

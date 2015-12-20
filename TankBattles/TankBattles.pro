@@ -28,7 +28,8 @@ SOURCES += main.cpp \
     numupdown.cpp \
     delay.cpp \
     caution.cpp \
-    textbox.cpp
+    textbox.cpp \
+    bot.cpp
 
 HEADERS  += \
     tank.h \
@@ -43,7 +44,8 @@ HEADERS  += \
     numupdown.h \
     delay.h \
     caution.h \
-    textbox.h
+    textbox.h \
+    bot.h
 
 RESOURCES += \
     res.qrc

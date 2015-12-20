@@ -37,6 +37,7 @@ extern Game * game;
 Player::Player()
 {
     isPlayer = true;
+    isBot = false;
 
     timer = new QTimer();
     connect(timer,SIGNAL(timeout()),this,SLOT(keyActions()));
@@ -153,7 +154,7 @@ void Player::keyPressEvent(QKeyEvent *event)
             break;
 
             case 52:
-                //emit reSpawn();
+                qDebug() << QSysInfo::kernelType();
             break;
 
             case 53:
@@ -259,8 +260,18 @@ void Player::keyActions() // player действия при нажатии кл�
     }
 
     // движение вперед, назад
-    if (mf) moveForward();
-    if (mb) moveBack();
+    if (mf)
+    {
+        moveForward();
+        if (game->createBots)
+            *bot << "mf ";
+    }
+    if (mb)
+    {
+        moveBack();
+        if (game->createBots)
+            *bot << "mb ";
+    }
 
     // если player вышел за границы
     if (this->x() < game->dop - pixsize/2 ||
@@ -283,7 +294,6 @@ void Player::keyActions() // player действия при нажатии кл�
             QString image = ":/images/images/out.png";
             caution = new Caution(image, "CAUTION", 5);
             caution->setPos(x1-200,y1-88);
-            caution->setZValue(10);
             game->scene->addItem(caution);
         }
         caution->setPos(x1-200, y1-88);
@@ -303,13 +313,6 @@ void Player::keyActions() // player действия при нажатии кл�
                 out = false;
                 outTimer = outMaxTime;
                 delete caution;
-
-                // плашка смерти
-                QString image1 = ":/images/images/died.png";
-                died = new Caution(image1, "DEAD");
-                died->setPos(x1-200,y1-88);
-                died->setZValue(10);
-                game->scene->addItem(died);
 
                 // убить
                 killPlayer();
@@ -346,8 +349,18 @@ void Player::keyActions() // player действия при нажатии кл�
     }
 
     // поворот башни
-    if (hl) headLeft();
-    if (hr) headRight();
+    if (hl)
+    {
+        headLeft();
+        if (game->createBots)
+            *bot << "hl ";
+    }
+    if (hr)
+    {
+        headRight();
+        if (game->createBots)
+            *bot << "hr ";
+    }
 
     // звук поворота башни
     if ((hr || hl) &&  tankhrotate->state() == QMediaPlayer::StoppedState) // если звук поворота еще не проигрывался
@@ -374,6 +387,8 @@ void Player::keyActions() // player действия при нажатии кл�
         movie->start();
         QGraphicsProxyWidget *proxy = game->scene->addWidget(reloadAnim);
 
+        if (game->createBots)
+            *bot << "fr ";
     }
     if (fireReady == false) // счетчик для ожидания между выстрелами
     {
@@ -393,6 +408,9 @@ void Player::keyActions() // player действия при нажатии кл�
 
         delete reloadAnim;
     }
+
+    if (game->createBots)
+        *bot << endl;
 
     if (lastX != x() || lastY != y() || lastDeg != degree || lastHDeg != hdegree || lastHealth != health)
         emit KeyPressed();
@@ -439,9 +457,17 @@ void Player::playerRotate()
 
     // выбор стороны поворота
     if (rl)
+    {
         rotateLeft(deg);
+        if (game->createBots)
+            *bot << "rl ";
+    }
     if (rr)
+    {
         rotateRight(deg);
+        if (game->createBots)
+            *bot << "rr ";
+    }
 }
 
 void Player::playerFire()
@@ -458,6 +484,18 @@ void Player::killPlayer()
         fireReady = true;
     }
     deleteTank();
+
+    // координата Х в центре экрана
+    int x1 = centralX();
+    // координата Y в центре экрана
+    int y1 = centralY();
+
+    // плашка смерти
+    QString image1 = ":/images/images/died.png";
+    died = new Caution(image1, "DEAD");
+    died->setPos(x1-200,y1-88);
+    game->scene->addItem(died);
+
     QTimer::singleShot(2000, this, SLOT(spawnPlayer()));
 }
 
@@ -473,9 +511,12 @@ void Player::spawnPlayer()
 
 void Player::getDmg(int v)
 {
-    decHealth(v);
-    wou = true;
+    health -= v;
+    if (health < 0)
+        killPlayer();
 
+    /*
+    wou = true;
     int x1 = centralX();
     int y1 = centralY();
 
@@ -483,12 +524,13 @@ void Player::getDmg(int v)
     wound->setPixmap(QPixmap(":/images/images/wound.png").scaled(game->width(),game->height()));
     wound->setPos(x1-game->width()/2,y1-game->height()/2);
     game->scene->addItem(wound);
+    */
 
     /*
     QTimer *timerw = new QTimer();
     connect(timerw,SIGNAL(timeout()),this,SLOT(playerWound()));
     */
-    QTimer::singleShot(2000, this, SLOT(playerWound()));
+    //QTimer::singleShot(2000, this, SLOT(playerWound()));
 }
 
 void Player::playerWound()

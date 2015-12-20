@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = TankBattles_MapEditor
 TEMPLATE = app
-RC_FILE = TankBattles.rc
+RC_FILE = TankBattles_MapEditor.rc
 
 SOURCES += main.cpp\
         mainwindow.cpp \

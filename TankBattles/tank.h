@@ -16,6 +16,11 @@ public:
     void defaultTank(); // функция установления стандартных значений (для вызова из класса player)
 
     bool isPlayer;
+    QString fileName;
+    QFile file;
+    QTextStream *bot;
+    bool isBot;
+    QString nSpawn;
 
     // действия
     void moveForward(bool check = 0); // движение вперед
