@@ -9,8 +9,9 @@ server::server(int tport, int uport, bool isStartdByClient, QString rmap)
     udpSocket = new QUdpSocket();
     tcpPort = tport;
     udpPort = uport;
-    gameStarted = 0;
+    gameStarted = false;
     ConnectedCnt = 0;
+    DisConnCnt = 0;
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
     tcpServer->listen(QHostAddress::Any, tcpPort);
     for (int i = 0; i < 2; i++)
@@ -28,30 +29,54 @@ void server::broadcastDatagram()
 {
     std::cout << "SENDING: X=" << x[cid] << ",Y=" << y[cid] << " FROM CLIENT # " << cid << "\n";
     QByteArray datagram = QByteArray::number(0) + ' ' + QByteArray::number(x[0]) + ' ' + QByteArray::number(y[0])+ ' ' +
-            QByteArray::number(TAngle[0]) + ' ' + QByteArray::number(HAngle[0]) + ' ' + QByteArray::number(isFiring[0]) + '|';
+            QByteArray::number(TAngle[0]) + ' ' + QByteArray::number(HAngle[0]) + ' ' + QByteArray::number(isFiring[0]) +
+            ' ' + QByteArray::number(health[0]) + '|';
        datagram += QByteArray::number(1) + ' ' + QByteArray::number(x[1]) + ' ' + QByteArray::number(y[1])+ ' ' +
-               QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) + ' ' + QByteArray::number(isFiring[1]) +  '|';
+               QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) + ' ' + QByteArray::number(isFiring[1]) +
+               ' ' + QByteArray::number(health[1]) + '|';
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
                              QHostAddress(GroupIP), udpPort);
 }
 
 void server::dataRecieved(QByteArray data)
 {
-    if (ConnectedCnt >= 2) gameStarted = 1;
-    if (gameStarted)
+    if (ConnectedCnt >= 2 && DisConnCnt != ConnectedCnt) gameStarted = 1;
+    QList<QByteArray> list;
+    list = data.split(' ');
+    cid = list.at(0).toInt();
+    if (list.at(1) != "SYSTEM") //Если не системное сообщение
     {
-        QList<QByteArray> list;
-        list = data.split(' ');
-        cid = list.at(0).toInt();
-        x[cid] = list.at(1).toInt();
+        x[cid] = list.at(1).toInt(); //Заносим данные
         y[cid] = list.at(2).toInt();
         TAngle[cid] = list.at(3).toInt();
         HAngle[cid] = list.at(4).toInt();
         isFiring[cid] = list.at(5).toInt();
-        broadcastDatagram();
+        health[cid] = list.at(6).toInt();
+        if (gameStarted) broadcastDatagram(); //Если игра идет, то отправляем данные
     }
-
-
+    else
+    {
+        if (list.at(2) == "EXIT")
+        {
+            QByteArray datagram = QByteArray::number(cid) + " SYSTEM EXIT";
+            udpSocket->writeDatagram(datagram.data(), datagram.size(),
+                                     QHostAddress(GroupIP), udpPort);
+            DisConnCnt++;
+            if (ConnectedCnt == DisConnCnt)
+            {
+                ConnectedCnt = 0;
+                DisConnCnt = 0;
+                for (int i = 0; i < 2; i++)
+                {
+                    x[i] = 0;
+                    y[i] = 0;
+                    TAngle[i] = 0;
+                    HAngle[i] = 0;
+                    isFiring[i] = 0;
+                }
+            } //Если все отключились, то обнуляем сервер
+        }
+    }
 }
 
 void server::newConnection()
@@ -67,21 +92,22 @@ void server::newConnection()
         buffers.insert(socket, buffer);
         sizes.insert(socket, s);
         QByteArray data;
-        if (!gameStarted)
+        if (!gameStarted) //Если игра не началась
         {
 
             if (ConnectedCnt >= 2)
             {
-                data = "FULL";
+                data = "FULL"; //Если сервер переполнен
             }
             else
             {
-                data = QByteArray::number(ConnectedCnt++) + ' ' + QByteArray::number(udpPort) + ' ' + map.toLatin1().constData();
+                data = QByteArray::number(ConnectedCnt++) + ' ' + QByteArray::number(udpPort) + ' ' + map.toLatin1().constData(); //Отправляем приветствие
+                //Формат: id udpПорт Карта
             }
         }
         else
         {
-            data = "STARTED";
+            data = "STARTED"; //Игра уже началась
         }
         socket->write(IntToArray(data.size()));
         socket->write(data);

@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QGraphicsScene>
 #include <QTcpSocket>
+#include <QProcess>
 #include "tank.h"
 #include "score.h"
 #include "health.h"
@@ -69,7 +70,8 @@ public:
 private slots:
     void SendData();
     void readResponse();
-
+    void close();
+    void closeEvent(QCloseEvent *);
 public slots:
     void switchButton(int n); // сменить кнопку на выбранную
 
@@ -80,6 +82,7 @@ public slots:
     void pvp();  // открывает меню выбора пвп
     void pvp1(); // присоединиться
     void pvp2(); // создать
+    void createServ();
     void pvpConnect(); // подключение
     void pvpLoad(QString filename); //Загрузка карты для MP
 
@@ -114,9 +117,9 @@ private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока
-    bool isrecieving, inMP;
-    QHash<QTcpSocket*, QByteArray*> buffers; //Буфер для хранения принимаемых по tcp данных
-    QHash<QTcpSocket*, qint32*> sizes;
+    bool isrecieving, issending, inMP;
+    QProcess *serv;
+
 
 };
 

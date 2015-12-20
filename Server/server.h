@@ -21,20 +21,19 @@ private:
     QTcpSocket *tcpSocket;
     QNetworkSession *networkSession;
     QUdpSocket *udpSocket;
-    void broadcastDatagram();
-    int x[2], y[2], TAngle[2], HAngle[2], tcpPort, udpPort, cid, ConnectedCnt;
-    bool isFiring[2], gameStarted;
-    QString map;
-    //QTcpServer *server;
-    QHash<QTcpSocket*, QByteArray*> buffers; //We need a buffer to store data until block has completely received
+    void broadcastDatagram(); //Рассылка данных
+    int x[2], y[2], TAngle[2], HAngle[2], health[2], tcpPort, udpPort, cid, ConnectedCnt, DisConnCnt; //Данные об игроках, порты, id текущего игрока, кол-во подключ. и отключ. игроков
+    bool isFiring[2], gameStarted; //Стрельба Игра_началась
+    QString map; //Карта
+    QHash<QTcpSocket*, QByteArray*> buffers; //Буфер для данных
     QHash<QTcpSocket*, qint32*> sizes;
     qint32 ArrayToInt(QByteArray);
-    void dataRecieved(QByteArray);
+    void dataRecieved(QByteArray); //Обработка данных
 private slots:
     //void sessionOpened();
-    void newConnection();
-    void disconnected();
-    void readyRead();
+    void newConnection(); //Подключился новый игрок
+    void disconnected(); //Отключение
+    void readyRead(); //Чтение данных
 
 };
 

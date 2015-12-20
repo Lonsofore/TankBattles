@@ -709,20 +709,19 @@ void Game::pvp1()
 
 void Game::pvpConnect()
 {
+    QThread::sleep(3); //Ждем запуск сервера
     if (tBoxes[0]->str != "")
         ServIP = tBoxes[0]->str;
-
     if (tBoxes[1]->str != "")
         tcpPort = tBoxes[1]->str.toInt();
-
     tcpSocket = new QTcpSocket();
     tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
     tcpSocket->waitForConnected();
-    udpSocket = new QUdpSocket(this);
+    /*udpSocket = new QUdpSocket(this);
     udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
     udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
     udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));*/
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
@@ -771,7 +770,7 @@ void Game::pvp2()
     btns[0] = new Button(2, "Create", 300, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
-    //connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp2()));
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
 
@@ -785,6 +784,200 @@ void Game::pvp2()
     connect(btns[1],SIGNAL(back()),this,SLOT(pvp()));
 
     switchButton(0); // по умолчанию выбрать первую кнопку
+}
+
+void Game::createServ()
+{
+    int udpPort = 2210; //Дефолтный порт
+    QString pathToServ = QDir::currentPath();
+    if (QSysInfo::kernelType() == "winnt") pathToServ += "/server.exe"; //путь к файлу сервера
+    else pathToServ += "/server"; //Если не винда
+    QString path = QDir::currentPath() + "/maps/";
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
+    QFile file(fileName); //Открывем файл карты, на которой будет проходить игра
+    //Проверка карты на соответствие стандартам
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        if (fileName != "") {QMessageBox::information(this, "Ошибка", "Не удалось прочитать указанный файл");}
+    }
+    else
+    {
+        QTextStream in(&file);
+        QString line = in.readLine();
+        QStringList fields = line.split(" ");
+        if (fields.count() == 3)
+         {
+            QString cnt = fields.at(0);
+            int rowcnt = cnt.toInt();  //Кол-во строк
+            cnt = fields.at(1);
+            int colcnt = cnt.toInt();  //Кол-во столбцов
+            cnt = fields.at(2);
+            int spwn = cnt.toInt();    //Кол-во точек спавна
+            int i, r = 0;
+            int spwncnt;
+            if (rowcnt > 600 || colcnt > 600)
+            {
+                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nСлишком большой размер карты.");
+                return;
+            }
+            else
+            {
+                if (spwn >= 2 || rowcnt<=0 || colcnt<=0)
+                {
+                    char **elm = new char* [rowcnt];                 //Массив для хранения элементов
+                    for (i = 0; i < rowcnt; i++)
+                    {
+                        elm[i] = new char [colcnt];
+                    }
+                    int **spcord = new int* [spwn]; //Массив для записи координат точек спавна для последующей проверки на правильность их расположения
+                    for (i = 0; i < spwn; i++)
+                    {
+                        spcord[i] = new int [2];
+                    }
+                    spwncnt = 0;
+                    while(!in.atEnd())  //Пока не конец файла
+                    {
+                            QString line = in.readLine(); //Читаем строку
+                            QStringList fields = line.split(" "); //Элементы в файле разделены пробелами
+                            if (fields.count() == colcnt+1)       //Если кол-во элементов в строке равно кол-ву элементов указанных в строке информации
+                            {
+                                for(i = 0; i < colcnt; i++)
+                                {
+                                   cnt = fields.at(i);
+                                   elm[r][i] = cnt.at(0).toLatin1(); //Читаем элемент
+                                   if (elm[r][i] == 'S') //Спавн
+                                   {
+                                       spcord[spwncnt][0] = r;
+                                       spcord[spwncnt][1] = i;
+                                       spwncnt++;
+                                   }
+                                   if ((elm[r][i] != '2') && (elm[r][i] != '1') && (elm[r][i] != '0') && (elm[r][i] != 'S')) //Что-то другое
+                                   {
+                                       QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nНе удалось распознать символ.");
+                                       for (i = 0; i < rowcnt; i++)
+                                       {
+                                           delete[] elm[i];
+                                       }
+                                       for (i = 0; i < spwncnt; i++)
+                                       {
+                                           delete[] spcord[i];
+                                       }
+                                       file.close();
+                                       return;
+                                   }
+                                }
+                            }
+                            else
+                            {
+                                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nИнформация в первой строке файла не соответствует действительности."); //Выдаем сообщение об ошибке и стираем всё
+                                for (i = 0; i < rowcnt; i++)
+                                {
+                                    delete[] elm[i];
+                                }
+                                for (i = 0; i < spwncnt; i++)
+                                {
+                                    delete[] spcord[i];
+                                }
+                                file.close();
+                                return;
+                            }
+                            r = r+1; //Строка прочитанна
+                            if (r>=rowcnt) break;
+                    }
+                    for(i = 0; i<spwn; i++) //Проверка на правильность расположения точек спавна
+                    {
+                       if (((spcord[i][0] > 0) && (spcord[i][0] < r)) && ((spcord[i][1] > 0) && (spcord[i][1] < colcnt)))
+                       {
+                               if((elm[spcord[i][0]-1][spcord[i][1]] != '0') || (elm[spcord[i][0]+1][spcord[i][1]] != '0') ||          //Проверка соседних блоков на пустоту
+                                       (elm[spcord[i][0]][spcord[i][1]-1] != '0') || (elm[spcord[i][0]][spcord[i][1]+1] != '0') ||
+                                       (elm[spcord[i][0]-1][spcord[i][1]-1] != '0') || (elm[spcord[i][0]-1][spcord[i][1]+1] != '0') ||
+                                       (elm[spcord[i][0]+1][spcord[i][1]-1] != '0') || (elm[spcord[i][0]+1][spcord[i][1]+1] != '0'))
+                               {
+                                   QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nБлоки спавна расположенны неправильно.");
+                                   for (i = 0; i < rowcnt; i++)
+                                   {
+                                       delete[] elm[i];
+                                   }
+                                   for (i = 0; i < spwncnt; i++)
+                                   {
+                                       delete[] spcord[i];
+                                   }
+                                   file.close();
+                                   return;
+                               }
+                       }
+                       else
+                       {
+                               QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nБлоки спавна расположенны неправильно.");
+                               for (i = 0; i < rowcnt; i++)
+                               {
+                                   delete[] elm[i];
+                               }
+                               for (i = 0; i < spwncnt; i++)
+                               {
+                                   delete[] spcord[i];
+                               }
+                               file.close();
+                               return;
+                       }
+                       for (i = 0; i < rowcnt; i++)
+                       {
+                           delete[] elm[i];
+                       }
+                       for (i = 0; i < spwncnt; i++)
+                       {
+                           delete[] spcord[i];
+                       }
+                    }
+                }
+                else
+                {
+                    file.close();
+                    QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nПервая строка файла содержит ошибочные значения.");
+                    return;
+                }
+            }
+            file.close();
+            if ((r != rowcnt) || (spwn != spwncnt)) //Если кол-во строк или точек спавна не равно указанному в начале файла кол-ву
+            {
+                QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nИнформация в первой строке файла не соответствует действительности.");
+                return;
+            }
+        }
+        else
+        {
+            QMessageBox::critical(this, "Ошибка загрузки", "Неправильный формат входного файла!\nНеправильный формат первой строки файла.");
+            return;
+        }
+    }
+    //Конец проверки
+    QString map = fileName.split('/').last(); //Имя карты
+    if (tBoxes[0]->str != "") tcpPort = tBoxes[0]->str.toInt();
+    if (tBoxes[1]->str != "") udpPort = tBoxes[1]->str.toInt();
+    QStringList arguments;
+    arguments << QString::number(tcpPort) << QString::number(udpPort) << map; //Аргументы для сервера
+    serv = new QProcess(this);
+    serv->start(pathToServ, arguments); //Запуск сервера
+    ServIP = "127.0.0.1"; //Так как сервер запущен на этой машине
+    if (serv->state() == QProcess::NotRunning) //Если не запустился
+    {
+        QMessageBox::critical(this, "Ошибка", "Невозможно запустить сервер");
+        return;
+    }
+    tBoxes[0]->str = "";
+    tBoxes[0]->update();
+    tBoxes[1]->str = "";
+    tBoxes[1]->update();
+    connect(serv, SIGNAL(started()), this, SLOT(pvpConnect()));
+    /*tcpSocket = new QTcpSocket();
+    tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
+    tcpSocket->waitForConnected();
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
+    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
+    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));*/
 }
 
 void Game::pvpLoad(QString filename)
@@ -1509,36 +1702,46 @@ void Game::processPendingDatagrams()
 {   int otherplayer; //Временный костыль
     if (usrid == 1) otherplayer = 0;
     if (usrid == 0) otherplayer = 1;
-    isrecieving = 1;
-    while (udpSocket->hasPendingDatagrams()) {
+    while (udpSocket->hasPendingDatagrams())
+    {
         QByteArray datagram;
         datagram.resize(udpSocket->pendingDatagramSize());
         udpSocket->readDatagram(datagram.data(), datagram.size());
-        QList<QByteArray> playersList;
-        playersList = datagram.split('|');
-        //Здесь будет цикл
-        QString temp;
-        temp +=QString::fromLatin1(playersList.at(otherplayer).data());
-        QList<QString> dataList;
-        dataList =  temp.split(' ');
-        enmy->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
-        enmy->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
-        if (dataList.at(5).toInt() == 1) enmy->fire(); //Стреляем, если нужно
+        if (datagram.split(' ').at(1) != "SYSTEM") //Если не системное сообщение
+        {
+            QList<QByteArray> playersList;
+            playersList = datagram.split('|');
+            //Здесь будет цикл
+            QString temp;
+            temp +=QString::fromLatin1(playersList.at(otherplayer).data());
+            QList<QString> dataList;
+            dataList =  temp.split(' ');
+                enmy->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
+                enmy->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
+                if (dataList.at(5).toInt() == 1) enmy->fire(); //Стреляем, если нужно
+                enmy->health = dataList.at(6).toInt(); //Устанавливаем здоровье
+        }
+        else
+        {
+            if (datagram.split(' ').at(2) == "EXIT")
+            {
+
+                enmy->hide(); //Иначе падает с ошибкой сегментации
+                enmy->head->hide();
+            }
+        }
     }
-    isrecieving = 0;
 }
 
 void Game::SendData() //Отправка данных
 {
-    //while(isrecieving) {wait();} ищу замену для wait
-    //if(inMP)
-
     if(tcpSocket->state() == QAbstractSocket::ConnectedState)
-        {	//Формат данных: "id X Y угол_поворота_танка угол_поворота_башни стреляет_ли_игрок
+        {	//Формат данных: "id X Y угол_поворота_танка угол_поворота_башни стреляет_ли_игрок здоровье
             QByteArray data = QByteArray::number(usrid) + ' ' + QByteArray::number(player->GetX()) + ' ' + QByteArray::number(player->GetY()) + ' '
-                    + QByteArray::number(player->GetTAngle()) + ' ' + QByteArray::number(player->GetHAngle()) + ' ' + QByteArray::number(player->isFiring); 
-            tcpSocket->write(IntToArray(data.size())); //write size of data
-            tcpSocket->write(data); //write the data itself
+                    + QByteArray::number(player->GetTAngle()) + ' ' + QByteArray::number(player->GetHAngle()) + ' ' + QByteArray::number(player->isFiring)
+                    + ' ' + QByteArray::number(player->health);
+            tcpSocket->write(IntToArray(data.size())); //Записываем размер данных
+            tcpSocket->write(data); //Записываем размер данных
             tcpSocket->waitForBytesWritten();
             player->isFiring = 0;
             return;
@@ -1550,6 +1753,8 @@ void Game::SendData() //Отправка данных
 }
 void Game::readResponse() //Читаем ответ от сервера после подключения
 {
+    QHash<QTcpSocket*, QByteArray*> buffers; //Буфер для хранения принимаемых по tcp данных
+    QHash<QTcpSocket*, qint32*> sizes;
     qint32 *sz = new qint32(0);
     QByteArray *buffr = new QByteArray();
     buffers.insert(tcpSocket, buffr);
@@ -1584,8 +1789,8 @@ void Game::readResponse() //Читаем ответ от сервера посл
                     QList<QByteArray> response;
                     response = data.split(' ');
                     usrid = response.at(0).toInt(); /*Получен id от сервера*/
-                    inMP = 1;
-                    udpSocket = new QUdpSocket(this);
+                    inMP = 1; //В МП
+                    udpSocket = new QUdpSocket(this); //Подготовка к приему данных
                     udpSocket->bind(QHostAddress::Any, response.at(1).toInt(), QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
                     udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
                     udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
@@ -1595,7 +1800,44 @@ void Game::readResponse() //Читаем ответ от сервера посл
             }
         }
     }
-    //pvpLoad(); //Запускаем игру
+}
+
+void Game::close()
+{
+    if (serv) serv->kill();
+    if (inMP) //Посылаем сообщение о выходе
+    {
+        if(tcpSocket->state() == QAbstractSocket::ConnectedState)
+            {
+                QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
+                tcpSocket->write(IntToArray(data.size()));
+                tcpSocket->write(data);
+                tcpSocket->waitForBytesWritten();
+                player->isFiring = 0;
+                exit(0);
+
+            }
+    }
+    exit(0);
+}
+
+void Game::closeEvent(QCloseEvent *)
+{
+    if (serv) serv->kill();
+    if (inMP)
+    {
+        if(tcpSocket->state() == QAbstractSocket::ConnectedState)
+            {	//Посылаем сообщение о выходе
+                QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
+                tcpSocket->write(IntToArray(data.size()));
+                tcpSocket->write(data);
+                tcpSocket->waitForBytesWritten();
+                player->isFiring = 0;
+                exit(0);
+
+            }
+    }
+    exit(0);
 }
 
 QByteArray IntToArray(qint32 source) //Получаем из int QByteArray
