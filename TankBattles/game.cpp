@@ -1804,38 +1804,42 @@ void Game::readResponse() //Читаем ответ от сервера посл
 
 void Game::close()
 {
-    if (serv) serv->kill();
     if (inMP) //Посылаем сообщение о выходе
     {
-        if(tcpSocket->state() == QAbstractSocket::ConnectedState)
+        if(tcpSocket)
+        {
+            if(tcpSocket->state() == QAbstractSocket::ConnectedState)
             {
                 QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
                 player->isFiring = 0;
+                if (serv) serv->kill();
                 exit(0);
-
             }
+        }
     }
     exit(0);
 }
 
 void Game::closeEvent(QCloseEvent *)
 {
-    if (serv) serv->kill();
-    if (inMP)
+    if (inMP) //Посылаем сообщение о выходе
     {
-        if(tcpSocket->state() == QAbstractSocket::ConnectedState)
-            {	//Посылаем сообщение о выходе
+        if(tcpSocket)
+        {
+            if(tcpSocket->state() == QAbstractSocket::ConnectedState)
+            {
                 QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
                 player->isFiring = 0;
+                if (serv) serv->kill();
                 exit(0);
-
             }
+        }
     }
     exit(0);
 }

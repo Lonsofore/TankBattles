@@ -170,7 +170,7 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.0\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.01\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
@@ -424,6 +424,10 @@ void MainWindow::LoadMap(QString fname)
                                    ui->field->clearContents();
                                    ui->field->setRowCount(0);
                                    ui->field->setColumnCount(0);
+                                   for (i = 0; i < spwncnt; i++)
+                                   {
+                                       delete[] spcord[i];
+                                   }
                                    file.close();
                                    return;
                                }
@@ -435,10 +439,15 @@ void MainWindow::LoadMap(QString fname)
                             ui->field->clearContents();
                             ui->field->setRowCount(0);
                             ui->field->setColumnCount(0);
+                            for (i = 0; i < spwncnt; i++)
+                            {
+                                delete[] spcord[i];
+                            }
                             file.close();
                             return;
                         }
                         r = r+1; //Строка прочитанна
+                        if (r >= rowcnt) break;
                     }
                     for(i = 0; i<spwncnt; i++) //Проверка на правильность расположения точек спавна
                     {
