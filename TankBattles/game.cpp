@@ -983,7 +983,7 @@ void Game::beginGame()
 {
     if(tcpSocket->state() == QAbstractSocket::ConnectedState)
     {       //Сигнал старта игры
-            QByteArray data = "SYSTEM START";
+            QByteArray data = "0 SYSTEM START";
             tcpSocket->write(IntToArray(data.size())); //Записываем размер данных
             tcpSocket->write(data); //Записываем размер данных
             tcpSocket->waitForBytesWritten();
@@ -2059,8 +2059,8 @@ void Game::processPendingDatagrams()
             {
                 if (!gameStarted)
                 {
-                    //QString text = QString::number(datagram.split(' ').at(0).toInt()) + " of " + QString::number(pCnt);
-                    //text1->setPlainText(text);
+                    QString text = QString::number(datagram.split(' ').at(0).toInt()) + " of " + QString::number(pCnt);
+                    text1->setText(text);
                 }
             }
         }
