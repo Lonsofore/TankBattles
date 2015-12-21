@@ -10,6 +10,8 @@ class Bot: public Tank
     Q_OBJECT
 public:
     Bot();
+    void getDmg(int v);
+
 private:
     int mode;
     QTimer *timer;

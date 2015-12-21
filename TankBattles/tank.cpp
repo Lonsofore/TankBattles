@@ -56,7 +56,10 @@ void Tank::defaultTank()
     head = new QGraphicsPixmapItem();
     hdegree = 0;
     hspeed = 2;
-    headImage = ":/images/images/tanks/greenHead.png";
+    if (game->darkMode)
+        headImage = ":/images/images/tanks/greenHeadDark.png";
+    else
+        headImage = ":/images/images/tanks/greenHead.png";
     head->setPixmap(QPixmap(headImage).scaled(pixsize,pixsize));
     //head->setPos(x,y);
     head->setZValue(90);
@@ -272,9 +275,6 @@ void Tank::fire()
 
 void Tank::randomSpawn()
 {
-    if (fileName != "")
-        file.close();
-
     int x,y;
     int num;
     if (game->spawns > 0)
@@ -291,6 +291,7 @@ void Tank::randomSpawn()
         x = game->spawnPoints[random]->x() - pixsize/2;
         y = game->spawnPoints[random]->y() - pixsize/4;
 
+        // поиск свободного спавна
         while (isBusy(x,y))
         {
             random++;
@@ -322,6 +323,9 @@ void Tank::randomSpawn()
 
         if (game->createBots)
         {
+            if (fileName != "")
+                file.close();
+
             int i = 0;
             while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(i) + ".bot"))
             {
@@ -333,41 +337,37 @@ void Tank::randomSpawn()
             fileName = "bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(i) + ".bot";
 
             file.setFileName(fileName);
-            //QFile file(fileName);
             file.open(QIODevice::ReadWrite);
             bot = new QTextStream(&file);
-            //QTextStream in(&file);
-
-            //qDebug() << "created " << game->mapname << " " << num << " " << i;
         }
     }
 
     if (isBot)
     {
-        int i = 0;
-        while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(i) + ".bot"))
+        int n = 0;
+        if (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot"))
         {
-            i++;
-        }
+            while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot"))
+                n++;
 
-        int stime;
-        long ltime;
-        int random;
+            int stime;
+            long ltime;
+            int random;
 
-        if (i > 0)
-        {
-            ltime = time(NULL);
-            stime = (unsigned) ltime/2;
-            srand(stime);
-            random = rand()%i;
-
-            if (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(random) + ".bot"))
+            if (n > 0)
             {
-                fileName = "bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(random) + ".bot";
-                file.setFileName(fileName);
-                file.open(QIODevice::ReadWrite);
-                bot = new QTextStream(&file);
+                ltime = time(NULL);
+                stime = (unsigned) ltime/2;
+                srand(stime);
+                random = rand()%n;
             }
+            else
+                random = 0;
+
+            fileName = "bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(random) + ".bot";
+            file.setFileName(fileName);
+            file.open(QIODevice::ReadWrite);
+            bot = new QTextStream(&file);
         }
     }
 }

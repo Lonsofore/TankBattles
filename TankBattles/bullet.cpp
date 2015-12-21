@@ -228,7 +228,7 @@ void Bullet::move()
             hit = true;
 
             Bot * bot = dynamic_cast <Bot *> (colliding_items[i]);
-            bot->decHealth(dmg);
+            bot->getDmg(dmg);
 
             if (bot->health > 0)
             {

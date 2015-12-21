@@ -18,7 +18,8 @@
 #include <QMessageBox>
 
 // где находится игрок
-bool inpve = false;   // пве
+bool inpve = false;   // загрузка пве
+bool ingpve = false;  // сама пве
 bool inpvp = false;   // пвп
 bool inpvp1 = false;  // присоединиться к игре
 bool inpvp2 = false;  // создать игру
@@ -34,6 +35,8 @@ const int nSettBtns = 3;
 const int nSett1Btns = 2;
 const int nSett2Btns = 2;
 const int nSett2UpDn = 3;
+const int nPvEBtns = 2;
+const int nPvEUpDn = 2;
 const int nPvPBtns = 3;
 const int nPvPLBtns = 1;
 const int nPvP1Btns = 2;
@@ -42,8 +45,6 @@ const int nPvP2Btns = 2;
 const int nPvP2TBs = 2;
 const int nPvP2UpDn = 1;
 const int nGMenuBtns = 4;
-
-const int nBots = 0;
 
 int from;
 
@@ -62,7 +63,9 @@ Game::Game(QWidget *parent)
     int height = 600;
 
     inMP = 0;
+
     gameStarted = 0;
+
     darkMode = false;
     createBots = false;
 
@@ -147,6 +150,7 @@ void Game::change(QString name)
 {
     inmenu = false;
     inpve = false;
+    ingpve = false;
     inpvp = false;
     inpvpl = false;
     inpvp1 = false;
@@ -165,6 +169,12 @@ void Game::change(QString name)
     if (name == "pve")
     {
         inpve = true;
+        return;
+    }
+
+    if (name == "gpve")
+    {
+        ingpve = true;
         return;
     }
 
@@ -235,6 +245,41 @@ void Game::switchButton(int n) // смена кнопки
     }
 
     if (inpve) // пве
+    {
+        if (n < 0)
+            n = n + nPvEBtns + nPvEUpDn;
+        if (n > nPvEBtns + nPvEUpDn - 1)
+            n = n - nPvEBtns - nPvEUpDn;
+
+        curButton = n;
+
+        for (int i=0; i<nPvEBtns; i++)
+            btns[i]->deselect();
+
+        for (int i=0; i<nPvEUpDn; i++)
+            udBtns[i]->deselect();
+
+        switch (curButton)
+        {
+            case 0:
+                udBtns[0]->select();
+            break;
+
+            case 1:
+                udBtns[1]->select();
+            break;
+
+            case 2:
+                btns[0]->select();
+            break;
+
+            case 3:
+                btns[1]->select();
+            break;
+        }
+    }
+
+    if (ingpve) // пве
     {
 
     }
@@ -475,8 +520,12 @@ void Game::menu()
 
 void Game::pve()
 {
+    change("pve");
+
     inMP = 0;
     scene->clear();
+
+    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     // файл открываем
     QString path = QDir::currentPath() + "/maps";
@@ -490,9 +539,113 @@ void Game::pve()
         return;
     }
 
+    fName = fileName;
     QFileInfo fi(file);
     mapname = fi.baseName();
-    qDebug() << mapname;
+
+    QTextStream in(&file);
+
+    //берем первую строку
+    QString line = in.readLine();
+    QStringList list1;
+    list1 = line.split(" ");
+    // кол-во точек спавна
+    spawns = list1[2].toInt();
+
+    // точки
+    int xPos;
+    int yPos = this->height()/2 - 270; //верхняя точка
+
+    // надпись
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("PvE"));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont titleFont("Century Gothic",70);
+    title->setFont(titleFont);
+    xPos = this->width()/2 - title->boundingRect().width()/2;
+    title->setPos(xPos,yPos);
+    scene->addItem(title);
+
+    btns = new Button*[nPvEBtns];
+    udBtns = new numUpDown*[nPvEUpDn];
+
+    // плашка музыка
+    QString img = ":/images/images/menu/Panel.png";
+    text1 = new TextPanel("Bots", img, 210, 70);
+    yPos += 150;
+    xPos = width()/2 - 350/2;
+    text1->setPos(xPos,yPos);
+    scene->addItem(text1);
+
+    // кол-во игроков
+    const int arrnum = spawns-1;
+    QString *arr;
+    arr = new QString[arrnum];
+    for (int i=0; i<arrnum; i++)
+        arr[i] = QString::number(i);
+
+    int xPos1 = xPos + 210;
+    udBtns[0] = new numUpDown(0, arr, arrnum, 0, 140, 70);
+    udBtns[0]->setPos(xPos1,yPos);
+    scene->addItem(udBtns[0]);
+    connect(udBtns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(udBtns[0],SIGNAL(back()),this,SLOT(menu()));
+
+    // плашка интерфейс
+    img = ":/images/images/menu/Panel.png";
+    text2 = new TextPanel("Theme", img, 210, 70);
+    yPos += 80;
+    text2->setPos(xPos,yPos);
+    scene->addItem(text2);
+
+    // темная карта или светлая
+    QString arr1[2];
+    arr1[0] = "light";
+    arr1[1] = "dark";
+    udBtns[1] = new numUpDown(1, arr1, 2, 0, 140, 70);
+    udBtns[1]->setPos(xPos1,yPos);
+    scene->addItem(udBtns[1]);
+    connect(udBtns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(udBtns[1],SIGNAL(back()),this,SLOT(menu()));
+
+    // создать игру
+    yPos += 80;
+    btns[0] = new Button(2, "Start!", 350, 70);
+    btns[0]->setPos(xPos,yPos);
+    scene->addItem(btns[0]);
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(gpve()));
+    connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[0],SIGNAL(back()),this,SLOT(menu()));
+
+    // вернуться назад
+    yPos += 80;
+    btns[1] = new Button(3, "Back", 350, 70);
+    btns[1]->setPos(xPos,yPos);
+    scene->addItem(btns[1]);
+    connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
+    connect(btns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(btns[1],SIGNAL(back()),this,SLOT(menu()));
+
+    switchButton(0); // по умолчанию выбрать первую кнопку
+}
+
+void Game::gpve()
+{
+    change("gpve");
+
+    // кол-во ботов
+    nBots = udBtns[0]->text->toPlainText().toInt();
+
+    // тема карты
+    if (udBtns[1]->text->toPlainText() == "light")
+        darkMode = false;
+    else
+        darkMode = true;
+
+    scene->clear();
+
+    // проверка
+    QFile file(fName);
+    file.open(QIODevice::ReadOnly);
 
     // фон карты
     if (darkMode)
@@ -632,8 +785,6 @@ void Game::pve()
     //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
     music->setVolume(vmusic); // уровень громкости (из 100)
     music->play();
-
-    change("pve");
 
     //Подготовка к приему данных
 
@@ -804,7 +955,7 @@ void Game::pvpLoading()
     title->setPos(xPos,yPos);
     scene->addItem(title);
 
-    // плашка музыка
+    // плашка кол-во игроков
     QString img = ":/images/images/menu/Panel.png";
     QString text = "... of " + QString::number(pCnt);
     text1 = new TextPanel(text, img, 250, 70);
@@ -852,7 +1003,6 @@ void Game::pvp2()
 
     change("pvp2");
 
-
     // точки
     int xPos;
     int yPos = this->height()/2 - 270; //верхняя точка
@@ -888,7 +1038,7 @@ void Game::pvp2()
     connect(tBoxes[1],SIGNAL(back()),this,SLOT(pvp()));
 
     QString img = ":/images/images/menu/Panel.png";
-    // плашка музыка
+    // плашка игроки
     text1 = new TextPanel("Players", img, 190, 70);
     yPos += 80;
     text1->setPos(xPos,yPos);
@@ -1827,34 +1977,6 @@ void Game::moveToCenter()
     center.setX(center.x() - (this->width()/2));  // учитываем половину ширины окна
     center.setY(center.y() - (this->height()/2));  // .. половину высоты
     move(center);
-}
-
-void Game::mouseReleaseEvent(QMouseEvent *event)
-{
-    if (inpve)
-        player->setFocus();
-    if (inmenu || insett || insett1 || insett2 || inpvp);
-        switchButton(curButton);
-}
-
-void Game::focusOutEvent(QFocusEvent *event)
-{
-    if (inpve)
-        player->playerReset();
-}
-
-void Game::wheelEvent(QWheelEvent * event)
-{
-    if (inpve)
-        centerOn(player);
-}
-
-void Game::changeEvent(QEvent *event)
-{
-    if (event->type() == QEvent::WindowStateChange && inpve == true)
-    {
-        player->playerReset();
-    }
 }
 
 QImage Game::setImageLightness(QImage img, int lightness)

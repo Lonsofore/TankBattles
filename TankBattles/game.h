@@ -31,7 +31,10 @@ public:
     Game(QWidget * parent=0);
 
     bool darkMode; // test
+
     bool createBots;
+    int nBots;
+    QString fName;
 
     QString mapname;
 
@@ -66,15 +69,10 @@ public:
 
     QImage setImageLightness(QImage img, int lightness);
 
-    // запреты на то, чтобы пользователь снял фокус с танка
-    void mouseReleaseEvent(QMouseEvent * event);
-    void focusOutEvent(QFocusEvent * event);
-    void wheelEvent(QWheelEvent * event);
-    void changeEvent(QEvent * event);
-
 private slots:
     void SendData();
     void readResponse();
+
     void waitForStart();
     void beginGame();
     void close();
@@ -85,7 +83,8 @@ public slots:
 
     void menu(); // запустить меню
 
-    void pve();  // пве
+    void pve();  // загрузка пве
+    void gpve(); // пве
 
     void pvp();  // открывает меню выбора пвп
     void pvp1(); // присоединиться
@@ -129,6 +128,8 @@ private:
     // мультиплеер
     bool isHost;
     int numPlayers;
+
+
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока
@@ -136,7 +137,6 @@ private:
     QString map;
     bool isrecieving, issending, inMP, gameStarted;
     QProcess *serv;
-
 
 };
 

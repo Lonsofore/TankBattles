@@ -90,7 +90,7 @@ void Bot::actions()
         switch (mode)
         {
             case 0:
-                timer->stop();
+                //timer->stop();
                 killBot();
             break;
 
@@ -102,8 +102,17 @@ void Bot::actions()
 
 }
 
+void Bot::getDmg(int v)
+{
+    health -= v;
+    if (health < 0)
+        killBot();
+}
+
 void Bot::killBot()
 {
+    timer->stop();
+    file.close();
     deleteTank();
     QTimer::singleShot(2000, this, SLOT(spawnBot()));
 }
