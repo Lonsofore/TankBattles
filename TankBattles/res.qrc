@@ -51,6 +51,7 @@
         <file>images/anim/Reload.gif</file>
         <file>images/wound.png</file>
         <file>images/icon.ico</file>
+        <file>images/logo.png</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>fonts/CITYNL.TTF</file>

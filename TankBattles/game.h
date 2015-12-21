@@ -75,7 +75,7 @@ public:
 private slots:
     void SendData();
     void readResponse();
-    void waitForStart();
+
     void close();
     void closeEvent(QCloseEvent *);
 
@@ -91,6 +91,7 @@ public slots:
     void pvp2(); // создать
     void createServ();
     void pvpConnect(); // подключение
+    void pvpLoading();
     void pvpLoad(QString filename); //Загрузка карты для MP
 
     void settings();  // список настроек
@@ -124,6 +125,8 @@ private:
     Bot **bots;
 
     // мультиплеер
+    bool isHost;
+    int numPlayers;
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока

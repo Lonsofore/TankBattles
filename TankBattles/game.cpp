@@ -22,20 +22,20 @@ bool inpve = false;   // пве
 bool inpvp = false;   // пвп
 bool inpvp1 = false;  // присоединиться к игре
 bool inpvp2 = false;  // создать игру
+bool inpvpl = false;  // загрузка пвп
 bool insett = false;  // общие настройки
 bool insett1 = false; // настройки игрока
 bool insett2 = false; // настройки игры
 bool inmenu = false;  // меню
 bool ingmenu = false; // внутриигровое меню
 
-int from;
-
 const int nMenuBtns = 4;
 const int nSettBtns = 3;
 const int nSett1Btns = 2;
 const int nSett2Btns = 2;
 const int nSett2UpDn = 3;
-const int nPvpBtns = 3;
+const int nPvPBtns = 3;
+const int nPvPLBtns = 1;
 const int nPvP1Btns = 2;
 const int nPvP1TBs = 2;
 const int nPvP2Btns = 2;
@@ -44,6 +44,8 @@ const int nPvP2UpDn = 1;
 const int nGMenuBtns = 4;
 
 const int nBots = 0;
+
+int from;
 
 int curButton;
 
@@ -146,6 +148,7 @@ void Game::change(QString name)
     inmenu = false;
     inpve = false;
     inpvp = false;
+    inpvpl = false;
     inpvp1 = false;
     inpvp2 = false;
     insett = false;
@@ -168,6 +171,12 @@ void Game::change(QString name)
     if (name == "pvp")
     {
         inpvp = true;
+        return;
+    }
+
+    if (name == "pvpl")
+    {
+        inpvpl = true;
         return;
     }
 
@@ -233,13 +242,28 @@ void Game::switchButton(int n) // смена кнопки
     if (inpvp) // пвп
     {
         if (n < 0)
-            n = n + nPvpBtns;
-        if (n > nPvpBtns - 1)
-            n = n - nPvpBtns;
+            n = n + nPvPBtns;
+        if (n > nPvPBtns - 1)
+            n = n - nPvPBtns;
 
         curButton = n;
 
-        for (int i=0; i<nPvpBtns; i++)
+        for (int i=0; i<nPvPBtns; i++)
+            btns[i]->deselect();
+
+        btns[curButton]->select();
+    }
+
+    if (inpvpl)
+    {
+        if (n < 0)
+            n = n + nPvPLBtns;
+        if (n > nPvPLBtns - 1)
+            n = n - nPvPLBtns;
+
+        curButton = n;
+
+        for (int i=0; i<nPvPBtns; i++)
             btns[i]->deselect();
 
         btns[curButton]->select();
@@ -637,7 +661,7 @@ void Game::pvp()
     scene->addItem(title);
 
     // обычные кнопки
-    btns = new Button*[nPvpBtns];
+    btns = new Button*[nPvPBtns];
 
     // присоединиться к игре
     yPos += 150;
@@ -676,6 +700,7 @@ void Game::pvp1()
     setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     change("pvp1");
+    isHost = false;
 
     // точки
     int xPos;
@@ -718,7 +743,8 @@ void Game::pvp1()
     btns[0] = new Button(2, "Connect", width, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
-    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpConnect()));
+    //connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpConnect()));
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpLoading()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
 
@@ -736,6 +762,8 @@ void Game::pvp1()
 
 void Game::pvpConnect()
 {
+    QThread::sleep(3);
+
     if (tBoxes[0]->str != "")
         ServIP = tBoxes[0]->str;
 
@@ -753,12 +781,69 @@ void Game::pvpConnect()
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
+void Game::pvpLoading()
+{
+    if (isHost)
+        numPlayers = udBtns[0]->text->toPlainText().toInt();
+    else
+        numPlayers = 10;
+
+    scene->clear();
+    setBackgroundBrush(QBrush(QColor(229,229,229,255)));
+
+    change("pvpl");
+
+    int xPos, yPos;
+
+    // картинка
+    QGraphicsPixmapItem * pix = new QGraphicsPixmapItem(QPixmap(":/images/images/logo.png").scaled(400,400));
+    xPos = width()/2 - pix->boundingRect().width()/2;
+    yPos = 50;
+    pix->setPos(xPos,yPos);
+    scene->addItem(pix);
+
+    // надпись
+    QGraphicsTextItem *title = new QGraphicsTextItem(QString("STAY CALM. WAITING FOR OTHER PLAYERS."));
+    title->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont titleFont("Century Gothic",30);
+    title->setFont(titleFont);
+    xPos = width()/2 - title->boundingRect().width()/2;
+    yPos = yPos + pix->boundingRect().height() + 40;
+    title->setPos(xPos,yPos);
+    scene->addItem(title);
+
+    // плашка музыка
+    QString img = ":/images/images/menu/Panel.png";
+    int count = 2; // кол-во игроков
+    QString text = QString::number(count) + " of " + "2-" + QString::number(numPlayers);
+    text1 = new TextPanel(text, img, 250, 70);
+    xPos = width()/2 - text1->boundingRect().width()/2;
+    yPos = yPos + title->boundingRect().height() + 40;
+    text1->setPos(xPos,yPos);
+    scene->addItem(text1);
+
+    // начать игру
+    if (isHost)
+    {
+        btns = new Button*[nPvPLBtns];
+
+        btns[0] = new Button(0, "BATTLE!", 250, 70);
+        xPos = width()/2 - btns[0]->boundingRect().width()/2;
+        yPos = yPos + text1->boundingRect().height() + 10;
+        btns[0]->setPos(xPos,yPos);
+        scene->addItem(btns[0]);
+        connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
+        connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
+    }
+}
+
 void Game::pvp2()
 {
     scene->clear();
     setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     change("pvp2");
+    isHost = true;
 
     // точки
     int xPos;
@@ -801,11 +886,6 @@ void Game::pvp2()
     text1->setPos(xPos,yPos);
     scene->addItem(text1);
 
-    //const int num = 14;
-    //QString arr[num];
-    //for (int i=0; i<num; i++)
-     //   arr[i] = i;
-
     QString arr[9] = {"2","3","4","5","6","7","8","9","10"};
     // кол-во игроков
     int xPos1 = xPos + 200;
@@ -819,7 +899,8 @@ void Game::pvp2()
     btns[0] = new Button(3, "Create", 300, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
-    connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpLoading()));
+    //connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
 
@@ -1013,29 +1094,20 @@ void Game::createServ()
         QMessageBox::critical(this, "Ошибка", "Невозможно запустить сервер");
         return;
     }
-    waitForStart();
-}
-
-void Game::waitForStart()
-{
     tBoxes[0]->str = "";
     tBoxes[0]->update();
     tBoxes[1]->str = "";
     tBoxes[1]->update();
-    btns[1]->hide();
-    btns[0]->hide();
-    if (serv->state() == QProcess::Running)
-    {
-        QTimer::singleShot(3000, this, SLOT(pvpConnect()));
-    }
-    if (serv->state() == QProcess::Starting)
-    {
-        QTimer::singleShot(3000, this, SLOT(waitForStart()));
-    }
-    if (serv->state() == QProcess::NotRunning)
-    {
-        QMessageBox::critical(this, "Ошибка", "Не удалось запустить сервер");
-    }
+    connect(serv, SIGNAL(started()), this, SLOT(pvpConnect()));
+    /*tcpSocket = new QTcpSocket();
+    tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
+    tcpSocket->waitForConnected();
+    udpSocket = new QUdpSocket(this);
+    udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
+    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
+    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
+    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));*/
 }
 
 void Game::pvpLoad(QString filename)
@@ -1872,6 +1944,7 @@ void Game::close()
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
+                player->isFiring = 0;
                 if (serv) serv->kill();
                 exit(0);
             }
@@ -1892,6 +1965,7 @@ void Game::closeEvent(QCloseEvent *)
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
+                player->isFiring = 0;
                 if (serv) serv->kill();
                 exit(0);
             }
