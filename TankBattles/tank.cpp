@@ -345,6 +345,20 @@ void Tank::randomSpawn()
     if (isBot)
     {
         int n = 0;
+        // удаление файлов весом менее 4 кб
+        if (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot"))
+        {
+            while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot"))
+            {
+                QFileInfo fi("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot");
+                if (fi.size() < 4000)
+                    QFile("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot").remove();
+
+                n++;
+            }
+        }
+
+        n = 0;
         if (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot"))
         {
             while (QFile::exists("bots/" + game->mapname + "/spawn" + QString::number(num) + "_" + QString::number(n) + ".bot"))

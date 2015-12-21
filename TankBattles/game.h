@@ -129,6 +129,7 @@ private:
     bool isHost;
     int numPlayers;
 
+    QGraphicsTextItem *waitText;
 
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;

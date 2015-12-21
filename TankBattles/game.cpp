@@ -946,21 +946,21 @@ void Game::pvpLoading()
     scene->addItem(pix);
 
     // надпись
-    QGraphicsTextItem *title = new QGraphicsTextItem(QString("STAY CALM. WAITING FOR OTHER PLAYERS."));
-    title->setDefaultTextColor(QColor(71, 71, 71, 255));
-    QFont titleFont("Century Gothic",30);
-    title->setFont(titleFont);
-    xPos = width()/2 - title->boundingRect().width()/2;
+    waitText = new QGraphicsTextItem(QString("STAY CALM. WAITING FOR OTHER PLAYERS."));
+    waitText->setDefaultTextColor(QColor(71, 71, 71, 255));
+    QFont waitTextFont("Century Gothic",30);
+    waitText->setFont(waitTextFont);
+    xPos = width()/2 - waitText->boundingRect().width()/2;
     yPos = yPos + pix->boundingRect().height() + 40;
-    title->setPos(xPos,yPos);
-    scene->addItem(title);
+    waitText->setPos(xPos,yPos);
+    scene->addItem(waitText);
 
     // плашка кол-во игроков
     QString img = ":/images/images/menu/Panel.png";
     QString text = "... of " + QString::number(pCnt);
     text1 = new TextPanel(text, img, 250, 70);
     xPos = width()/2 - text1->boundingRect().width()/2;
-    yPos = yPos + title->boundingRect().height() + 40;
+    yPos = yPos + waitText->boundingRect().height() + 40;
     text1->setPos(xPos,yPos);
     scene->addItem(text1);
 
