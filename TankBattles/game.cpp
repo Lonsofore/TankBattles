@@ -36,7 +36,7 @@ const int nSett1Btns = 2;
 const int nSett2Btns = 2;
 const int nSett2UpDn = 3;
 const int nPvEBtns = 2;
-const int nPvEUpDn = 2;
+const int nPvEUpDn = 3;
 const int nPvPBtns = 3;
 const int nPvPLBtns = 1;
 const int nPvP1Btns = 2;
@@ -270,10 +270,14 @@ void Game::switchButton(int n) // смена кнопки
             break;
 
             case 2:
-                btns[0]->select();
+                udBtns[2]->select();
             break;
 
             case 3:
+                btns[0]->select();
+            break;
+
+            case 4:
                 btns[1]->select();
             break;
         }
@@ -577,7 +581,7 @@ void Game::pve()
     scene->addItem(text1);
 
     // кол-во игроков
-    const int arrnum = spawns-1;
+    const int arrnum = spawns;
     QString *arr;
     arr = new QString[arrnum];
     for (int i=0; i<arrnum; i++)
@@ -590,26 +594,43 @@ void Game::pve()
     connect(udBtns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(udBtns[0],SIGNAL(back()),this,SLOT(menu()));
 
-    // плашка интерфейс
+    // плашка создавать ли ботов
     img = ":/images/images/menu/Panel.png";
-    text2 = new TextPanel("Theme", img, 210, 70);
+    text2 = new TextPanel("Create?", img, 210, 70);
     yPos += 80;
     text2->setPos(xPos,yPos);
     scene->addItem(text2);
 
-    // темная карта или светлая
+    // создавать ли ботов
     QString arr1[2];
-    arr1[0] = "light";
-    arr1[1] = "dark";
+    arr1[0] = "no";
+    arr1[1] = "yes";
     udBtns[1] = new numUpDown(1, arr1, 2, 0, 140, 70);
     udBtns[1]->setPos(xPos1,yPos);
     scene->addItem(udBtns[1]);
     connect(udBtns[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(udBtns[1],SIGNAL(back()),this,SLOT(menu()));
 
+    // плашка интерфейс
+    img = ":/images/images/menu/Panel.png";
+    text3 = new TextPanel("Theme", img, 210, 70);
+    yPos += 80;
+    text3->setPos(xPos,yPos);
+    scene->addItem(text3);
+
+    // темная карта или светлая
+    QString arr2[2];
+    arr2[0] = "light";
+    arr2[1] = "dark";
+    udBtns[2] = new numUpDown(2, arr2, 2, 0, 140, 70);
+    udBtns[2]->setPos(xPos1,yPos);
+    scene->addItem(udBtns[2]);
+    connect(udBtns[2],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+    connect(udBtns[2],SIGNAL(back()),this,SLOT(menu()));
+
     // создать игру
     yPos += 80;
-    btns[0] = new Button(2, "Start!", 350, 70);
+    btns[0] = new Button(3, "Start!", 350, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
     connect(btns[0],SIGNAL(clicked()),this,SLOT(gpve()));
@@ -618,7 +639,7 @@ void Game::pve()
 
     // вернуться назад
     yPos += 80;
-    btns[1] = new Button(3, "Back", 350, 70);
+    btns[1] = new Button(4, "Back", 350, 70);
     btns[1]->setPos(xPos,yPos);
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
@@ -635,8 +656,14 @@ void Game::gpve()
     // кол-во ботов
     nBots = udBtns[0]->text->toPlainText().toInt();
 
+    // создавать ли ботов
+    if (udBtns[1]->text->toPlainText() == "no")
+        createBots = false;
+    else
+        createBots = true;
+
     // тема карты
-    if (udBtns[1]->text->toPlainText() == "light")
+    if (udBtns[2]->text->toPlainText() == "light")
         darkMode = false;
     else
         darkMode = true;

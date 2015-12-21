@@ -121,6 +121,7 @@ private:
     // текстовые плашки
     TextPanel *text1;
     TextPanel *text2;
+    TextPanel *text3;
 
     // боты
     Bot **bots;
