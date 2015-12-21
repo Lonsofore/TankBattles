@@ -728,8 +728,6 @@ void Game::pvp1()
 
 void Game::pvpConnect()
 {
-    QThread::sleep(3);
-
     if (tBoxes[0]->str != "")
         ServIP = tBoxes[0]->str;
 
@@ -986,20 +984,29 @@ void Game::createServ()
         QMessageBox::critical(this, "Ошибка", "Невозможно запустить сервер");
         return;
     }
+    waitForStart();
+}
+
+void Game::waitForStart()
+{
     tBoxes[0]->str = "";
     tBoxes[0]->update();
     tBoxes[1]->str = "";
     tBoxes[1]->update();
-    connect(serv, SIGNAL(started()), this, SLOT(pvpConnect()));
-    /*tcpSocket = new QTcpSocket();
-    tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
-    tcpSocket->waitForConnected();
-    udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
-    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
-    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));*/
+    btns[1]->hide();
+    btns[0]->hide();
+    if (serv->state() == QProcess::Running)
+    {
+        QTimer::singleShot(3000, this, SLOT(pvpConnect()));
+    }
+    if (serv->state() == QProcess::Starting)
+    {
+        QTimer::singleShot(3000, this, SLOT(waitForStart()));
+    }
+    if (serv->state() == QProcess::NotRunning)
+    {
+        QMessageBox::critical(this, "Ошибка", "Не удалось запустить сервер");
+    }
 }
 
 void Game::pvpLoad(QString filename)
@@ -1836,7 +1843,6 @@ void Game::close()
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
-                player->isFiring = 0;
                 if (serv) serv->kill();
                 exit(0);
             }
@@ -1857,7 +1863,6 @@ void Game::closeEvent(QCloseEvent *)
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
-                player->isFiring = 0;
                 if (serv) serv->kill();
                 exit(0);
             }

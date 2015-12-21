@@ -75,7 +75,7 @@ public:
 private slots:
     void SendData();
     void readResponse();
-
+    void waitForStart();
     void close();
     void closeEvent(QCloseEvent *);
 
