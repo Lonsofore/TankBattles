@@ -62,7 +62,7 @@ Game::Game(QWidget *parent)
     int height = 600;
 
     inMP = 0;
-
+    gameStarted = 0;
     darkMode = false;
     createBots = false;
 
@@ -743,8 +743,7 @@ void Game::pvp1()
     btns[0] = new Button(2, "Connect", width, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
-    //connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpConnect()));
-    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpLoading()));
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpConnect()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
 
@@ -762,8 +761,6 @@ void Game::pvp1()
 
 void Game::pvpConnect()
 {
-    QThread::sleep(3);
-
     if (tBoxes[0]->str != "")
         ServIP = tBoxes[0]->str;
 
@@ -773,11 +770,6 @@ void Game::pvpConnect()
     tcpSocket = new QTcpSocket();
     tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
     tcpSocket->waitForConnected();
-    /*udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
-    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
-    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));*/
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));
 }
 
@@ -814,8 +806,7 @@ void Game::pvpLoading()
 
     // плашка музыка
     QString img = ":/images/images/menu/Panel.png";
-    int count = 2; // кол-во игроков
-    QString text = QString::number(count) + " of " + "2-" + QString::number(numPlayers);
+    QString text = "... of " + QString::number(pCnt);
     text1 = new TextPanel(text, img, 250, 70);
     xPos = width()/2 - text1->boundingRect().width()/2;
     yPos = yPos + title->boundingRect().height() + 40;
@@ -832,8 +823,25 @@ void Game::pvpLoading()
         yPos = yPos + text1->boundingRect().height() + 10;
         btns[0]->setPos(xPos,yPos);
         scene->addItem(btns[0]);
-        connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
+        connect(btns[0],SIGNAL(clicked()),this,SLOT(beginGame()));
         connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
+    }
+}
+
+void Game::beginGame()
+{
+    if(tcpSocket->state() == QAbstractSocket::ConnectedState)
+    {       //Сигнал старта игры
+            QByteArray data = "SYSTEM START";
+            tcpSocket->write(IntToArray(data.size())); //Записываем размер данных
+            tcpSocket->write(data); //Записываем размер данных
+            tcpSocket->waitForBytesWritten();
+            return;
+
+    }
+    else
+    {
+        return;
     }
 }
 
@@ -843,7 +851,7 @@ void Game::pvp2()
     setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
     change("pvp2");
-    isHost = true;
+
 
     // точки
     int xPos;
@@ -899,8 +907,8 @@ void Game::pvp2()
     btns[0] = new Button(3, "Create", 300, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
-    connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpLoading()));
-    //connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
+    //connect(btns[0],SIGNAL(clicked()),this,SLOT(pvpLoading()));
+    connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
     connect(btns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(btns[0],SIGNAL(back()),this,SLOT(pvp()));
 
@@ -924,11 +932,67 @@ void Game::createServ()
     else pathToServ += "/server"; //Если не винда
     QString path = QDir::currentPath() + "/maps/";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
-    QFile file(fileName); //Открывем файл карты, на которой будет проходить игра
-    //Проверка карты на соответствие стандартам
+    int cnt = fileCheck(fileName);
+    if (cnt > 0)
+    {
+        QString map = fileName.split('/').last(); //Имя карты
+        if (tBoxes[0]->str != "") tcpPort = tBoxes[0]->str.toInt();
+        if (tBoxes[1]->str != "") udpPort = tBoxes[1]->str.toInt();
+        if ((udBtns[0]->text->toPlainText().toInt()) <= cnt && (udBtns[0]->text->toPlainText().toInt() <= 10))
+        {
+            QStringList arguments;
+            arguments << QString::number(tcpPort) << QString::number(udpPort) << map <<
+                         QString::number(udBtns[0]->text->toPlainText().toInt()); //Аргументы для сервера
+            serv = new QProcess(this);
+            serv->start(pathToServ, arguments); //Запуск сервера
+            ServIP = "127.0.0.1"; //Так как сервер запущен на этой машине
+            if (serv->state() == QProcess::NotRunning) //Если не запустился
+            {
+                QMessageBox::critical(this, "Ошибка", "Невозможно запустить сервер");
+                return;
+            }
+            isHost = true;
+            waitForStart();
+        }
+    }
+    else
+    {
+        toMenu();
+    }
+}
+
+void Game::waitForStart()
+{
+    tBoxes[0]->str = "";
+    tBoxes[0]->update();
+    tBoxes[0]->update();
+    tBoxes[1]->str = "";
+    tBoxes[1]->str = "";
+    tBoxes[1]->update();
+    tBoxes[1]->update();
+    btns[1]->hide();
+    btns[0]->hide();
+    if (serv->state() == QProcess::Running)
+    {
+        QTimer::singleShot(3000, this, SLOT(pvpConnect()));
+    }
+    if (serv->state() == QProcess::Starting)
+    {
+        QTimer::singleShot(3000, this, SLOT(waitForStart()));
+    }
+    if (serv->state() == QProcess::NotRunning)
+    {
+        QMessageBox::critical(this, "Ошибка", "Не удалось запустить сервер");
+    }
+}
+
+int Game::fileCheck(QString filen)
+{
+    QFile file(filen); //Открывем файл карты, на которой будет проходить игра
     if(!file.open(QIODevice::ReadOnly))
     {
-        if (fileName != "") {QMessageBox::information(this, "Ошибка", "Не удалось прочитать указанный файл");}
+        if (filen != "") {QMessageBox::information(this, "Ошибка", "Не удалось прочитать указанный файл");}
+        return 0;
     }
     else
     {
@@ -948,7 +1012,7 @@ void Game::createServ()
             if (rowcnt > 600 || colcnt > 600)
             {
                 QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nСлишком большой размер карты.");
-                return;
+                return 0;
             }
             else
             {
@@ -993,7 +1057,7 @@ void Game::createServ()
                                            delete[] spcord[i];
                                        }
                                        file.close();
-                                       return;
+                                       return 0;
                                    }
                                 }
                             }
@@ -1009,7 +1073,7 @@ void Game::createServ()
                                     delete[] spcord[i];
                                 }
                                 file.close();
-                                return;
+                                return 0;
                             }
                             r = r+1; //Строка прочитанна
                             if (r>=rowcnt) break;
@@ -1033,7 +1097,7 @@ void Game::createServ()
                                        delete[] spcord[i];
                                    }
                                    file.close();
-                                   return;
+                                   return 0;
                                }
                        }
                        else
@@ -1048,7 +1112,7 @@ void Game::createServ()
                                    delete[] spcord[i];
                                }
                                file.close();
-                               return;
+                               return 0;
                        }
                        for (i = 0; i < rowcnt; i++)
                        {
@@ -1064,204 +1128,181 @@ void Game::createServ()
                 {
                     file.close();
                     QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nПервая строка файла содержит ошибочные значения.");
-                    return;
+                    return 0;
                 }
             }
             file.close();
             if ((r != rowcnt) || (spwn != spwncnt)) //Если кол-во строк или точек спавна не равно указанному в начале файла кол-ву
             {
                 QMessageBox::critical(this, "Ошибка загрузки", "Файл не может быть загружен!\nИнформация в первой строке файла не соответствует действительности.");
-                return;
+                return 0;
+            }
+            else
+            {
+                return spwncnt;
             }
         }
         else
         {
             QMessageBox::critical(this, "Ошибка загрузки", "Неправильный формат входного файла!\nНеправильный формат первой строки файла.");
-            return;
+            return 0;
         }
     }
-    //Конец проверки
-    QString map = fileName.split('/').last(); //Имя карты
-    if (tBoxes[0]->str != "") tcpPort = tBoxes[0]->str.toInt();
-    if (tBoxes[1]->str != "") udpPort = tBoxes[1]->str.toInt();
-    QStringList arguments;
-    arguments << QString::number(tcpPort) << QString::number(udpPort) << map; //Аргументы для сервера
-    serv = new QProcess(this);
-    serv->start(pathToServ, arguments); //Запуск сервера
-    ServIP = "127.0.0.1"; //Так как сервер запущен на этой машине
-    if (serv->state() == QProcess::NotRunning) //Если не запустился
-    {
-        QMessageBox::critical(this, "Ошибка", "Невозможно запустить сервер");
-        return;
-    }
-    tBoxes[0]->str = "";
-    tBoxes[0]->update();
-    tBoxes[1]->str = "";
-    tBoxes[1]->update();
-    connect(serv, SIGNAL(started()), this, SLOT(pvpConnect()));
-    /*tcpSocket = new QTcpSocket();
-    tcpSocket->connectToHost(ServIP, tcpPort); //Подключение
-    tcpSocket->waitForConnected();
-    udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::Any, tcpPort, QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
-    udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
-    udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(readResponse()));*/
 }
 
-void Game::pvpLoad(QString filename)
+void Game::pvpLoad()
 {
-    scene->clear();
-
-    // файл открываем
-    QString path = QDir::currentPath() + "/maps/" + filename;
-    //QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
-
-    // проверка
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!gameStarted)
     {
-        menu();
-        return;
-    }
+        scene->clear();
+        QString filename = map;
+        // файл открываем
+        QString path = QDir::currentPath() + "/maps/" + filename;
 
-    // фон карты
-    if (darkMode)
-        setBackgroundBrush(QBrush(QColor(33,33,33,255)));
-    else
-        setBackgroundBrush(QBrush(QColor(229,229,229,255)));
+        // проверка
+        QFile file(path);
+        file.open(QIODevice::ReadOnly);
+        // фон карты
+        if (darkMode)
+            setBackgroundBrush(QBrush(QColor(33,33,33,255)));
+        else
+            setBackgroundBrush(QBrush(QColor(229,229,229,255)));
 
-    QTextStream in(&file);
+        QTextStream in(&file);
 
-    //берем первую строку
-    QString line = in.readLine();
-    QStringList list1;
-    list1 = line.split(" ");
-    // размеры карты
-    yBlocks = list1[0].toInt();
-    xBlocks = list1[1].toInt();
-    // кол-во точек спавна
-    spawns = list1[2].toInt();
-    spawnPoints=new QPoint*[spawns];
-
-    QString img;
-    int width = blockSize; // размер блоков
-    int height = blockSize;
-    int x,y;
-
-    dop = 2*width; // дополнительное кол-во блоков за картой
-    scene->setSceneRect(0,0,xBlocks*width+dop*2,yBlocks*height+dop*2); // разрешение сцены
-
-    // если разрешение, выставленное игроком, больше того, что на карте
-    if (xBlocks*width <= maxwidth) // по ширине
-        setFixedWidth(xBlocks*width);
-    if (yBlocks*height <= maxheight) // по высоте
-        setFixedHeight(yBlocks*height);
-
-    moveToCenter();
-
-    // создание линий ограничения
-    int pwidth = 10; // ширина линии
-    QPen pen;
-    pen.setStyle(Qt::SolidLine);
-
-    if (darkMode)
-        pen.setColor(QColor(55, 55, 55, 255));
-    else
-        pen.setColor(QColor(179, 179, 179, 255));
-
-    pen.setJoinStyle(Qt::MiterJoin);
-    pen.setWidth(pwidth);
-
-    int pp = pwidth + 4; // чтобы линии были не вплотную к блокам
-    // чтобы понятнее было:
-    // p1 p2
-    // p4 p3
-    QPointF p1(dop-pp, dop-pp);
-    QPointF p2(xBlocks*width+dop+pp, dop-pp);
-    QPointF p3(xBlocks*width+dop+pp, yBlocks*height+dop+pp);
-    QPointF p4(dop-pp, yBlocks*height+dop+pp);
-    scene->addLine(QLineF(p1,p2),pen); // тут можно сделать setZValue
-    scene->addLine(QLineF(p2,p3),pen);
-    scene->addLine(QLineF(p3,p4),pen);
-    scene->addLine(QLineF(p4,p1),pen);
-
-    // считывание карты из файла
-    int num = 0;
-    for (int i = 0; i < yBlocks; i++)
-    {
-        line = in.readLine();
+        //берем первую строку
+        QString line = in.readLine();
+        QStringList list1;
         list1 = line.split(" ");
-        for (int j = 0; j < xBlocks; j++)
+        // размеры карты
+        yBlocks = list1[0].toInt();
+        xBlocks = list1[1].toInt();
+        // кол-во точек спавна
+        spawns = list1[2].toInt();
+        spawnPoints=new QPoint*[spawns];
+
+        QString img;
+        int width = blockSize; // размер блоков
+        int height = blockSize;
+        int x,y;
+
+        dop = 2*width; // дополнительное кол-во блоков за картой
+        scene->setSceneRect(0,0,xBlocks*width+dop*2,yBlocks*height+dop*2); // разрешение сцены
+
+        // если разрешение, выставленное игроком, больше того, что на карте
+        if (xBlocks*width <= maxwidth) // по ширине
+            setFixedWidth(xBlocks*width);
+        if (yBlocks*height <= maxheight) // по высоте
+            setFixedHeight(yBlocks*height);
+
+        moveToCenter();
+
+        // создание линий ограничения
+        int pwidth = 10; // ширина линии
+        QPen pen;
+        pen.setStyle(Qt::SolidLine);
+
+        if (darkMode)
+            pen.setColor(QColor(55, 55, 55, 255));
+        else
+            pen.setColor(QColor(179, 179, 179, 255));
+
+        pen.setJoinStyle(Qt::MiterJoin);
+        pen.setWidth(pwidth);
+
+        int pp = pwidth + 4; // чтобы линии были не вплотную к блокам
+        // чтобы понятнее было:
+        // p1 p2
+        // p4 p3
+        QPointF p1(dop-pp, dop-pp);
+        QPointF p2(xBlocks*width+dop+pp, dop-pp);
+        QPointF p3(xBlocks*width+dop+pp, yBlocks*height+dop+pp);
+        QPointF p4(dop-pp, yBlocks*height+dop+pp);
+        scene->addLine(QLineF(p1,p2),pen); // тут можно сделать setZValue
+        scene->addLine(QLineF(p2,p3),pen);
+        scene->addLine(QLineF(p3,p4),pen);
+        scene->addLine(QLineF(p4,p1),pen);
+
+        // считывание карты из файла
+        int num = 0;
+        for (int i = 0; i < yBlocks; i++)
         {
-            if (list1[j] != "S" && list1[j] != "0" && list1[j] != "")
+            line = in.readLine();
+            list1 = line.split(" ");
+            for (int j = 0; j < xBlocks; j++)
             {
-                Block *block = new Block(list1[j].toInt());
-                x = width * j + dop;
-                y = height * i + dop;
-                img = ":/images/images/blocks/" + list1[j] + ".png";
-
-                if (darkMode)
+                if (list1[j] != "S" && list1[j] != "0" && list1[j] != "")
                 {
-                    QImage img1(img);
-                    img1 = setImageLightness(img1, 10);
-                    QPixmap pix(QPixmap::fromImage(img1));
-                    block->setPixmap(pix.scaled(width,height));
+                    Block *block = new Block(list1[j].toInt());
+                    x = width * j + dop;
+                    y = height * i + dop;
+                    img = ":/images/images/blocks/" + list1[j] + ".png";
+
+                    if (darkMode)
+                    {
+                        QImage img1(img);
+                        img1 = setImageLightness(img1, 10);
+                        QPixmap pix(QPixmap::fromImage(img1));
+                        block->setPixmap(pix.scaled(width,height));
+                    }
+                    else
+                        block->setPixmap(QPixmap(img).scaled(width,height));
+
+                    block->setPos(x,y);
+                    scene->addItem(block);
                 }
-                else
-                    block->setPixmap(QPixmap(img).scaled(width,height));
 
-                block->setPos(x,y);
-                scene->addItem(block);
-            }
-
-            if (list1[j] == "S")
-            {
-                // создание массива точек для спавна
-                spawnPoints[num] = new QPoint(width*j+dop,height*i+dop);
-                num++;
+                if (list1[j] == "S")
+                {
+                    // создание массива точек для спавна
+                    spawnPoints[num] = new QPoint(width*j+dop,height*i+dop);
+                    num++;
+                }
             }
         }
+        file.close();
+
+        // тестовый танк
+        *enmy = new Tank[10];
+        for (int i = 0; i< pCnt-1; i++)
+        {
+            enmy[i] = new Tank();
+            scene->addItem(enmy[i]);
+            scene->addItem(enmy[i]->head);
+            enmy[i]->randomSpawn();
+        }
+        //enmy->changePos(200,100);
+        //enmy[0]->changePos(0, 0);
+        // создание игрока
+        player = new Player();
+        scene->addItem(player);
+        scene->addItem(player->head);
+        connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
+        connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
+        connect(player, SIGNAL(reSpawn()), this, SLOT(SendData()));
+        emit player->reSpawn();
+
+        // очки
+        //score = new Score();
+        //scene->addItem(score);
+
+        // музыка
+        QMediaPlayer * music = new QMediaPlayer();
+        QMediaPlaylist * playlist = new QMediaPlaylist();
+        playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+        playlist->setPlaybackMode(QMediaPlaylist::Loop);
+        music->setPlaylist(playlist);
+        //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
+        music->setVolume(vmusic); // уровень громкости (из 100)
+        music->play();
+
+        change("pve");
+
+        //Подготовка к приему данных
+        gameStarted = 1;
+        connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+        SendData();
     }
-    file.close();
-
-    // тестовый танк
-    enmy = new Tank();
-    scene->addItem(enmy);
-    scene->addItem(enmy->head);
-    enmy->randomSpawn();
-    //enmy->changePos(200,100);
-
-    // создание игрока
-    player = new Player();
-    scene->addItem(player);
-    scene->addItem(player->head);
-    connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
-    connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
-    connect(player, SIGNAL(reSpawn()), this, SLOT(SendData()));
-    emit player->reSpawn();
-
-    // очки
-    //score = new Score();
-    //scene->addItem(score);
-
-    // музыка
-    QMediaPlayer * music = new QMediaPlayer();
-    QMediaPlaylist * playlist = new QMediaPlaylist();
-    playlist->addMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::Loop);
-    music->setPlaylist(playlist);
-    //music->setMedia(QUrl("qrc:/sounds/sounds/ambient.mp3"));
-    music->setVolume(vmusic); // уровень громкости (из 100)
-    music->play();
-
-    change("pve");
-
-    //Подготовка к приему данных
-
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-    SendData();
 }
 
 void Game::settings()
@@ -1756,7 +1797,11 @@ void Game::gSettings()
 
 void Game::toMenu()
 {
-    // тут сделать сигнал, что игрок отключился
+    QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
+    tcpSocket->write(IntToArray(data.size()));
+    tcpSocket->write(data);
+    tcpSocket->waitForBytesWritten();
+    if (isHost) {serv->kill(); isHost = 0;}
     scene->setSceneRect(0,0,maxwidth,maxheight);
     setFixedSize(maxwidth, maxheight);
     menu();
@@ -1829,9 +1874,7 @@ QImage Game::setImageLightness(QImage img, int lightness)
 }
 
 void Game::processPendingDatagrams()
-{   int otherplayer; //Временный костыль
-    if (usrid == 1) otherplayer = 0;
-    if (usrid == 0) otherplayer = 1;
+{   int otherplayer;
     while (udpSocket->hasPendingDatagrams())
     {
         QByteArray datagram;
@@ -1839,25 +1882,64 @@ void Game::processPendingDatagrams()
         udpSocket->readDatagram(datagram.data(), datagram.size());
         if (datagram.split(' ').at(1) != "SYSTEM") //Если не системное сообщение
         {
-            QList<QByteArray> playersList;
-            playersList = datagram.split('|');
-            //Здесь будет цикл
-            QString temp;
-            temp +=QString::fromLatin1(playersList.at(otherplayer).data());
-            QList<QString> dataList;
-            dataList =  temp.split(' ');
-                enmy->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
-                enmy->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
-                if (dataList.at(5).toInt() == 1) enmy->fire(); //Стреляем, если нужно
-                enmy->health = dataList.at(6).toInt(); //Устанавливаем здоровье
+            if (!gameStarted) {QTimer::singleShot(1000, this, SLOT(pvpLoad()));}
+            else
+            {
+                QList<QByteArray> playersList;
+                playersList = datagram.split('|');
+                //Здесь будет цикл
+                for (int i = 0; i<pCnt; i++)
+                {
+                    if (i != usrid)
+                    {
+                        if (i < usrid) otherplayer = i;
+                        if (i > usrid) otherplayer = i-1;
+                        QString temp;
+                        temp +=QString::fromLatin1(playersList.at(i).data());
+                        QList<QString> dataList;
+                        dataList =  temp.split(' ');
+                        enmy[otherplayer]->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
+                        enmy[otherplayer]->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
+                        if (dataList.at(5).toInt() == 1) enmy[otherplayer]->fire(); //Стреляем, если нужно
+                        enmy[otherplayer]->health = dataList.at(6).toInt(); //Устанавливаем здоровье
+                    }
+                }
+            }
         }
         else
         {
             if (datagram.split(' ').at(2) == "EXIT")
             {
-
-                enmy->hide(); //Иначе падает с ошибкой сегментации
-                enmy->head->hide();
+                if (gameStarted)
+                {
+                    int exid = datagram.split(' ').at(0).toInt();
+                    if (exid < usrid)
+                    {
+                        enmy[exid]->hide(); //Иначе падает с ошибкой сегментации
+                        enmy[exid]->head->hide();
+                    }
+                    else
+                    {
+                        enmy[exid-1]->hide();
+                        enmy[exid-1]->head->hide();
+                    }
+                }
+            }
+            if (datagram.split(' ').at(2) == "STARTED")
+            {
+                if (!gameStarted)
+                {
+                    pCnt = datagram.split(' ').at(0).toInt();
+                    pvpLoad();
+                }
+            }
+            if (datagram.split(' ').at(2) == "CONNECTED")
+            {
+                if (!gameStarted)
+                {
+                    //QString text = QString::number(datagram.split(' ').at(0).toInt()) + " of " + QString::number(pCnt);
+                    //text1->setPlainText(text);
+                }
             }
         }
     }
@@ -1920,12 +2002,25 @@ void Game::readResponse() //Читаем ответ от сервера посл
                     response = data.split(' ');
                     usrid = response.at(0).toInt(); /*Получен id от сервера*/
                     inMP = 1; //В МП
+                    pCnt = response.at(3).toInt();
                     udpSocket = new QUdpSocket(this); //Подготовка к приему данных
                     udpSocket->bind(QHostAddress::Any, response.at(1).toInt(), QUdpSocket::ShareAddress| QUdpSocket::ReuseAddressHint);
                     udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
                     udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
-                    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-                    pvpLoad(response.at(2));
+                    map = response.at(2);
+                    if (fileCheck(response.at(2)) == 0 || fileCheck(response.at(2)) < pCnt ) //Жизнь-тлен: карта не загрузилась
+                    {
+                        QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
+                        tcpSocket->write(IntToArray(data.size()));
+                        tcpSocket->write(data);
+                        tcpSocket->waitForBytesWritten();
+                        toMenu();
+                    }
+                    else
+                    {
+                        pvpLoading();
+                        connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
+                    }
                 }
             }
         }
@@ -1944,8 +2039,7 @@ void Game::close()
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
-                player->isFiring = 0;
-                if (serv) serv->kill();
+                if (isHost) {serv->kill(); isHost = 0;}
                 exit(0);
             }
         }
@@ -1965,8 +2059,7 @@ void Game::closeEvent(QCloseEvent *)
                 tcpSocket->write(IntToArray(data.size()));
                 tcpSocket->write(data);
                 tcpSocket->waitForBytesWritten();
-                player->isFiring = 0;
-                if (serv) serv->kill();
+                if (isHost) {serv->kill(); isHost = 0;}
                 exit(0);
             }
         }

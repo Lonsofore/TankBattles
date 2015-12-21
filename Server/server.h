@@ -15,15 +15,16 @@ class server : public QObject
 
 public:
     server();
-    server(int tport, int uport, bool isStartdByClient, QString rmap);
+    server(int tport, int uport, bool isStartdByClient, QString rmap, int max_clients);
 private:
     QTcpServer *tcpServer;
     QTcpSocket *tcpSocket;
     QNetworkSession *networkSession;
     QUdpSocket *udpSocket;
     void broadcastDatagram(); //Рассылка данных
-    int x[2], y[2], TAngle[2], HAngle[2], health[2], tcpPort, udpPort, cid, ConnectedCnt, DisConnCnt; //Данные об игроках, порты, id текущего игрока, кол-во подключ. и отключ. игроков
-    bool isFiring[2], gameStarted; //Стрельба Игра_началась
+    int x[16], y[16], TAngle[16], HAngle[16], health[16], tcpPort, udpPort, cid, ConnectedCnt, DisConnCnt; //Данные об игроках, порты, id текущего игрока, кол-во подключ. и отключ. игроков
+    bool isFiring[16], gameStarted; //Стрельба Игра_началась
+    int max_cl;
     QString map; //Карта
     QHash<QTcpSocket*, QByteArray*> buffers; //Буфер для данных
     QHash<QTcpSocket*, qint32*> sizes;

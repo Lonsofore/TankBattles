@@ -59,7 +59,7 @@ public:
 
     // просто танк
     int numtank;
-    Tank * enmy;
+    Tank * enmy[10];
 
     void moveToCenter();
     void change(QString name);
@@ -75,7 +75,8 @@ public:
 private slots:
     void SendData();
     void readResponse();
-
+    void waitForStart();
+    void beginGame();
     void close();
     void closeEvent(QCloseEvent *);
 
@@ -92,7 +93,8 @@ public slots:
     void createServ();
     void pvpConnect(); // подключение
     void pvpLoading();
-    void pvpLoad(QString filename); //Загрузка карты для MP
+    void pvpLoad(); //Загрузка карты для MP
+    int fileCheck(QString filen); //Проверка карты на соответствие стандартам
 
     void settings();  // список настроек
     void pSettings(); // настройки игрока
@@ -130,8 +132,11 @@ private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока
-    bool isrecieving, issending, inMP;
+    int pCnt;
+    QString map;
+    bool isrecieving, issending, inMP, gameStarted;
     QProcess *serv;
+
 
 };
 

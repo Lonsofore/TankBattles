@@ -4,17 +4,18 @@
 #include "server.h"
 QString GroupIP = "255.255.255.255";
 static inline QByteArray IntToArray(qint32 source);
-server::server(int tport, int uport, bool isStartdByClient, QString rmap)
+server::server(int tport, int uport, bool isStartdByClient, QString rmap, int max_clients)
 {   tcpServer = new QTcpServer();
     udpSocket = new QUdpSocket();
     tcpPort = tport;
     udpPort = uport;
+    max_cl = max_clients;
     gameStarted = false;
     ConnectedCnt = 0;
     DisConnCnt = 0;
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
     tcpServer->listen(QHostAddress::Any, tcpPort);
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < max_cl; i++)
     {
         x[i] = 0;
         y[i] = 0;
@@ -28,19 +29,20 @@ server::server(int tport, int uport, bool isStartdByClient, QString rmap)
 void server::broadcastDatagram()
 {
     std::cout << "SENDING: X=" << x[cid] << ",Y=" << y[cid] << " FROM CLIENT # " << cid << "\n";
-    QByteArray datagram = QByteArray::number(0) + ' ' + QByteArray::number(x[0]) + ' ' + QByteArray::number(y[0])+ ' ' +
-            QByteArray::number(TAngle[0]) + ' ' + QByteArray::number(HAngle[0]) + ' ' + QByteArray::number(isFiring[0]) +
-            ' ' + QByteArray::number(health[0]) + '|';
-       datagram += QByteArray::number(1) + ' ' + QByteArray::number(x[1]) + ' ' + QByteArray::number(y[1])+ ' ' +
-               QByteArray::number(TAngle[1]) + ' ' + QByteArray::number(HAngle[1]) + ' ' + QByteArray::number(isFiring[1]) +
-               ' ' + QByteArray::number(health[1]) + '|';
+    QByteArray datagram;
+    for (int i = 0; i < max_cl; i++)
+    {
+        datagram += QByteArray::number(i) + ' ' + QByteArray::number(x[i]) + ' ' + QByteArray::number(y[i])+ ' ' +
+                       QByteArray::number(TAngle[i]) + ' ' + QByteArray::number(HAngle[i]) + ' ' + QByteArray::number(isFiring[i]) +
+                       ' ' + QByteArray::number(health[i]) + '|';
+    }
     udpSocket->writeDatagram(datagram.data(), datagram.size(),
                              QHostAddress(GroupIP), udpPort);
 }
 
 void server::dataRecieved(QByteArray data)
 {
-    if (ConnectedCnt >= 2 && DisConnCnt != ConnectedCnt) gameStarted = 1;
+    //if (ConnectedCnt >= max_cl && DisConnCnt != ConnectedCnt) gameStarted = 1;
     QList<QByteArray> list;
     list = data.split(' ');
     cid = list.at(0).toInt();
@@ -66,7 +68,7 @@ void server::dataRecieved(QByteArray data)
             {
                 ConnectedCnt = 0;
                 DisConnCnt = 0;
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < max_cl; i++)
                 {
                     x[i] = 0;
                     y[i] = 0;
@@ -75,6 +77,12 @@ void server::dataRecieved(QByteArray data)
                     isFiring[i] = 0;
                 }
             } //Если все отключились, то обнуляем сервер
+        }
+        if (list.at(2) == "START")
+        {
+            gameStarted = 1;
+            QByteArray datagram = QByteArray::number(ConnectedCnt) + ' ' + "SYSTEM STARTED";
+            udpSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress(GroupIP), udpPort);
         }
     }
 }
@@ -95,14 +103,17 @@ void server::newConnection()
         if (!gameStarted) //Если игра не началась
         {
 
-            if (ConnectedCnt >= 2)
+            if (ConnectedCnt >= max_cl)
             {
                 data = "FULL"; //Если сервер переполнен
             }
             else
             {
-                data = QByteArray::number(ConnectedCnt++) + ' ' + QByteArray::number(udpPort) + ' ' + map.toLatin1().constData(); //Отправляем приветствие
-                //Формат: id udpПорт Карта
+                data = QByteArray::number(ConnectedCnt++) + ' ' + QByteArray::number(udpPort) + ' ' + map.toLatin1().constData() + ' ' + QByteArray::number(max_cl); //Отправляем приветствие
+                //Формат: id udpПорт Карта Число_игроков
+                QByteArray datagram = QByteArray::number(ConnectedCnt) + ' ' + "SYSTEM CONNECTED";
+                udpSocket->writeDatagram(datagram.data(), datagram.size(),
+                                             QHostAddress(GroupIP), udpPort);
             }
         }
         else
@@ -112,6 +123,20 @@ void server::newConnection()
         socket->write(IntToArray(data.size()));
         socket->write(data);
         socket->waitForBytesWritten();
+        if (!gameStarted)
+        {
+            if (ConnectedCnt >= max_cl && DisConnCnt != ConnectedCnt)
+            {
+                gameStarted = 1;
+                QByteArray datagram = QByteArray::number(ConnectedCnt) + ' ' + "SYSTEM STARTED";
+                udpSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress(GroupIP), udpPort);
+            }
+        }
+        if (gameStarted)
+        {
+            QByteArray datagram = QByteArray::number(ConnectedCnt) + ' ' + "SYSTEM STARTED";
+            udpSocket->writeDatagram(datagram.data(), datagram.size(), QHostAddress(GroupIP), udpPort);
+        }
     }
 }
 void server::disconnected()
