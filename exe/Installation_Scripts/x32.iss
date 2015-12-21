@@ -54,7 +54,7 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\MapEditor"; Filename: "{app}\MapEditor.exe"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{commondesktop}\РедакторКарт_TB"; Filename: "{app}\{#MyAppExeName}"; Tasks: editoricon
+Name: "{commondesktop}\РедакторКарт_TB"; Filename: "{app}\MapEditor.exe"; Tasks: editoricon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]

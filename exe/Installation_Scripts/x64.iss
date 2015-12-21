@@ -11,7 +11,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{8194394C-9A48-40C6-9070-450E405D895C}
+AppId={{345A0BF7-6FCE-460F-86BE-956C52863B0A}
 ChangesAssociations = yes
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -27,6 +27,7 @@ OutputDir=C:\Users\Grigoriy\Desktop
 OutputBaseFilename=TBSetup_x64
 Compression=lzma
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode = x64
 
 [Languages]
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
@@ -54,7 +55,7 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\MapEditor"; Filename: "{app}\MapEditor.exe"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-Name: "{commondesktop}\РедакторКарт_TB"; Filename: "{app}\{#MyAppExeName}"; Tasks: editoricon
+Name: "{commondesktop}\РедакторКарт_TB"; Filename: "{app}\MapEditor.exe"; Tasks: editoricon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]

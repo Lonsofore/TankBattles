@@ -93,7 +93,7 @@ public slots:
     void pvpConnect(); // подключение
     void pvpLoading();
     void pvpLoad(); //Загрузка карты для MP
-    int fileCheck(QString filen); //Проверка карты на соответствие стандартам
+    int fileCheck(QString filen, bool param); //Проверка карты на соответствие стандартам
 
     void settings();  // список настроек
     void pSettings(); // настройки игрока

@@ -1109,7 +1109,7 @@ void Game::createServ()
     else pathToServ += "/server"; //Если не винда
     QString path = QDir::currentPath() + "/maps/";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("Map (*.map)")); // только .map
-    int cnt = fileCheck(fileName);
+    int cnt = fileCheck(fileName, true);
     if (cnt > 0)
     {
         QString map = fileName.split('/').last(); //Имя карты
@@ -1163,9 +1163,12 @@ void Game::waitForStart()
     }
 }
 
-int Game::fileCheck(QString filen)
+int Game::fileCheck(QString filen, bool param)
 {
-    QFile file(filen); //Открывем файл карты, на которой будет проходить игра
+    QString path;
+    if (!param) path = QDir::currentPath() + "/maps/" + filen;
+    else path = filen;
+    QFile file(path); //Открывем файл карты, на которой будет проходить игра
     if(!file.open(QIODevice::ReadOnly))
     {
         if (filen != "") {QMessageBox::information(this, "Ошибка", "Не удалось прочитать указанный файл");}
@@ -2167,7 +2170,7 @@ void Game::readResponse() //Читаем ответ от сервера посл
                     udpSocket->joinMulticastGroup(QHostAddress(GroupIP));
                     udpSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, QVariant(1));
                     map = response.at(2);
-                    if (fileCheck(response.at(2)) == 0 || fileCheck(response.at(2)) < pCnt ) //Жизнь-тлен: карта не загрузилась
+                    if (fileCheck(response.at(2), false) == 0 || fileCheck(response.at(2), false) < pCnt ) //Жизнь-тлен: карта не загрузилась
                     {
                         QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
                         tcpSocket->write(IntToArray(data.size()));
