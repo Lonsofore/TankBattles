@@ -40,9 +40,10 @@ const int nPvP1Btns = 2;
 const int nPvP1TBs = 2;
 const int nPvP2Btns = 2;
 const int nPvP2TBs = 2;
+const int nPvP2UpDn = 1;
 const int nGMenuBtns = 4;
 
-const int nBots = 3;
+const int nBots = 0;
 
 int curButton;
 
@@ -61,7 +62,7 @@ Game::Game(QWidget *parent)
     inMP = 0;
 
     darkMode = false;
-    createBots = true;
+    createBots = false;
 
     // создание сцены
     scene = new QGraphicsScene();
@@ -282,9 +283,9 @@ void Game::switchButton(int n) // смена кнопки
     if (inpvp2) // создать игру
     {
         if (n < 0)
-            n = n + nPvP2Btns + nPvP2TBs;
-        if (n > nPvP2Btns + nPvP2TBs - 1)
-            n = n - nPvP2Btns - nPvP2TBs;
+            n = n + nPvP2Btns + nPvP2TBs + nPvP2UpDn;
+        if (n > nPvP2Btns + nPvP2TBs + nPvP2UpDn - 1)
+            n = n - nPvP2Btns - nPvP2TBs - nPvP2UpDn;
 
         curButton = n;
 
@@ -293,6 +294,9 @@ void Game::switchButton(int n) // смена кнопки
 
         for (int i=0; i<nPvP2Btns; i++)
             btns[i]->deselect();
+
+        for (int i=0; i<nPvP2UpDn; i++)
+            udBtns[i]->deselect();
 
         switch (curButton)
         {
@@ -305,10 +309,14 @@ void Game::switchButton(int n) // смена кнопки
             break;
 
             case 2:
-                btns[0]->select();
+                udBtns[0]->select();
             break;
 
             case 3:
+                btns[0]->select();
+            break;
+
+            case 4:
                 btns[1]->select();
             break;
         }
@@ -767,6 +775,7 @@ void Game::pvp2()
 
     btns = new Button*[nPvP2Btns];
     tBoxes = new TextBox*[nPvP2TBs];
+    udBtns = new numUpDown*[nPvP2UpDn];
 
     yPos += 150;
     xPos = this->width()/2 - 300/2;
@@ -785,9 +794,29 @@ void Game::pvp2()
     connect(tBoxes[1],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
     connect(tBoxes[1],SIGNAL(back()),this,SLOT(pvp()));
 
+    QString img = ":/images/images/menu/Panel.png";
+    // плашка музыка
+    text1 = new TextPanel("Players", img, 190, 70);
+    yPos += 80;
+    text1->setPos(xPos,yPos);
+    scene->addItem(text1);
+
+    //const int num = 14;
+    //QString arr[num];
+    //for (int i=0; i<num; i++)
+     //   arr[i] = i;
+
+    QString arr[9] = {"2","3","4","5","6","7","8","9","10"};
+    // кол-во игроков
+    int xPos1 = xPos + 200;
+    udBtns[0] = new numUpDown(2, arr, 9, 0, 100, 70);
+    udBtns[0]->setPos(xPos1,yPos);
+    scene->addItem(udBtns[0]);
+    connect(udBtns[0],SIGNAL(changed(int)),this,SLOT(switchButton(int)));
+
     // создать игру
     yPos += 80;
-    btns[0] = new Button(2, "Create", 300, 70);
+    btns[0] = new Button(3, "Create", 300, 70);
     btns[0]->setPos(xPos,yPos);
     scene->addItem(btns[0]);
     connect(btns[0],SIGNAL(clicked()),this,SLOT(createServ()));
@@ -796,7 +825,7 @@ void Game::pvp2()
 
     // вернуться назад
     yPos += 80;
-    btns[1] = new Button(3, "Back", 300, 70);
+    btns[1] = new Button(4, "Back", 300, 70);
     btns[1]->setPos(xPos,yPos);
     scene->addItem(btns[1]);
     connect(btns[1],SIGNAL(clicked()),this,SLOT(pvp()));
