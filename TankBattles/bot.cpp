@@ -17,7 +17,8 @@ Bot::Bot()
     isBot = true;
     defaultTank();
 
-    timer->start(20);
+    if (fileName != "")
+        timer->start(20);
 }
 
 void Bot::actions()
@@ -120,6 +121,7 @@ void Bot::killBot()
 void Bot::spawnBot()
 {
     spawnTank();
-    timer->start(20);
+    if (fileName != "")
+        timer->start(20);
 }
 
