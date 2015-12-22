@@ -135,10 +135,11 @@ private:
     QUdpSocket *udpSocket;
     QTcpSocket *tcpSocket;
     int usrid; //ID игрока
-    int pCnt;
+    int pCnt; //Кол-во игроков
     QString map;
     bool isrecieving, issending, inMP, gameStarted;
     QProcess *serv;
+    bool isSpwnd, isExititng;
 
 };
 

@@ -76,6 +76,7 @@ void server::dataRecieved(QByteArray data)
                     HAngle[i] = 0;
                     isFiring[i] = 0;
                 }
+                gameStarted = 0;
             } //Если все отключились, то обнуляем сервер
         }
         if (list.at(2) == "START")

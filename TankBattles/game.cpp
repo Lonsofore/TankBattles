@@ -63,7 +63,7 @@ Game::Game(QWidget *parent)
     int height = 600;
 
     inMP = 0;
-
+    isExititng = 0;
     gameStarted = 0;
 
     darkMode = false;
@@ -984,7 +984,7 @@ void Game::pvpLoading()
 
     // плашка кол-во игроков
     QString img = ":/images/images/menu/Panel.png";
-    QString text = "... of " + QString::number(pCnt);
+    QString text = QString::number(usrid + 1) + " of " + QString::number(pCnt);
     text1 = new TextPanel(text, img, 250, 70);
     xPos = width()/2 - text1->boundingRect().width()/2;
     yPos = yPos + waitText->boundingRect().height() + 40;
@@ -1454,6 +1454,7 @@ void Game::pvpLoad()
         player = new Player();
         scene->addItem(player);
         scene->addItem(player->head);
+        isSpwnd = 0;
         connect(player,SIGNAL(tomenu()),this,SLOT(gameMenu()));
         connect(player, SIGNAL(KeyPressed()), this, SLOT(SendData()));
         connect(player, SIGNAL(reSpawn()), this, SLOT(SendData()));
@@ -1974,11 +1975,16 @@ void Game::gSettings()
 
 void Game::toMenu()
 {
-    QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
-    tcpSocket->write(IntToArray(data.size()));
-    tcpSocket->write(data);
-    tcpSocket->waitForBytesWritten();
-    if (isHost) {serv->kill(); isHost = 0;}
+    isExititng = 1;
+    if (inMP)
+    {
+        QByteArray data = QByteArray::number(usrid) + " SYSTEM EXIT";
+        tcpSocket->write(IntToArray(data.size()));
+        tcpSocket->write(data);
+        tcpSocket->waitForBytesWritten();
+        if (isHost) {serv->kill(); isHost = 0;}
+        inMP = 0;
+    }
     scene->setSceneRect(0,0,maxwidth,maxheight);
     setFixedSize(maxwidth, maxheight);
     menu();
@@ -2024,70 +2030,74 @@ QImage Game::setImageLightness(QImage img, int lightness)
 
 void Game::processPendingDatagrams()
 {   int otherplayer;
-    while (udpSocket->hasPendingDatagrams())
+    if (!isExititng)
     {
-        QByteArray datagram;
-        datagram.resize(udpSocket->pendingDatagramSize());
-        udpSocket->readDatagram(datagram.data(), datagram.size());
-        if (datagram.split(' ').at(1) != "SYSTEM") //Если не системное сообщение
+        while (udpSocket->hasPendingDatagrams())
         {
-            if (!gameStarted) {QTimer::singleShot(1000, this, SLOT(pvpLoad()));}
+            QByteArray datagram;
+            datagram.resize(udpSocket->pendingDatagramSize());
+            udpSocket->readDatagram(datagram.data(), datagram.size());
+            if (datagram.split(' ').at(1) != "SYSTEM") //Если не системное сообщение
+            {
+                if (!gameStarted) {QTimer::singleShot(1000, this, SLOT(pvpLoad()));}
+                else
+                {
+                    QList<QByteArray> playersList;
+                    playersList = datagram.split('|');
+                    //Здесь будет цикл
+                    for (int i = 0; i<pCnt; i++)
+                    {
+                        if (i != usrid)
+                        {
+                            if (i < usrid) otherplayer = i;
+                            if (i > usrid) otherplayer = i-1;
+                            QString temp;
+                            temp +=QString::fromLatin1(playersList.at(i).data());
+                            QList<QString> dataList;
+                            dataList =  temp.split(' ');
+                            enmy[otherplayer]->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
+                            enmy[otherplayer]->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
+                            if (dataList.at(5).toInt() == 1) enmy[otherplayer]->fire(); //Стреляем, если нужно
+                            enmy[otherplayer]->health = dataList.at(6).toInt(); //Устанавливаем здоровье
+                        }
+                    }
+                    if (!isSpwnd) {player->randomSpawn(); isSpwnd = 1;}
+                }
+            }
             else
             {
-                QList<QByteArray> playersList;
-                playersList = datagram.split('|');
-                //Здесь будет цикл
-                for (int i = 0; i<pCnt; i++)
+                if (datagram.split(' ').at(2) == "EXIT")
                 {
-                    if (i != usrid)
+                    if (gameStarted)
                     {
-                        if (i < usrid) otherplayer = i;
-                        if (i > usrid) otherplayer = i-1;
-                        QString temp;
-                        temp +=QString::fromLatin1(playersList.at(i).data());
-                        QList<QString> dataList;
-                        dataList =  temp.split(' ');
-                        enmy[otherplayer]->changePos(dataList.at(1).toInt(),dataList.at(2).toInt()); //Устанавливаем координаты
-                        enmy[otherplayer]->changeAngle(dataList.at(3).toInt(), dataList.at(4).toInt()); //И угол поворота
-                        if (dataList.at(5).toInt() == 1) enmy[otherplayer]->fire(); //Стреляем, если нужно
-                        enmy[otherplayer]->health = dataList.at(6).toInt(); //Устанавливаем здоровье
+                        int exid = datagram.split(' ').at(0).toInt();
+                        if (exid < usrid)
+                        {
+                            enmy[exid]->hide(); //Иначе падает с ошибкой сегментации
+                            enmy[exid]->head->hide();
+                        }
+                        else
+                        {
+                            enmy[exid-1]->hide();
+                            enmy[exid-1]->head->hide();
+                        }
                     }
                 }
-            }
-        }
-        else
-        {
-            if (datagram.split(' ').at(2) == "EXIT")
-            {
-                if (gameStarted)
+                if (datagram.split(' ').at(2) == "STARTED")
                 {
-                    int exid = datagram.split(' ').at(0).toInt();
-                    if (exid < usrid)
+                    if (!gameStarted)
                     {
-                        enmy[exid]->hide(); //Иначе падает с ошибкой сегментации
-                        enmy[exid]->head->hide();
-                    }
-                    else
-                    {
-                        enmy[exid-1]->hide();
-                        enmy[exid-1]->head->hide();
+                        pCnt = datagram.split(' ').at(0).toInt();
+                        pvpLoad();
                     }
                 }
-            }
-            if (datagram.split(' ').at(2) == "STARTED")
-            {
-                if (!gameStarted)
+                if (datagram.split(' ').at(2) == "CONNECTED")
                 {
-                    pCnt = datagram.split(' ').at(0).toInt();
-                    pvpLoad();
-                }
-            }
-            if (datagram.split(' ').at(2) == "CONNECTED")
-            {
-                if (!gameStarted)
-                {
-                    QString text = QString::number(datagram.split(' ').at(0).toInt()) + " of " + QString::number(pCnt);
-                    text1->setText(text);
+                    if (!gameStarted)
+                    {
+                        QString text = QString::number(datagram.split(' ').at(0).toInt()) + " of " + QString::number(pCnt);
+                        text1->setText(text);
+                    }
                 }
             }
         }
