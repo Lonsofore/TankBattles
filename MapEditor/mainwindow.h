@@ -69,8 +69,9 @@ private slots:
 
     void Selection_shortcut();
 
+    void fill(int r, int c);
+
 signals:
-//void redirectData(QString data);
     void ReturnValue(int itm);
 
     void ReturnSize(int x, int y);
@@ -80,7 +81,8 @@ private:
 
     void closeEvent(QCloseEvent *);
 
-    bool isChanged;
+
+    bool isChanged, isFilling;
 
     int spwncnt;  //Кол-во точек спавна
 

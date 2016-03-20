@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->yspin->setMaximum(max_size);
     selShort = new QShortcut(QKeySequence("Ctrl+E"), this);
     connect(selShort, SIGNAL(activated()), this, SLOT(Selection_shortcut()));
-
+    connect(ui->field, SIGNAL(cellClicked(int,int)), this, SLOT(fill(int,int)));
 }
 
 MainWindow::~MainWindow()
@@ -170,7 +170,7 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.01\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.05\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
@@ -178,7 +178,7 @@ void MainWindow::on_preview_clicked()
     bool isSpwnCorrect = 0;
     if ((ui->field->rowCount() == 0) || (ui->field->columnCount() == 0))
     {
-        QMessageBox::critical(this, "Внимание!", "Нечего показывать!");
+        QMessageBox::critical(this, "Ошибка!", "Нечего показывать!");
     }
     else
     {   if (spwncnt < 2)
@@ -236,12 +236,20 @@ void MainWindow::on_selection_comboBox_currentIndexChanged(int index)
     {
         case 0:
             ui->field->setSelectionMode(QAbstractItemView::SingleSelection);
+            isFilling = 0;
         break;
         case 1:
             ui->field->setSelectionMode(QAbstractItemView::ExtendedSelection);
+            isFilling = 0;
         break;
         case 2:
+            QMessageBox::information(this, "Внимание!", "Функция работает в тестовом режиме.\nВозможны ошибки при заливке больших областей!");
             ui->field->setSelectionMode(QAbstractItemView::NoSelection);
+            isFilling = 1;
+        break;
+        case 3:
+            ui->field->setSelectionMode(QAbstractItemView::NoSelection);
+            isFilling = 0;
         break;
         default: break;
     }
@@ -272,39 +280,42 @@ void MainWindow::on_spwn_btn_clicked()
 void MainWindow::on_field_itemSelectionChanged()
 {
     isChanged = 1;
-    int row, column;
+    if(!isFilling)
     {
-        QList<QTableWidgetItem*> selection =  ui->field->selectedItems();
-        for (int i = 0; i < selection.count(); ++i)
+        int row, column;
         {
-            QTableWidgetItem *itm = selection.at(i);
-            row = itm->row();
-            column = itm->column();
-            if (ui->field->item(row, column)->text() == "S") spwncnt--;
-            QTableWidgetItem *item = new QTableWidgetItem;
-            if (ui->ubr_btn->isChecked())  //Неразрушаеммый
+            QList<QTableWidgetItem*> selection =  ui->field->selectedItems();
+            for (int i = 0; i < selection.count(); ++i)
             {
-                item->setText("2");
-                ui->field->setItem(row, column, item);
-                ui->field->item(row, column)->setBackgroundColor(QColor(38, 14, 55));
-            }
-            if (ui->br_btn->isChecked())   //Разрушаеммый
-            {
-                item->setText("1");
-                //  item->setIcon(QIcon(":/textures/breakable.png"));
-                ui->field->setItem(row, column, item);
-                ui->field->item(row, column)->setBackgroundColor(QColor(255, 202, 61));
-            }
-            if (ui->emp_btn->isChecked()) //Пустой
-            {
-                item->setText("0");
-                ui->field->setItem(row, column, item);
-            }
-            if (ui->spwn_btn->isChecked()) //Спавн
-            {
-                item->setText("S");
-                ui->field->setItem(row, column, item);
-                spwncnt++;
+                QTableWidgetItem *itm = selection.at(i);
+                row = itm->row();
+                column = itm->column();
+                if (ui->field->item(row, column)->text() == "S") spwncnt--;
+                QTableWidgetItem *item = new QTableWidgetItem;
+                if (ui->ubr_btn->isChecked())  //Неразрушаеммый
+                {
+                    item->setText("2");
+                    ui->field->setItem(row, column, item);
+                    ui->field->item(row, column)->setBackgroundColor(QColor(38, 14, 55));
+                }
+                if (ui->br_btn->isChecked())   //Разрушаеммый
+                {
+                    item->setText("1");
+                    //  item->setIcon(QIcon(":/textures/breakable.png"));
+                    ui->field->setItem(row, column, item);
+                    ui->field->item(row, column)->setBackgroundColor(QColor(255, 202, 61));
+                }
+                if (ui->emp_btn->isChecked()) //Пустой
+                {
+                    item->setText("0");
+                    ui->field->setItem(row, column, item);
+                }
+                if (ui->spwn_btn->isChecked()) //Спавн
+                {
+                    item->setText("S");
+                    ui->field->setItem(row, column, item);
+                    spwncnt++;
+                }
             }
         }
     }
@@ -384,7 +395,7 @@ void MainWindow::LoadMap(QString fname)
                     ui->field->setColumnCount(colcnt);
                     while(!in.atEnd())  //Пока не конец файла
                     {
-                        QString line = in.readLine(); //Читаем строку
+                        QString line = in.readLine(); //Читаем строкуВнимани
                         QStringList fields = line.split(" "); //Элементы в файле разделены пробелами
                         if (fields.count() == colcnt+1)       //Если кол-во элементов в строке равно кол-ву элементов указанных в строке информации
                         {
@@ -509,8 +520,8 @@ void MainWindow::LoadMap(QString fname)
 void MainWindow::Selection_shortcut()
 {
     int indx = ui->selection_comboBox->currentIndex();
-    if (indx < 3) {ui->selection_comboBox->setCurrentIndex(++indx);}
-    if (indx == 3) {ui->selection_comboBox->setCurrentIndex(0);}
+    if (indx < 4) {ui->selection_comboBox->setCurrentIndex(++indx);}
+    if (indx == 4) {ui->selection_comboBox->setCurrentIndex(0);}
 }
 
 void MainWindow::on_Exit_triggered()
@@ -522,4 +533,61 @@ void MainWindow::on_Exit_triggered()
         if (reply.exec() == QMessageBox::Yes) {MainWindow::on_Save_triggered();}
     }
     exit(0);
+}
+
+void MainWindow::fill(int r, int c)
+{
+    if (isFilling)
+    {
+        QString elem = ui->field->item(r, c)->text();
+        QTableWidgetItem *item = new QTableWidgetItem;
+        if (ui->ubr_btn->isChecked())  //Неразрушаеммый
+        {
+            if (ui->field->item(r, c)->text() == "2") return;
+            item->setText("2");
+            ui->field->setItem(r, c, item);
+            ui->field->item(r, c)->setBackgroundColor(QColor(38, 14, 55));
+        }
+        if (ui->br_btn->isChecked())   //Разрушаеммый
+        {
+            if (ui->field->item(r, c)->text() == "1") return;
+            item->setText("1");
+            //  item->setIcon(QIcon(":/textures/breakable.png"));
+            ui->field->setItem(r, c, item);
+            ui->field->item(r, c)->setBackgroundColor(QColor(255, 202, 61));
+        }
+        if (ui->emp_btn->isChecked()) //Пустой
+        {
+            if (ui->field->item(r, c)->text() == "0") return;
+            item->setText("0");
+            ui->field->setItem(r, c, item);
+        }
+        if (ui->spwn_btn->isChecked()) //Спавн
+        {
+            if (ui->field->item(r, c)->text() == "S") return;
+            item->setText("S");
+            ui->field->setItem(r, c, item);
+            spwncnt++;
+        }
+        if (r > 0)
+        {
+            if(ui->field->item(r-1, c)->text() == elem)
+                fill(r-1, c);
+        }
+        if (r < ui->field->rowCount()-1)
+        {
+            if(ui->field->item(r+1, c)->text() == elem)
+                fill(r+1, c);
+        }
+        if (c > 0)
+        {
+            if(ui->field->item(r, c-1)->text() == elem)
+                fill(r, c-1);}
+        if (c < ui->field->columnCount()-1)
+        {
+            if(ui->field->item(r, c+1)->text() == elem)
+                fill(r, c+1);
+        }
+        //delete *item;
+    }
 }
