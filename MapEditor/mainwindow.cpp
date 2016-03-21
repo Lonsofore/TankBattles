@@ -84,6 +84,15 @@ void MainWindow::on_Save_triggered()
                    }
                }
             }
+            if ( (ui->xspin->value() * ui->yspin->value()) > 22500 )
+            {
+                QMessageBox reply (QMessageBox::Warning, "Внимание!", "Слишком большой рамер карты!\n"
+                                                                      "Отрисовка карты у игроков может занять много времени."
+                                                                      "Продолжить?", QMessageBox::Yes|QMessageBox::No);
+                reply.setButtonText(QMessageBox::Yes, "Да");
+                reply.setButtonText(QMessageBox::No, "Нет");
+                if (reply.exec() == QMessageBox::No) {return;}
+            }
             QString fname = QFileDialog::getSaveFileName(this, tr("Сохранение"), "Map_Name.map", tr("Map files (*.map)"));
             if (fname.split('.').count() < 2) fname +=".map";
             else
@@ -146,8 +155,8 @@ void MainWindow::on_New_triggered()
     ui->field->clearContents(); //Стираем всё
     ui->field->setRowCount(0);
     ui->field->setColumnCount(0);
-    ui->xspin->setValue(1);
-    ui->yspin->setValue(1);
+    ui->xspin->setValue(5);
+    ui->yspin->setValue(5);
     spwncnt = 0;
 }
 
@@ -170,12 +179,11 @@ void MainWindow::on_Help_triggered()
 
 void MainWindow::on_About_triggered()
 {
-    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.05\n"); //Я не знаю что ещё здесь можно написать
+    QMessageBox::information(this, "О программе", "Редактор карт для игры TankBattles V 1.1\n"); //Я не знаю что ещё здесь можно написать
 }
 
 void MainWindow::on_preview_clicked()
 {
-    bool isSpwnCorrect = 0;
     if ((ui->field->rowCount() == 0) || (ui->field->columnCount() == 0))
     {
         QMessageBox::critical(this, "Ошибка!", "Нечего показывать!");
@@ -206,6 +214,15 @@ void MainWindow::on_preview_clicked()
                         else {QMessageBox::warning(this, "Ошибка построения карты", "Блок спавна не может располагаться на краю карты!"); return;}
                     }
                 }
+            }
+            if ( (ui->xspin->value() * ui->yspin->value()) > 22500 )
+            {
+                QMessageBox reply (QMessageBox::Warning, "Внимание!", "Слишком большой рамер карты!\n"
+                                                                      "Отрисовка может занять много времени. "
+                                                                      "Продолжить?", QMessageBox::Yes|QMessageBox::No);
+                reply.setButtonText(QMessageBox::Yes, "Да");
+                reply.setButtonText(QMessageBox::No, "Нет");
+                if (reply.exec() == QMessageBox::No) {return;}
             }
             Preview = new preview(this);
             QObject::connect(Preview, SIGNAL(GetData(int, int)),this, SLOT(GetItem(int,int)));       //Получение данных
@@ -243,7 +260,6 @@ void MainWindow::on_selection_comboBox_currentIndexChanged(int index)
             isFilling = 0;
         break;
         case 2:
-            QMessageBox::information(this, "Внимание!", "Функция работает в тестовом режиме.\nВозможны ошибки при заливке больших областей!");
             ui->field->setSelectionMode(QAbstractItemView::NoSelection);
             isFilling = 1;
         break;
@@ -539,6 +555,20 @@ void MainWindow::fill(int r, int c)
 {
     if (isFilling)
     {
+        fillCnt = 0;
+        fill_sub(r, c);
+    }
+}
+
+void MainWindow::fill_sub(int r, int c)
+{
+    if (isFilling)
+    {
+        if (fillCnt >= 10000)
+        {
+            return;
+        }
+        fillCnt++;
         QString elem = ui->field->item(r, c)->text();
         QTableWidgetItem *item = new QTableWidgetItem;
         if (ui->ubr_btn->isChecked())  //Неразрушаеммый
@@ -572,22 +602,21 @@ void MainWindow::fill(int r, int c)
         if (r > 0)
         {
             if(ui->field->item(r-1, c)->text() == elem)
-                fill(r-1, c);
+                fill_sub(r-1, c);
         }
         if (r < ui->field->rowCount()-1)
         {
             if(ui->field->item(r+1, c)->text() == elem)
-                fill(r+1, c);
+                fill_sub(r+1, c);
         }
         if (c > 0)
         {
             if(ui->field->item(r, c-1)->text() == elem)
-                fill(r, c-1);}
+                fill_sub(r, c-1);}
         if (c < ui->field->columnCount()-1)
         {
             if(ui->field->item(r, c+1)->text() == elem)
-                fill(r, c+1);
+                fill_sub(r, c+1);
         }
-        //delete *item;
     }
 }
