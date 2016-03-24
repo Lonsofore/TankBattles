@@ -135,36 +135,36 @@ void Player::keyPressEvent(QKeyEvent *event)
             // Таблица
             case 96:   // `
             case 1025: // ё
-                qDebug() << "score";
+                //qDebug() << "score";
             break;
 
             // цифры (для тестов)
             case 49:
-                this->changeSize(pixsize-10);
-                qDebug() << pixsize;
+                //this->changeSize(pixsize-10);
+                //qDebug() << pixsize;
             break;
 
             case 50:
-                this->changeSize(pixsize+10);
-                qDebug() << pixsize;
+                //this->changeSize(pixsize+10);
+                //qDebug() << pixsize;
             break;
 
             case 51:
-                randomSpawn();
+                //randomSpawn();
             break;
 
             case 52:
-                qDebug() << QSysInfo::kernelType();
+                //qDebug() << QSysInfo::kernelType();
             break;
 
             case 53:
                 //getDmg(10);
-                last = QTime::currentTime();
+                //last = QTime::currentTime();
             break;
 
             case 54:
                 //qDebug() << cur.minute() << " " << cur.second() << " " << cur.msec();
-                qDebug() << last.msecsTo(QTime::currentTime());
+                //qDebug() << last.msecsTo(QTime::currentTime());
             break;
         }
         if (action == false)
