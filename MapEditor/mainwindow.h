@@ -88,6 +88,10 @@ private:
 
     int max_size;
 
+    int fillCnt;
+
+    void fill_sub(int, int);
+
     preview *Preview;
 
     QShortcut *selShort;
